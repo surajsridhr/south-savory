@@ -1,4 +1,4 @@
-// One shared password in front of everything: the page and the data.
+// One shared password in front of everything: the page and the data. worker.js runs this first.
 // The password lives in the APP_PASSWORD secret, never in this code. A correct
 // password sets a cookie that lasts a year, so each phone types it once.
 
@@ -49,7 +49,7 @@ ${wrong ? '<div class="err" role="alert">That password is wrong. Try again.</div
 <button type="submit">Open</button></form></body></html>`, { status: wrong ? 401 : 200, headers: { "Content-Type": "text/html; charset=utf-8", ...PRIVATE } });
 }
 
-export async function onRequest({ request, env, next }) {
+export async function withPassword(request, env, next) {
   if (!env.APP_PASSWORD) return new Response("The site password isn't set yet. See DEPLOY.md.", { status: 503, headers: PRIVATE });
   const url = new URL(request.url);
   const token = await tokenFor(env.APP_PASSWORD);

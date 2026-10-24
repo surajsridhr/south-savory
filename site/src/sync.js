@@ -1,7 +1,7 @@
 // GET  /api/sync?since=<rev>  → every row changed after that rev
 // POST /api/sync {records:[{id,data,deleted,ts}]} → store them; a row only replaces
 //      what's there if it was saved later (ts), so a slow phone can't undo a newer edit.
-// The password check in _middleware.js runs before either of these.
+// The password check in auth.js runs before either of these.
 
 const ID = /^[mehox]:[\w:.-]{1,200}$/;
 const MAX_DATA = 200000;

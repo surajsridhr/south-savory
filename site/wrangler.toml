@@ -1,9 +1,0 @@
-name = "south-savory"
-compatibility_date = "2025-09-01"
-pages_build_output_dir = "public"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "south-savory"
-# Created 24 Oct 2026 in the APAC region.
-database_id = "ed65dd58-1c8b-4d79-aefa-eaac0967929e"

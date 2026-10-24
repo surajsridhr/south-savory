@@ -16,7 +16,8 @@ Every order has a name, DM or group, a "handed over" tick and a paid tick. Unpai
 | Path | What it is |
 | --- | --- |
 | `site/public/index.html` | The app: one HTML file, no build step |
-| `site/functions/` | Cloudflare Pages Functions: a shared password, and the sync both phones read and write |
+| `site/src/` | The Cloudflare Worker: a shared password, and the sync both phones read and write |
+| `wrangler.toml` | Worker and database settings |
 | `site/schema.sql` | The D1 database table |
 | `site/DEPLOY.md` | How to put it online |
 | `user-flows-v2.md` | The user flows the app is built from |
@@ -29,4 +30,4 @@ Every order has a name, DM or group, a "handed over" tick and a paid tick. Unpai
 
 Open `site/public/index.html` in a browser to use it on one device. For two phones sharing one list, see `site/DEPLOY.md`.
 
-Tests: serve the repo root on port 8899 and run `node outputs/tests/v2_flows.mjs`; for sync, run `npx wrangler pages dev --port 8788` in `site/` and then `node outputs/tests/v2_sync.mjs`.
+Tests: serve the repo root on port 8899 and run `node outputs/tests/v2_flows.mjs`; for sync, run `npx wrangler dev --port 8788` at the repo root and then `node outputs/tests/v2_sync.mjs`.

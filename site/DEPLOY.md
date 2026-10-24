@@ -1,42 +1,39 @@
 # Putting South Savory online
 
-The site is a Cloudflare Pages project with a D1 database, both on the free plan.
+South Savory runs as a Cloudflare Worker with a D1 database, both on the free plan.
+The code lives on GitHub; Cloudflare Workers Builds deploys it on every push to `main`.
 One shared password protects the page and the data. Each phone types it once.
 
 ```
-site/
-  public/index.html        the app
-  functions/_middleware.js the password check, in front of everything
-  functions/api/sync.js    the shared list both phones read and write
-  schema.sql               the database table
-  wrangler.toml            project name and database link
+wrangler.toml              Worker name, the app folder, the database link
+site/public/index.html     the app
+site/src/worker.js         password first, then the shared list or the app
+site/src/auth.js           the password check and login screen
+site/src/sync.js           the shared list both phones read and write
+site/schema.sql            the database table
 ```
 
-## First time (run from this `site` folder)
+## Already done (24 Oct 2026)
 
-1. Sign in to Cloudflare. A browser window opens; approve it.
-   `npx wrangler login`
-2. Create the database, then paste the `database_id` it prints into `wrangler.toml`.
-   `npx wrangler d1 create south-savory`
-3. Create the table.
-   `npx wrangler d1 execute south-savory --remote --file schema.sql`
-4. Create the site.
-   `npx wrangler pages project create south-savory --production-branch main`
-5. Set the kitchen password. It asks you to type it; it is never stored in these files.
-   `npx wrangler pages secret put APP_PASSWORD --project-name south-savory`
-6. Put the site live.
-   `npx wrangler pages deploy`
+- Database `south-savory` created and its table set up.
+- Worker `south-savory` connected to `github.com/surajsridhr/south-savory`
+  (deploy command `npx wrangler deploy`, root directory `/`).
 
-The address is printed at the end, for example `https://south-savory.pages.dev`.
-Open it on both phones, enter the password, and add it to the home screen.
+## Set the kitchen password (once)
+
+From the repo folder. It asks you to type it; it is never stored in these files.
+
+`npx wrangler secret put APP_PASSWORD`
+
+Until it's set, the site says "The site password isn't set yet."
 
 ## After a change to the app
 
-`npx wrangler pages deploy`
+Push to `main`. Cloudflare deploys it within a minute.
 
 ## Changing the password
 
-Run step 5 again, then step 6. Every phone will ask for the new one.
+Run the command above again. Every phone will ask for the new one.
 
 ## Moving data from the old app
 
@@ -45,5 +42,6 @@ Do it on one phone only; the other phone picks it up.
 
 ## Testing on this Mac
 
-`npx wrangler d1 execute south-savory --local --file schema.sql` once, then
-`npx wrangler pages dev --port 8788`, with `APP_PASSWORD=...` in `.dev.vars` (not uploaded).
+`npx wrangler d1 execute south-savory --local --file site/schema.sql` once, then
+`npx wrangler dev --port 8788`, with `APP_PASSWORD=...` in `.dev.vars` (not uploaded),
+then `node outputs/tests/v2_sync.mjs`.

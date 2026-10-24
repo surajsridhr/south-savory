@@ -1,5 +1,5 @@
-// Two phones, one shared list: run against `npx wrangler pages dev` in site/ (port 8788),
-// with APP_PASSWORD=local-test-only in site/.dev.vars.
+// Two phones, one shared list: run against `npx wrangler dev --port 8788` at the repo root,
+// with APP_PASSWORD=local-test-only in .dev.vars.
 import { chromium } from 'playwright';
 
 const URL = 'http://localhost:8788/';
