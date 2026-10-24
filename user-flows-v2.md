@@ -1,6 +1,6 @@
 # South Savory — user flows (v2)
 
-Status: **signed off by Suraj on 24 Oct 2026.** Everything below is his answers from the interview. First version built: `app/index.html`.
+Status: **signed off by Suraj on 24 Oct 2026.** Everything below is his answers from the interview. First version built: `site/public/index.html`, live at south-savory.suraj-kreative.workers.dev. Costing (C1–C8) agreed 25 Oct 2026, not built yet.
 
 No post generation. You write the WhatsApp message yourself.
 
@@ -143,9 +143,19 @@ Four tiles: **Daily lunch**, **Batter**, **Special drops**, **Custom orders**.
 - **Menu items** from the old app seed the new lists (lunch dishes sorted into groups; combos broken into dishes).
 - The old app's backup export is the transfer route.
 
+## Costs (COGS), agreed 25 Oct 2026
+
+- **Third tab** in the bottom bar: Home · History · Costs. Used most for lunch, where the menu changes daily; ragi ball, menthya ball, batter and drops are costed once and kept.
+- **Ingredients** are a saved list (name, price, per kg / litre / piece / bunch), kept in Costs and never shown in the menu lists. It starts empty: no researched or guessed prices.
+- **Tier first, then refine.** Three tier recipes: up to one vegetable, two vegetables, more than two. Each lunch dish picks a tier (first guess from its price: ₹50 / ₹60 / ₹70), but the tier is about ingredients, not price, so it can be changed. A dish given its own recipe in the calculator (e.g. pepper rasam, where pepper drives the cost) uses that instead. Rice, curd rice, ragi ball, menthya ball, chapathi, batter and drops use their own recipes.
+- **A recipe says what it makes**: N portions for lunch, N kg for batter, N kg or N pieces for drops. Cost per unit = (ingredients + overhead) ÷ that.
+- **Overhead: one setting, 15%**, on top of ingredients, for spices, gas and labour. Shown as its own line. No packaging or delivery costs: customers bring containers and collect from the door.
+- **The calculator shows the margin** for the item being costed: cost per portion, selling price, amount and % left.
+- **No daily profit.** Day and batch tiles keep showing revenue only. A **monthly report** in Costs shows the month's revenue, cost and profit. Revenue counts what orders are worth, paid or not. Items with no cost are flagged ("3 items not costed"), never counted as free.
+
 ## Parked
 
-Not in these flows: costing and ingredient prices, the monthly report, CSV export.
+Not in these flows: CSV export.
 
 ## Open questions
 

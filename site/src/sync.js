@@ -3,7 +3,7 @@
 //      what's there if it was saved later (ts), so a slow phone can't undo a newer edit.
 // The password check in auth.js runs before either of these.
 
-const ID = /^[mehox]:[\w:.-]{1,200}$/;
+const ID = /^[mehoxc]:[\w:.-]{1,200}$/;
 const MAX_DATA = 200000;
 const PAGE = 2000;
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });

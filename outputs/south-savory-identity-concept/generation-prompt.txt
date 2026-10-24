@@ -1,0 +1,15 @@
+Tool: built-in image_gen
+Reference: /Users/suraj/Desktop/Loose Images to sort/SS.jpg
+Background: opaque
+
+Use case: logo-brand and product-mockup
+Asset type: polished South Savory visual identity concept board, one cohesive designed landscape image.
+Input image: original South Savory logo is the identity reference, not a layout to repeat.
+Primary request: visualize a more appealing distinctive evolution of South Savory, a South Indian food brand. Create an intentional professional identity board with the new logo large and clear and a few convincing packaging applications.
+
+Design direction: warm, confident, approachable South Indian food identity. A custom paired SS monogram with flowing continuous kolam-inspired curves, subtly referencing rice-flour line patterns while unmistakably readable as TWO S LETTERS. Avoid making it look like 88, ampersands, or musical clefs. Retain the original's two small orange dots, placed purposefully in the central negative space. Smooth rounded flowing strokes, open counters, simple enough for a small sticker. Refine the original connected SS idea, not an unrelated symbol.
+Wordmark: exact text "South Savory", carefully crafted warm soft serif with rounded details and moderate stroke contrast. Comfortable spacing, highly legible; the name should feel inviting rather than formal. Match the same monogram and same wordmark precisely in every application.
+Palette: deep banana-leaf green #173E2D, warm cream #F6F0E3, orange #F36B16. No gold. Flat clean logo art, with realistic natural materials only in mockups.
+Layout: beautifully art-directed editorial concept board, wide landscape, generous cream negative space and fine orderly grid, no busy collage. Left half: large primary horizontal logo in leaf green with the orange dots, plus below a smaller standalone SS icon inside a leaf green social-profile circle (cream SS, orange dots) and three small palette swatches. Right half: one photorealistic cream takeaway food box with a green paper sleeve carrying the same cream/orange logo; one upright cream paper carry bag with green wordmark; and a small round green seal sticker with the same SS icon. Restrained tone-on-tone line pattern derived from the SS curves on the box side or sleeve edge, subtle and uncluttered. Consistent identity across all items.
+Only text allowed: brand name "South Savory", and a tiny board label "IDENTITY CONCEPT". No slogans, no founding year, no arch, no ornamental rules, no food illustrations, no random extra copy.
+Rendering: crisp high-resolution flat artwork on left, refined realistic packaging photography on right, soft daylight and subtle shadows, high-end but accessible food brand. Ensure every wordmark spells South Savory correctly. This is a visual proposal, not a technical brand manual.

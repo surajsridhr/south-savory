@@ -9,6 +9,8 @@ Four kinds of order, one way of working:
 - **Special drops**: festivals, ragi malt, lehya and other one-off runs, each with its own collection date.
 - **Custom orders**: a customer's own menu from the lunch list.
 
+A **Costs** tab works out what each item costs to make: a saved ingredient list, three curry-tier pots that any curry can take until it has a recipe of its own, and a 15% overhead. Profit is shown only in a monthly report.
+
 Every order has a name, DM or group, a "handed over" tick and a paid tick. Unpaid amounts carry forward, and change owed back to a customer is tracked until it's given.
 
 ## In this repo
@@ -30,4 +32,4 @@ Every order has a name, DM or group, a "handed over" tick and a paid tick. Unpai
 
 Open `site/public/index.html` in a browser to use it on one device. For two phones sharing one list, see `site/DEPLOY.md`.
 
-Tests: serve the repo root on port 8899 and run `node outputs/tests/v2_flows.mjs`; for sync, run `npx wrangler dev --port 8788` at the repo root and then `node outputs/tests/v2_sync.mjs`.
+Tests: serve the repo root on port 8899 and run `node outputs/tests/v2_flows.mjs` and `node outputs/tests/v2_costs.mjs`; for sync, run `npx wrangler dev --port 8788` at the repo root and then `node outputs/tests/v2_sync.mjs`.

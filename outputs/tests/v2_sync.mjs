@@ -103,6 +103,11 @@ ok('a sync never wipes what you are typing', (await A.page.inputValue('#odName')
 await B.page.reload(); await B.page.waitForFunction(() => SYNC.on && SYNC.state === 'ok', null, { timeout: 10000 });
 ok('after reload phone B still has everything', await state(B.page, () => events('batter')[0].orders.length === 3));
 
+// costing made on one phone shows on the other
+await A.page.evaluate(() => { S.costs.ings.push({ id: uid(), name: 'Toor dal', price: 110, unit: 'kg' }); S.costs.overhead = 18; save(); });
+await wait(700); await sync(A.page); await sync(B.page);
+ok('an ingredient and the overhead reach the other phone', await state(B.page, () => !!ingByName('Toor dal') && S.costs.overhead === 18));
+
 ok('no page errors', [...A.errors, ...B.errors].length === 0, [...A.errors, ...B.errors].join(' | '));
 await browser.close();
 console.log(`\n${pass} passed, ${fail} failed`);
