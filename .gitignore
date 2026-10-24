@@ -1,0 +1,8 @@
+node_modules/
+.wrangler/
+site/.wrangler/
+.dev.vars
+site/.dev.vars
+.claude/
+.taste-skill/
+.DS_Store

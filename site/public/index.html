@@ -1,0 +1,1389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f3f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)">
+<title>South Savory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Achromatic ledger (taste-skill app sheet, seed 549999267), with one face from the brief:
+   a stone ground from the kitchen's own world instead of #f8f8f8. Chrome is ink; the one
+   hue (#1d5fbf) marks the counts the kitchen cooks against. */
+:root{
+  --ground:#f4f3f1; --surface:#ffffff; --raised:#eeeeee; --active:#e9e8e5;
+  --border:#e6e6e6; --rule:#f0f0f0; --control:#d4d4d4;
+  --text:#0a0a0a; --muted:#5f5f5f;
+  --primary:#141414; --on-primary:#ffffff;
+  --hue:#1d5fbf;
+  --positive:#2e7d32; --pill-positive-bg:#dcfae5; --pill-positive-ink:#04250e;
+  --pill-warning-bg:#fffbeb; --pill-warning-ink:#92400e;
+  --pill-neutral-bg:#eeeeee; --pill-neutral-ink:#3d3d3d;
+  --negative:#c4242a;
+  --radius-card:8px; --radius-control:6px;
+  --gap:12px; --pad:16px;
+  --font:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --fs-title:24px; --fs-section:16px; --fs-kpi:30px; --fs-body:15px; --fs-small:13px;
+  --bar:52px; --tabbar:56px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#0b0b0b; --surface:#161616; --raised:#222222; --active:#262626;
+    --border:#262626; --rule:#1e1e1e; --control:#444444;
+    --text:#f5f5f5; --muted:#b4b4b4;
+    --primary:#f5f5f5; --on-primary:#0b0b0b;
+    --hue:#6ea1ff;
+    --positive:#3fc07a; --pill-positive-bg:#172a1d; --pill-positive-ink:#7fdca5;
+    --pill-warning-bg:#2d2210; --pill-warning-ink:#f2b866;
+    --pill-neutral-bg:#262626; --pill-neutral-ink:#d0d0d0;
+    --negative:#ff6b6b;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--ground);color:var(--text);font:400 var(--fs-body)/1.45 var(--font);
+  min-height:100vh;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+a{color:inherit;text-decoration:none}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--hue);outline-offset:2px;border-radius:4px}
+.app{max-width:560px;margin:0 auto;min-height:100vh;
+  padding-bottom:calc(var(--tabbar) + env(safe-area-inset-bottom) + 84px)}
+
+/* top bar: the screen's name, a back button, at most one action */
+.bar{position:sticky;top:0;z-index:5;height:calc(var(--bar) + env(safe-area-inset-top));
+  padding:env(safe-area-inset-top) 8px 0;display:flex;align-items:center;gap:4px;background:var(--ground)}
+.bar h1{font-size:17px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
+.bar .back{display:flex;align-items:center;gap:2px;height:44px;padding:0 8px;color:var(--text);font-size:15px}
+.bar .back svg{width:20px;height:20px}
+.bar .act{height:44px;padding:0 10px;font-size:15px;color:var(--text);display:flex;align-items:center}
+.wordmark{display:flex;align-items:center;gap:10px;padding:0 8px;flex:1}
+.wordmark h1{padding:0;font-size:17px}
+.mark{width:28px;height:28px;flex:none}
+
+.page{padding:4px var(--pad) 24px}
+.title{font-size:var(--fs-title);font-weight:500;letter-spacing:-0.01em;line-height:1.2}
+.sub{color:var(--muted);font-size:var(--fs-small);margin-top:4px}
+.section{margin-top:28px}
+.section > h2,.h2{font-size:var(--fs-section);font-weight:500;margin-bottom:10px;display:flex;align-items:baseline;gap:8px}
+.h2 .aside,.section > h2 .aside{margin-left:auto;font-size:var(--fs-small);font-weight:400;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:var(--fs-small)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card)}
+.card + .card{margin-top:var(--gap)}
+.pad{padding:14px 16px}
+
+/* home tiles: four peers, the category's flow behind each */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);margin-top:16px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);
+  padding:14px 14px 16px;text-align:left;min-height:148px;display:flex;flex-direction:column;gap:4px;
+  transition:transform .12s ease,border-color .12s ease}
+.tile:active{transform:scale(.98)}
+.tile:hover{border-color:var(--control)}
+.tile .name{font-size:16px;font-weight:500}
+.tile .when{font-size:var(--fs-small);color:var(--muted)}
+.tile .fig{margin-top:auto;font-size:22px;font-weight:500;letter-spacing:-0.01em}
+.tile .fig small{font-size:var(--fs-small);font-weight:400;color:var(--muted);margin-left:2px}
+.tile .line{font-size:var(--fs-small);color:var(--muted)}
+.tile.quiet .fig{color:var(--muted);font-size:15px;font-weight:400}
+
+.owedrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:var(--gap);padding:14px 16px}
+.owedrow .big{font-size:20px;font-weight:700;margin-left:auto}
+.chev{width:16px;height:16px;color:var(--muted);flex:none}
+
+/* lists */
+.list{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:52px;width:100%;text-align:left}
+.row + .row{border-top:1px solid var(--rule)}
+button.row:hover{background:color-mix(in srgb,var(--raised) 45%,transparent)}
+.row .grow{flex:1;min-width:0}
+.row .t1{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t2{font-size:var(--fs-small);color:var(--muted);margin-top:2px}
+.row .amt{font-weight:700;white-space:nowrap}
+.row .val{white-space:nowrap}
+.empty{padding:16px;color:var(--muted);font-size:var(--fs-small);border:1px dashed var(--control);border-radius:var(--radius-card);background:transparent}
+
+/* the kitchen count: the signature element. One row per dish, the count in the one hue */
+.count .ci{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid var(--rule)}
+.count .ci:first-child{border-top:0}
+.count .cv{text-align:right;white-space:nowrap;font-size:18px;font-weight:500;color:var(--hue);font-variant-numeric:tabular-nums}
+.count .cv.zero{color:var(--muted);font-weight:400}
+.count .cv small{font-size:var(--fs-small);color:var(--muted);font-weight:400;margin-left:2px}
+.count .cn .t2{font-size:var(--fs-small);color:var(--muted)}
+
+/* totals strip: one container split by a hairline */
+.strip{display:grid;grid-template-columns:repeat(3,1fr)}
+.strip > div{padding:12px 14px}
+.strip > div + div{border-left:1px solid var(--border)}
+.strip .lab{font-size:var(--fs-small);color:var(--muted)}
+.strip .v{font-size:20px;font-weight:500;margin-top:2px;white-space:nowrap}
+.strip .v.money{font-weight:700}
+
+/* orders */
+.order{padding:12px 16px}
+.order + .order{border-top:1px solid var(--rule)}
+.order .top{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left}
+.order .who{font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.order .what{font-size:var(--fs-small);color:var(--muted);margin-top:3px;width:100%;text-align:left;display:block}
+.order .ctl{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.order .ctl .chip{height:44px;padding:0 16px;font-size:14px}
+.tag{font-size:12px;color:var(--muted);flex:none}
+
+.chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;
+  font-size:13px;font-weight:500;border:1px solid var(--control);background:var(--surface);flex:none;white-space:nowrap;
+  min-width:44px;justify-content:center}
+.chip svg{width:14px;height:14px}
+.chip.on-del{background:var(--pill-neutral-bg);border-color:transparent;color:var(--pill-neutral-ink)}
+.chip.paid{background:var(--pill-positive-bg);border-color:transparent;color:var(--pill-positive-ink)}
+.chip.unpaid{background:var(--pill-warning-bg);border-color:transparent;color:var(--pill-warning-ink)}
+.chip.change{background:var(--pill-warning-bg);border-color:transparent;color:var(--pill-warning-ink)}
+.chip:active{transform:scale(.97)}
+.pill{display:inline-block;font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;background:var(--pill-neutral-bg);color:var(--pill-neutral-ink);white-space:nowrap}
+.pill.warn{background:var(--pill-warning-bg);color:var(--pill-warning-ink)}
+.pill.ok{background:var(--pill-positive-bg);color:var(--pill-positive-ink)}
+
+/* buttons */
+.btn{height:44px;padding:0 18px;border-radius:var(--radius-control);font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.btn.primary{background:var(--primary);color:var(--on-primary)}
+.btn.secondary{background:var(--raised);color:var(--text)}
+.btn.text{padding:0 8px;height:44px;color:var(--text);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--control)}
+.btn.danger{color:var(--negative);padding:0 8px}
+.btn.block{width:100%}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* the action dock: the screen's one primary job, in thumb reach above the tab bar */
+.dock{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom));z-index:6;
+  background:var(--ground);padding:10px var(--pad)}
+.dock .in{max-width:528px;margin:0 auto;display:flex;gap:8px}
+.dock .btn{flex:1}
+
+/* tab bar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:7;background:var(--surface);border-top:1px solid var(--border);
+  padding-bottom:env(safe-area-inset-bottom)}
+.tabbar .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;height:var(--tabbar)}
+.tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);text-decoration:none;font-size:11px;font-weight:500}
+.tabbar a svg{width:22px;height:22px}
+.tabbar a[aria-current="page"]{color:var(--text)}
+.tabbar .badge{position:absolute;margin:-6px 0 0 22px;background:var(--pill-warning-bg);color:var(--pill-warning-ink);font-size:11px;padding:0 6px;border-radius:999px}
+.tabbar a > span.ic{position:relative;display:flex}
+
+/* segmented control */
+.seg{display:inline-flex;background:var(--raised);border-radius:8px;padding:2px;gap:2px}
+.seg button{height:36px;padding:0 14px;border-radius:6px;font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text)}
+.seg.full{display:flex}.seg.full button{flex:1}
+
+/* forms */
+label.f{display:block;font-size:14px;font-weight:500;margin-bottom:6px}
+.field + .field{margin-top:16px}
+input[type=text],input[type=number],input[type=date],input[type=search],select,textarea{
+  width:100%;height:44px;border:1px solid var(--control);border-radius:var(--radius-control);background:var(--surface);
+  padding:0 12px;font-size:16px}
+input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transparent}
+.money-in{position:relative;display:inline-block}
+.money-in::before{content:"₹";position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
+.money-in input{padding-left:22px;width:96px;height:38px;text-align:right;font-variant-numeric:tabular-nums}
+.check{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 0;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--primary);flex:none}
+.hint{font-size:var(--fs-small);color:var(--muted);margin-top:6px}
+
+/* steppers */
+.step{display:inline-flex;align-items:center;border:1px solid var(--control);border-radius:999px;height:44px;flex:none}
+.step button{width:44px;height:42px;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center}
+.step button[disabled]{color:var(--control)}
+.step .q{min-width:28px;text-align:center;font-weight:500;font-variant-numeric:tabular-nums}
+
+/* picker rows inside setup and order sheets */
+.pick{display:flex;align-items:center;gap:12px;padding:10px 16px;min-height:56px}
+.pick + .pick{border-top:1px solid var(--rule)}
+.pick .grow{flex:1;min-width:0}
+.pick .nm{font-weight:500}
+.pick .meta{font-size:var(--fs-small);color:var(--muted);margin-top:1px}
+.pick.wrap{flex-wrap:wrap}
+.lp{width:100%;display:flex;justify-content:flex-end;align-items:center;gap:8px;padding-top:6px;font-size:var(--fs-small);color:var(--muted)}
+.search{margin:4px 0 0}
+.grouphead{font-size:var(--fs-small);color:var(--muted);padding:16px 2px 6px}
+.wchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.wline{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--rule);flex-wrap:wrap}
+.wline:first-child{border-top:0}
+.wline .kg{font-weight:500;min-width:64px}
+.wline .kg input{width:76px;height:38px;text-align:right}
+.x{width:44px;height:38px;display:flex;align-items:center;justify-content:center;color:var(--muted);margin-left:auto}
+.x svg{width:16px;height:16px}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:20;opacity:0;transition:opacity .2s ease}
+.scrim.show{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;top:max(24px,env(safe-area-inset-top));z-index:21;background:var(--ground);
+  border-radius:14px 14px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);
+  max-width:560px;margin:0 auto;box-shadow:0 -8px 30px rgba(0,0,0,.12)} /* taste-skill-ignore: a sheet floats */
+.sheet.show{transform:none}
+.sheet.short{top:auto;max-height:85vh}
+.sheet .sh{display:flex;align-items:center;height:52px;padding:0 8px;flex:none}
+.sheet .sh h2{flex:1;text-align:center;font-size:17px;font-weight:500}
+.sheet .sh .btn.text{text-decoration:none;min-width:72px}
+.sheet .grab{width:36px;height:5px;border-radius:3px;background:var(--control);margin:6px auto 0;flex:none}
+.sheet .drag{touch-action:none;cursor:grab}
+.sheet.dragging{transition:none}
+.sheet .sb{flex:1;overflow:auto;padding:4px var(--pad) 24px;-webkit-overflow-scrolling:touch}
+.sheet .sf{flex:none;padding:10px var(--pad) calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--ground);display:flex;gap:10px;align-items:center}
+.sheet .sf .tot{font-size:13px;color:var(--muted);line-height:1.2}
+.sheet .sf .tot b{display:block;font-size:20px;color:var(--text);font-weight:700}
+.sheet .sf .btn{flex:1}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom) + 76px);transform:translate(-50%,20px);
+  background:var(--primary);color:var(--on-primary);padding:10px 8px 10px 16px;border-radius:10px;z-index:30;display:flex;align-items:center;gap:8px;
+  font-size:14px;opacity:0;transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)} /* taste-skill-ignore: a toast floats */
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast button{color:var(--on-primary);font-weight:500;text-decoration:underline;padding:6px 8px}
+
+.notice{background:var(--pill-warning-bg);color:var(--pill-warning-ink);border-radius:var(--radius-card);padding:12px 14px;font-size:14px}
+.notice.neutral{background:var(--raised);color:var(--text)}
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:0 calc(-1 * var(--pad));padding:0 var(--pad)}
+.filters .chip[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.foot{margin-top:40px;color:var(--muted);font-size:12px;text-align:center}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+<div id="dock"></div>
+<div id="sheetRoot"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileIn" accept="application/json,.json" hidden>
+<script>
+"use strict";
+var BUILD="v2.0 — first version · 2026-10-24";
+var KEY="southsavory.v2";
+/* Starting menu lists, pulled from the old app (south-savory-tally.html):
+   lunch dishes from its SEED list; prices only where the old app had his own figure
+   (rasam ₹50 / sambar-huli ₹60 / richer huli ₹70 tiers, rice ₹30, curd rice ₹60,
+   ragi ball ₹40, menthya ball ₹60, chapathi ₹30). Every other dish starts with no price.
+   Batter: the old BATTER_PRICES 1 kg figure as the rate per kg. Drops: the old
+   specials list, plus ghee, dry fruit lehya and ragi malt at the prices Suraj gave. */
+var SEED={"lunch":[{"name":"Tomato Dal Rasam","group":"Curries","price":50,"last":"2026-08-12"},{"name":"Bisibelebath","group":"Rice items","price":null,"last":"2026-08-09"},{"name":"Baby Potato Fry","group":"Palyas","price":null,"last":"2026-06-28"},{"name":"Avial","group":"Curries","price":70,"last":"2026-08-14"},{"name":"Bendekayi (Okra) Sambar","group":"Curries","price":60,"last":"2026-08-02"},{"name":"Pudina Rice","group":"Rice items","price":null,"last":"2026-07-31"},{"name":"Puliyogre","group":"Rice items","price":null,"last":"2026-07-22"},{"name":"Vangibath","group":"Rice items","price":null,"last":"2026-07-16"},{"name":"Dantina Soppu Alasande Kalu Huli","group":"Curries","price":60,"last":"2026-07-28"},{"name":"Palak Peas Bath","group":"Rice items","price":null,"last":"2026-06-07"},{"name":"Ash Gourd Majjige Huli","group":"Curries","price":60,"last":"2026-07-26"},{"name":"Mixed Sprouts Usli","group":"Palyas","price":null,"last":"2026-06-13"},{"name":"Pepper Kootu","group":"Curries","price":60,"last":"2026-07-19"},{"name":"Beetroot Palya","group":"Palyas","price":null,"last":"2026-07-07"},{"name":"Carrot Beans Potato Huli","group":"Curries","price":70,"last":"2026-07-18"},{"name":"Huruli Saaru","group":"Curries","price":50,"last":"2026-06-16"},{"name":"Tomato Rasam","group":"Curries","price":50,"last":"2026-08-18"},{"name":"Green Gram Usli","group":"Palyas","price":null,"last":"2026-07-01"},{"name":"Methi Soppu Alasande Kalu Huli","group":"Curries","price":60,"last":"2026-07-21"},{"name":"Pepper Jeera Rasam","group":"Curries","price":50,"last":"2026-07-01"},{"name":"Sabbakki Soppu Kootu","group":"Curries","price":60,"last":"2026-06-09"},{"name":"Beans Bele Palya","group":"Palyas","price":null,"last":"2026-07-14"},{"name":"Mixed Sprouts Huli","group":"Curries","price":null,"last":"2026-08-25"},{"name":"Mixed Vegetable Kootu","group":"Curries","price":70,"last":"2026-06-21"},{"name":"Vegetable Bath","group":"Rice items","price":null,"last":"2026-07-29"},{"name":"Vegetable Sambar","group":"Curries","price":70,"last":"2026-08-16"},{"name":"Balekayi (Raw Banana) Palya","group":"Palyas","price":null,"last":"2026-08-12"},{"name":"Hasi Kootu","group":"Curries","price":null,"last":"2026-08-29"},{"name":"Heerekayi (Ridge Gourd) Dal","group":"Curries","price":60,"last":"2026-07-09"},{"name":"Kadale Gojju","group":"Curries","price":null,"last":"2026-06-12"},{"name":"Onion Potato Drumstick Huli","group":"Curries","price":70,"last":"2026-07-04"},{"name":"Pongal","group":"Rice items","price":null,"last":"2026-06-12"},{"name":"Mixed Soppu Huli","group":"Curries","price":null,"last":"2026-06-25"},{"name":"Radish Sambar","group":"Curries","price":60,"last":"2026-07-10"},{"name":"Tomato Peas Bath","group":"Rice items","price":null,"last":"2026-08-15"},{"name":"Vegetable Pulav","group":"Rice items","price":null,"last":"2026-07-03"},{"name":"Bendekayi (Okra) Gojju","group":"Curries","price":null,"last":"2026-08-11"},{"name":"Capsicum Peas Bath","group":"Rice items","price":null,"last":"2026-08-26"},{"name":"Horsegram Usli","group":"Palyas","price":null,"last":"2026-08-18"},{"name":"Lemon Capsicum Bath","group":"Rice items","price":null,"last":"2026-08-08"},{"name":"Mangalore Cucumber Huli","group":"Curries","price":60,"last":"2026-07-12"},{"name":"Methi Soppu Peas Bath","group":"Rice items","price":null,"last":"2026-07-25"},{"name":"Onion Capsicum Gojju","group":"Curries","price":null,"last":"2026-09-01"},{"name":"Palak Majjige Huli","group":"Curries","price":60,"last":"2026-08-04"},{"name":"Pepper Rasam","group":"Curries","price":50,"last":"2026-08-11"},{"name":"Potato Brinjal Palya","group":"Palyas","price":null,"last":"2026-07-30"},{"name":"Rice","group":"Rice items","price":30,"last":null},{"name":"Curd rice","group":"Rice items","price":60,"last":null},{"name":"Ragi ball","group":"Ragi ball and menthya ball","price":40,"last":null},{"name":"Menthya ball","group":"Ragi ball and menthya ball","price":60,"last":null},{"name":"Chapathi","group":"Chapathi","price":30,"last":null},{"name":"Papad","group":"Sides","price":null,"last":null},{"name":"Sandige","group":"Sides","price":null,"last":null},{"name":"Raita","group":"Sides","price":null,"last":null},{"name":"Boondi","group":"Sides","price":null,"last":null},{"name":"Chutney","group":"Sides","price":null,"last":null}],"batter":[{"name":"Idly","rate":120,"topping":null,"last":"2026-08-03"},{"name":"Dosa","rate":150,"topping":null,"last":"2026-07-20"},{"name":"Set Dosa","rate":150,"topping":null,"last":"2026-07-31"},{"name":"Paddu","rate":120,"topping":15,"last":"2026-07-28"},{"name":"Adai","rate":160,"topping":null,"last":"2026-06-18"}],"drops":[{"name":"Varamahalakshmi Obbattu (Kobbari + Bele)","unit":"piece","rate":45,"pair":null},{"name":"Maddur Vada","unit":"piece","rate":50,"pair":90},{"name":"Onion Masala Vade","unit":"piece","rate":10,"pair":null},{"name":"Wheat Chapati","unit":"piece","rate":null,"pair":null},{"name":"Wheat Aloo Paratha","unit":"piece","rate":65,"pair":null},{"name":"Ghee","unit":"kg","rate":1700,"pair":null},{"name":"Dry fruit lehya","unit":"kg","rate":2500,"pair":null},{"name":"Ragi malt","unit":"kg","rate":1400,"pair":null}]};
+
+/* ---------- storage: one place to swap in a shared backend later ---------- */
+var store={
+  load:function(){ try{ var r=localStorage.getItem(KEY); return r?JSON.parse(r):null; }catch(e){ return null; } },
+  save:function(s){ try{ localStorage.setItem(KEY,JSON.stringify(s)); return true; }catch(e){ return false; } }
+};
+var canSave=(function(){ try{ localStorage.setItem(KEY+".probe","1"); localStorage.removeItem(KEY+".probe"); return true; }catch(e){ return false; } })();
+
+/* ---------- small helpers ---------- */
+function uid(){ return Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4); }
+function pad2(n){ return (n<10?"0":"")+n; }
+function keyOf(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+function todayKey(){ return keyOf(new Date()); }
+function addDays(k,n){ var d=new Date(k+"T00:00:00"); d.setDate(d.getDate()+n); return keyOf(d); }
+function dayDiff(a,b){ return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5); }
+function dow(k){ return new Date(k+"T00:00:00").getDay(); }
+function isMonday(k){ return dow(k)===1; }
+var DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtDate(k){ if(!k) return "—"; var d=new Date(k+"T00:00:00"); return DN[d.getDay()]+" "+d.getDate()+" "+MN[d.getMonth()]; }
+function relLower(k){ var r=relDate(k); return /^(Today|Tomorrow|Yesterday)$/.test(r)?r.toLowerCase():r; }
+function plural(n,one,many){ return n+" "+(n===1?one:(many||one+"s")); }
+function relDate(k){ var t=todayKey(); if(k===t) return "Today"; if(k===addDays(t,1)) return "Tomorrow"; if(k===addDays(t,-1)) return "Yesterday"; return fmtDate(k); }
+function rupee(n){ if(n===null||n===undefined||n==="") return "—"; n=Math.round(Number(n)); return (n<0?"−":"")+"₹"+Math.abs(n).toLocaleString("en-IN"); }
+function kgLabel(kg){ kg=Math.round(kg*1000)/1000; if(kg===0.5) return "½ kg"; if(kg===0.25) return "250 g"; if(kg===0.75) return "750 g"; if(kg<1) return Math.round(kg*1000)+" g"; return (Math.round(kg*100)/100)+" kg"; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function normName(s){ return String(s||"").trim().replace(/\s+/g," ").toLowerCase(); }
+function num(v){ if(v===""||v===null||v===undefined) return null; var n=Number(v); return isFinite(n)?n:null; }
+var LUNCH_GROUPS=["Curries","Palyas","Rice items","Ragi ball and menthya ball","Chapathi","Sides"];
+var UNIT_LABEL={kg:"per kg",piece:"per piece",portion:"per portion"};
+
+/* ---------- state ---------- */
+var S=store.load();
+function fresh(){
+  var s={version:2,menus:{lunch:[],batter:[],drops:[]},events:{},holidays:{},meta:{created:Date.now()}};
+  SEED.lunch.forEach(function(x){ s.menus.lunch.push({id:uid(),name:x.name,group:x.group,price:x.price,last:x.last}); });
+  SEED.batter.forEach(function(x){ s.menus.batter.push({id:uid(),name:x.name,rate:x.rate,topping:x.topping,last:x.last}); });
+  SEED.drops.forEach(function(x){ s.menus.drops.push({id:uid(),name:x.name,unit:x.unit,rate:x.rate,pair:x.pair}); });
+  return s;
+}
+if(!S||S.version!==2) S=fresh();
+var saveOK=true;
+function save(){ if(!canSave) return; saveOK=store.save(S); if(!saveOK) toast("Couldn't save on this phone. Export a backup from History."); syncQueue(); }
+
+/* ---------- shared data: on the hosted site, both phones see the same orders ----------
+   The data is split into rows (a menu item, a lunch day, an order, a holiday). Each phone
+   sends the rows it changed and pulls the rows changed since it last looked. If both edit
+   the same row, the later save wins. Opened from disk, none of this runs. */
+var SYNC={on:false,state:"local",cursor:0,last:{},pending:{},at:null,timer:null,busy:false,needRender:false};
+var SK=KEY+".sync", API="/api/sync";
+function flatten(s){
+  var m={};
+  ["lunch","batter","drops"].forEach(function(k){ s.menus[k].forEach(function(it){ m["m:"+k+":"+it.id]=JSON.stringify({kind:k,item:it}); }); });
+  Object.keys(s.events).forEach(function(id){
+    var e=s.events[id], copy={};
+    Object.keys(e).forEach(function(k){ if(k!=="orders") copy[k]=e[k]; });
+    m["e:"+id]=JSON.stringify(copy);
+    e.orders.forEach(function(o){ m["o:"+id+":"+o.id]=JSON.stringify({eventId:id,order:o}); });
+  });
+  Object.keys(s.holidays).forEach(function(d){ if(s.holidays[d]) m["h:"+d]="1"; });
+  m["x:meta"]=JSON.stringify({oldKeys:s.meta.oldKeys||{},imported:s.meta.imported||null});
+  return m;
+}
+function unflatten(m,meta){
+  var s={version:2,menus:{lunch:[],batter:[],drops:[]},events:{},holidays:{},meta:meta||{}}, orders=[];
+  Object.keys(m).forEach(function(id){
+    var d=m[id], t=id.charAt(0);
+    if(t==="m"){ var x=JSON.parse(d); if(s.menus[x.kind]) s.menus[x.kind].push(x.item); }
+    else if(t==="e"){ var e=JSON.parse(d); e.orders=[]; s.events[e.id]=e; }
+    else if(t==="o") orders.push(JSON.parse(d));
+    else if(t==="h") s.holidays[id.slice(2)]=true;
+    else if(id==="x:meta"){ var mm=JSON.parse(d); s.meta.oldKeys=mm.oldKeys||{}; if(mm.imported) s.meta.imported=mm.imported; }
+  });
+  orders.sort(function(a,b){ return (a.order.t||0)-(b.order.t||0); }).forEach(function(r){ var e=s.events[r.eventId]; if(e) e.orders.push(r.order); });
+  return s;
+}
+function syncPersist(){ try{ localStorage.setItem(SK,JSON.stringify({cursor:SYNC.cursor,last:SYNC.last,pending:SYNC.pending,at:SYNC.at})); }catch(e){} }
+function syncQueue(){
+  if(!SYNC.on) return;
+  var cur=flatten(S), now=Date.now();
+  Object.keys(cur).forEach(function(id){ if(cur[id]!==SYNC.last[id]) SYNC.pending[id]={id:id,data:cur[id],deleted:0,ts:now}; });
+  Object.keys(SYNC.last).forEach(function(id){ if(!(id in cur)) SYNC.pending[id]={id:id,deleted:1,ts:now}; });
+  SYNC.last=cur; syncPersist(); syncBadge();
+  clearTimeout(SYNC.timer); SYNC.timer=setTimeout(syncNow,400);
+}
+function signedOut(){ SYNC.state="signedout"; syncBadge(); }
+async function pullAll(since){
+  var all=[], cursor=since, more=true;
+  while(more){
+    var r=await fetch(API+"?since="+cursor,{credentials:"same-origin",cache:"no-store"});
+    if(r.status===401){ signedOut(); throw new Error("signed out"); }
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    var j=await r.json(); all=all.concat(j.records); cursor=j.cursor; more=j.more;
+  }
+  return {records:all,cursor:cursor};
+}
+async function syncNow(){
+  if(!SYNC.on||SYNC.busy||SYNC.state==="signedout") return;
+  SYNC.busy=true;
+  try{
+    var ids=Object.keys(SYNC.pending);
+    while(ids.length){
+      var batch=ids.splice(0,500).map(function(id){ return SYNC.pending[id]; });
+      var r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({records:batch})});
+      if(r.status===401){ signedOut(); return; }
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      batch.forEach(function(rec){ if(SYNC.pending[rec.id]===rec) delete SYNC.pending[rec.id]; });
+    }
+    var got=await pullAll(SYNC.cursor), changed=false;
+    if(got.records.length){
+      var cur=flatten(S);
+      got.records.forEach(function(rec){
+        if(SYNC.pending[rec.id]) return;                 /* my unsent edit wins until it's sent */
+        if(rec.deleted){ if(rec.id in cur){ delete cur[rec.id]; changed=true; } delete SYNC.last[rec.id]; }
+        else { if(cur[rec.id]!==rec.data){ cur[rec.id]=rec.data; changed=true; } SYNC.last[rec.id]=rec.data; }
+      });
+      if(changed){ S=unflatten(cur,S.meta); store.save(S); }
+    }
+    SYNC.cursor=got.cursor; SYNC.state="ok"; SYNC.at=Date.now();
+    if(changed) softRender();
+  }catch(e){ if(SYNC.state!=="signedout") SYNC.state="offline"; }
+  finally{ SYNC.busy=false; syncPersist(); syncBadge(); }
+}
+function softRender(){
+  var a=document.activeElement, typing=a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName);
+  if(sheetOpen||typing){ SYNC.needRender=true; return; }
+  SYNC.needRender=false; render();
+}
+function syncText(){
+  if(!SYNC.on) return "";
+  var n=Object.keys(SYNC.pending).length;
+  if(SYNC.state==="signedout") return "Signed out. Reload the page and enter the password.";
+  if(SYNC.state==="offline") return n?"No connection. "+plural(n,"change")+" waiting to go up.":"No connection right now.";
+  if(n) return "Saving to the shared list…";
+  if(!SYNC.at) return "Connecting to the shared list…";
+  var d=new Date(SYNC.at); return "Shared between your phones · synced "+pad2(d.getHours())+":"+pad2(d.getMinutes());
+}
+function syncBadge(){ var el=document.getElementById("syncState"); if(el) el.textContent=syncText(); }
+async function syncStart(){
+  if(!canSave||!/^https?:$/.test(location.protocol)) return;
+  var first;
+  try{ first=await fetch(API+"?since=0",{credentials:"same-origin",cache:"no-store"}); }catch(e){ return; }
+  if(first.status===401){ SYNC.on=true; signedOut(); return; }
+  if(!first.ok||!/json/.test(first.headers.get("Content-Type")||"")) return;   /* no shared database here */
+  SYNC.on=true;
+  var saved=null; try{ saved=JSON.parse(localStorage.getItem(SK)); }catch(e){}
+  if(saved&&saved.cursor){
+    SYNC.cursor=saved.cursor; SYNC.last=saved.last||{}; SYNC.pending=saved.pending||{}; SYNC.at=saved.at||null;
+  } else {
+    /* first time on this phone: take what's already shared; only bring local work along */
+    var got; try{ got=await pullAll(0); }catch(e){ SYNC.state="offline"; syncBadge(); return; }
+    var server={}; got.records.forEach(function(r){ if(!r.deleted) server[r.id]=r.data; });
+    var hasLocal=Object.keys(S.events).length>0;
+    if(Object.keys(server).length){
+      var merged=Object.assign({},server);
+      if(hasLocal){
+        var cur=flatten(S), names={};
+        Object.keys(server).forEach(function(k){ if(k.charAt(0)==="m"){ var x=JSON.parse(server[k]); names[x.kind+"|"+normName(x.item.name)]=1; } });
+        Object.keys(cur).forEach(function(k){
+          if(k.charAt(0)==="m"){ var x=JSON.parse(cur[k]); if(names[x.kind+"|"+normName(x.item.name)]) return; }
+          merged[k]=cur[k];
+        });
+      }
+      S=unflatten(merged,S.meta); store.save(S);
+      SYNC.last=server;
+    }
+    SYNC.cursor=got.cursor; SYNC.state="ok"; SYNC.at=Date.now();
+    var cur2=flatten(S), now=Date.now();
+    Object.keys(cur2).forEach(function(id){ if(cur2[id]!==SYNC.last[id]) SYNC.pending[id]={id:id,data:cur2[id],deleted:0,ts:now}; });
+    SYNC.last=cur2; syncPersist(); render();
+  }
+  syncNow();
+  setInterval(function(){ if(!document.hidden) syncNow(); if(SYNC.needRender) softRender(); },15000);
+  document.addEventListener("visibilitychange",function(){ if(!document.hidden) syncNow(); });
+  window.addEventListener("online",syncNow);
+}
+function saveWarning(){ return canSave?'':'<p class="notice" style="margin:0 0 12px">This preview can\'t save. Open the file in Chrome or Safari to keep your orders.</p>'; }
+
+/* ---------- pricing ---------- */
+function evItem(ev,ref){ for(var i=0;i<ev.items.length;i++) if(ev.items[i].id===ref) return ev.items[i]; return null; }
+function evCombo(ev,ref){ var id=String(ref).slice(6); return (ev.combos||[]).filter(function(c){return c.id===id;})[0]||null; }
+function isCombo(ref){ return String(ref).indexOf("combo:")===0; }
+function autoPrice(ev,ln){
+  var q=Number(ln.qty)||0; if(!q) return 0;
+  if(isCombo(ln.ref)){ var c=evCombo(ev,ln.ref); return c?Math.round((Number(c.price)||0)*q):0; }
+  var it=evItem(ev,ln.ref); if(!it) return 0;
+  if(ev.kind==="batter"){
+    var p=Math.round((Number(it.rate)||0)*q);
+    if(ln.top&&it.topping) p+=Math.ceil(q-1e-9)*Number(it.topping);   /* ₹15 per kilo started */
+    return p;
+  }
+  if(ev.kind==="drop"){
+    if(it.unit==="kg") return Math.round((Number(it.rate)||0)*q);
+    if(it.pair) return Math.floor(q/2)*Number(it.pair)+(q%2)*(Number(it.rate)||0);
+    return q*(Number(it.rate)||0);
+  }
+  return q*(Number(it.price)||0);   /* lunch, custom */
+}
+function linePrice(ev,ln){ return (ln.price!==null&&ln.price!==undefined)?Number(ln.price):autoPrice(ev,ln); }
+function orderTotal(ev,o){ return (o.lines||[]).reduce(function(a,ln){return a+linePrice(ev,ln);},0); }
+function lineMissingPrice(ev,ln){
+  if(ln.price!==null&&ln.price!==undefined) return false;
+  if(isCombo(ln.ref)){ var c=evCombo(ev,ln.ref); return !c||c.price===null||c.price===""; }
+  var it=evItem(ev,ln.ref); if(!it) return false;
+  var v=(ev.kind==="batter"||ev.kind==="drop")?it.rate:it.price;
+  return v===null||v===undefined||v==="";
+}
+
+/* what goes in the bag, as dishes: combos open up into their dishes */
+function orderWhat(ev,o){
+  var parts=[];
+  (o.lines||[]).forEach(function(ln){
+    var q=Number(ln.qty)||0; if(!q) return;
+    if(isCombo(ln.ref)){
+      var c=evCombo(ev,ln.ref); if(!c) return;
+      c.dishes.forEach(function(did){ var it=evItem(ev,did); if(it) parts.push((q>1?q+" ":"")+it.name); });
+      return;
+    }
+    var it=evItem(ev,ln.ref); var nm=it?it.name:"Item";
+    if(ev.kind==="batter") parts.push(nm+" "+kgLabel(q)+(ln.top?" with topping":""));
+    else if(ev.kind==="drop"&&it&&it.unit==="kg") parts.push(nm+" "+kgLabel(q));
+    else parts.push((q>1||ev.kind==="drop"?q+" ":"")+nm+(it&&it.unit==="portion"?(q>1?" portions":" portion"):""));
+  });
+  return parts.join(", ")||"Nothing yet";
+}
+
+/* the kitchen count */
+function kitchenCount(ev){
+  var by={};
+  ev.items.forEach(function(it){ by[it.id]={it:it,q:0,top:0}; });
+  ev.orders.forEach(function(o){
+    (o.lines||[]).forEach(function(ln){
+      var q=Number(ln.qty)||0; if(!q) return;
+      if(isCombo(ln.ref)){ var c=evCombo(ev,ln.ref); if(c) c.dishes.forEach(function(d){ if(by[d]) by[d].q+=q; }); return; }
+      if(!by[ln.ref]) return;
+      by[ln.ref].q+=q; if(ln.top) by[ln.ref].top+=q;
+    });
+  });
+  return ev.items.map(function(it){ return by[it.id]; });
+}
+function eventStats(ev){
+  var total=0,paid=0,unpaid=0,n=0,untracked=0;
+  ev.orders.forEach(function(o){
+    var t=orderTotal(ev,o); total+=t; n++;
+    if(o.untracked) untracked+=t; else if(o.paid) paid+=t; else unpaid+=t;
+  });
+  return {total:total,paid:paid,unpaid:unpaid,n:n,untracked:untracked};
+}
+
+/* ---------- events ---------- */
+function events(kind){ return Object.keys(S.events).map(function(k){return S.events[k];}).filter(function(e){return !kind||e.kind===kind;}); }
+function lunchOn(date){ return events("lunch").filter(function(e){return e.date===date;})[0]||null; }
+function liveBatches(){ return events("batter").filter(function(e){return e.status!=="closed";}).sort(byDate); }
+function liveDrops(){ return events("drop").filter(function(e){return e.status!=="closed";}).sort(byDate); }
+function upcomingCustom(){ var t=todayKey(); return events("custom").filter(function(e){return e.date>=t;}).sort(byDate); }
+function byDate(a,b){ return a.date<b.date?-1:a.date>b.date?1:(a.createdAt||0)-(b.createdAt||0); }
+function evLabel(ev){
+  if(ev.kind==="lunch") return "Lunch · "+fmtDate(ev.date);
+  if(ev.kind==="batter") return "Batter · "+fmtDate(ev.date);
+  if(ev.kind==="drop") return (ev.title||"Drop")+" · "+fmtDate(ev.date);
+  return "Custom · "+((ev.orders[0]&&ev.orders[0].name)||"order")+" · "+fmtDate(ev.date);
+}
+function evRoute(ev){ return {lunch:"#/lunch?d="+ev.date,batter:"#/batter/"+ev.id,drop:"#/drops/"+ev.id,custom:"#/custom/"+ev.id}[ev.kind]; }
+function isPast(ev){
+  var t=todayKey();
+  if(ev.kind==="batter"||ev.kind==="drop") return ev.status==="closed";
+  return ev.date<t;
+}
+/* last time an item went out on a posted menu (custom orders don't count) */
+function lastPosted(kind,menuId,seedLast){
+  var t=todayKey(),best=seedLast||null;
+  events(kind).forEach(function(e){ if(e.date<=t&&e.items.some(function(i){return i.id===menuId;})&&(!best||e.date>best)) best=e.date; });
+  return best;
+}
+function lastPostedText(kind,item){
+  var d=lastPosted(kind,item.id,item.last);
+  if(kind==="lunch"){ if(!d||dayDiff(d,todayKey())>30) return ""; return "Last posted "+relLower(d); }
+  return d?"Last posted "+fmtDate(d)+" · "+dayDiff(d,todayKey())+" days ago":"Not posted yet";
+}
+
+/* ---------- owed and change ---------- */
+function owedGroups(){
+  var g={};
+  events().forEach(function(ev){
+    ev.orders.forEach(function(o){
+      if(o.paid||o.untracked) return;
+      var t=orderTotal(ev,o); if(t<=0) return;
+      var k=normName(o.name)||"(no name)";
+      if(!g[k]) g[k]={name:o.name||"No name",rows:[],total:0,oldest:ev.date,oldestT:o.t||0};
+      g[k].rows.push({ev:ev,o:o,t:t}); g[k].total+=t;
+      if(ev.date<g[k].oldest||(ev.date===g[k].oldest&&(o.t||0)<g[k].oldestT)){ g[k].oldest=ev.date; g[k].oldestT=o.t||0; }
+    });
+  });
+  return Object.keys(g).map(function(k){ var x=g[k]; x.rows.sort(function(a,b){return byDate(a.ev,b.ev);}); return x; })
+    .sort(function(a,b){ return a.oldest<b.oldest?-1:a.oldest>b.oldest?1:(a.oldestT-b.oldestT)||(a.name<b.name?-1:1); });
+}
+function changeRows(){
+  var out=[];
+  events().forEach(function(ev){ ev.orders.forEach(function(o){ if(Number(o.changeDue)>0&&!o.changeGiven) out.push({ev:ev,o:o}); }); });
+  return out.sort(function(a,b){return byDate(a.ev,b.ev);});
+}
+
+/* ---------- icons (outline, 1.5px, one set) ---------- */
+var I={
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg>',
+  hist:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4.5v4h4"/><path d="M12 7.5V12l3 2"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  circle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
+/* the mark: a lidded tiffin seen from the side, drawn from the kitchen's own object */
+var MARK='<svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="var(--primary)"/><path d="M9 9.5h10M10 12h8v3.2h-8zM10 16.6h8v3.6a1.4 1.4 0 0 1-1.4 1.4h-5.2A1.4 1.4 0 0 1 10 20.2z" fill="none" stroke="var(--on-primary)" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 9.5V7.6h4v1.9" fill="none" stroke="var(--on-primary)" stroke-width="1.5"/></svg>';
+
+/* ---------- router ---------- */
+/* The app keeps its own current screen, so it works however the file is opened:
+   from a web address, straight from disk, or inside a preview that blocks the page
+   address from changing. The address bar is updated only where that is allowed,
+   which keeps the phone's back button working when it is. */
+var current=(location.hash&&location.hash.length>1)?location.hash:"#/";
+var canPush=/^(https?|file):$/.test(location.protocol);
+function route(){
+  var h=current||"#/"; var q={};
+  var parts=h.slice(1).split("?"); (parts[1]||"").split("&").forEach(function(p){ if(!p) return; var kv=p.split("="); q[kv[0]]=decodeURIComponent(kv[1]||""); });
+  return {path:parts[0]||"/",q:q};
+}
+function go(h){
+  var same=(h===current); current=h;
+  if(!same&&canPush){ try{ history.pushState(null,"",h); }catch(e){ canPush=false; } }
+  closeSheet(true); render(); if(!same) window.scrollTo(0,0);
+}
+window.addEventListener("popstate",function(){ current=location.hash||"#/"; closeSheet(true); render(); window.scrollTo(0,0); });
+document.addEventListener("click",function(e){
+  var a=e.target.closest&&e.target.closest('a[href^="#"]');
+  if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey) return;
+  e.preventDefault(); go(a.getAttribute("href"));
+});
+
+var $app=document.getElementById("app"), $dock=document.getElementById("dock");
+function bar(title,backHash,action){
+  return '<header class="bar">'+(backHash?'<a class="back" href="'+backHash+'" aria-label="Back">'+I.back+'<span>Back</span></a>':'')+
+    '<h1>'+esc(title)+'</h1>'+(action||'')+'</header>';
+}
+function dock(html){ $dock.innerHTML=html?'<div class="dock"><div class="in">'+html+'</div></div>':''; }
+function tabbar(active){
+  var owed=owedGroups().length;
+  document.getElementById("tabbar").innerHTML='<div class="in">'+
+    '<a href="#/" '+(active==="home"?'aria-current="page"':'')+'><span class="ic">'+I.home+'</span>Home</a>'+
+    '<a href="#/history" '+(active==="history"?'aria-current="page"':'')+'><span class="ic">'+I.hist+(owed?'<span class="badge num" aria-label="'+owed+' people owe">'+owed+'</span>':'')+'</span>History</a></div>';
+}
+
+function render(){
+  var r=route(), p=r.path, m;
+  dock("");
+  if(p==="/"||p==="") return viewHome();
+  if(p==="/history") return viewHistory(r.q);
+  if(p==="/lunch") return viewLunch(r.q);
+  if(p==="/lunch/setup") return viewLunchSetup(r.q);
+  if(p==="/batter") return viewBatterList();
+  if(p==="/batter/setup") return viewBatterSetup(r.q);
+  if((m=p.match(/^\/batter\/(.+)$/))) return viewEvent(m[1],"#/batter");
+  if(p==="/drops") return viewDropList();
+  if(p==="/drops/setup") return viewDropSetup(r.q);
+  if((m=p.match(/^\/drops\/date\/(.+)$/))) return viewCollections(m[1]);
+  if((m=p.match(/^\/drops\/(.+)$/))) return viewEvent(m[1],"#/drops");
+  if(p==="/custom") return viewCustomList();
+  if(p==="/custom/setup") return viewCustomSetup(r.q);
+  if((m=p.match(/^\/custom\/(.+)$/))) return viewCustom(m[1]);
+  if((m=p.match(/^\/menu\/(lunch|batter|drops)$/))) return viewMenu(m[1],r.q);
+  return viewHome();
+}
+
+/* ======================= HOME ======================= */
+function viewHome(){
+  var t=todayKey(), tm=addDays(t,1);
+  var lt=lunchOn(t), ltm=lunchOn(tm), lunchTile;
+  if(lt){ var s=eventStats(lt); lunchTile={when:"Today"+(lt.status==="done"?" · done for the day":""),fig:s.n+'<small>'+(s.n===1?"order":"orders")+'</small>',line:rupee(s.total)+(ltm?" · tomorrow set":"")}; }
+  else if(ltm){ var s2=eventStats(ltm); lunchTile={when:"Tomorrow",fig:s2.n+'<small>'+(s2.n===1?"order":"orders")+'</small>',line:rupee(s2.total)}; }
+  else if(isMonday(t)&&!ltm) lunchTile={when:"Today",quiet:"Monday, kitchen off",line:isMonday(tm)?"":"Tomorrow not set yet"};
+  else if(S.holidays[t]) lunchTile={when:"Today",quiet:"Holiday",line:"Tomorrow not set yet"};
+  else lunchTile={when:"Today",quiet:"No menu yet",line:"Set today's or tomorrow's"};
+
+  var bs=liveBatches(), bt;
+  if(bs.length){ var b=bs[0], kg=0; kitchenCount(b).forEach(function(c){kg+=c.q;}); bt={when:relDate(b.date)+(bs.length>1?" · +"+(bs.length-1)+" more":""),fig:fmtKg(kg)+'<small>to make</small>',line:b.orders.length+" "+(b.orders.length===1?"order":"orders")+" · "+rupee(eventStats(b).total)}; }
+  else bt={when:"No batch open",quiet:"Start a batch",line:""};
+
+  var ds=liveDrops(), dt;
+  if(ds.length){ dt={when:ds.length+" open",fig:ds.reduce(function(a,d){return a+d.orders.length;},0)+'<small>orders</small>',line:"Next collection "+relDate(ds[0].date)}; }
+  else dt={when:"None open",quiet:"Start a drop",line:""};
+
+  var cs=upcomingCustom(), ct;
+  if(cs.length){ var c0=cs[0]; ct={when:relDate(c0.date),fig:esc(c0.orders[0]?c0.orders[0].name:"Order"),line:rupee(orderTotal(c0,c0.orders[0]||{lines:[]}))+(cs.length>1?" · "+(cs.length-1)+" more":"")}; }
+  else ct={when:"None coming up",quiet:"New custom order",line:""};
+
+  function tile(name,href,d){
+    return '<a class="tile'+(d.quiet?' quiet':'')+'" href="'+href+'"><span class="name">'+name+'</span><span class="when">'+esc(d.when)+'</span>'+
+      '<span class="fig num">'+(d.quiet?esc(d.quiet):d.fig)+'</span>'+(d.line?'<span class="line num">'+esc(d.line)+'</span>':'')+'</a>';
+  }
+  var og=owedGroups(), owed=og.reduce(function(a,g){return a+g.total;},0), ch=changeRows();
+  $app.innerHTML='<header class="bar"><div class="wordmark">'+MARK+'<h1>South Savory</h1></div></header>'+
+    '<main class="page">'+saveWarning()+((SYNC.state==="offline"&&Object.keys(SYNC.pending).length)||SYNC.state==="signedout"?'<p class="notice neutral" style="margin:0 0 12px" id="syncState">'+esc(syncText())+'</p>':'')+'<p class="sub" style="margin-top:0">'+fmtDate(t)+(isMonday(t)?" · Monday, kitchen off":"")+'</p>'+
+    '<div class="tiles">'+tile("Daily lunch","#/lunch",lunchTile)+tile("Batter","#/batter",bt)+tile("Special drops","#/drops",dt)+tile("Custom orders","#/custom",ct)+'</div>'+
+    (og.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Unpaid</span><span class="sub" style="display:block;margin:0">'+og.length+' '+(og.length===1?"person":"people")+' · oldest '+relLower(og[0].oldest)+'</span></span><span class="big num">'+rupee(owed)+'</span>'+I.chev+'</a>':'')+
+    (ch.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Change to give</span><span class="sub" style="display:block;margin:0">'+ch.length+' '+(ch.length===1?"person":"people")+'</span></span><span class="big num" style="font-weight:500">'+rupee(ch.reduce(function(a,r){return a+Number(r.o.changeDue);},0))+'</span>'+I.chev+'</a>':'')+
+    '</main>';
+  tabbar("home");
+}
+function fmtKg(kg){ kg=Math.round(kg*100)/100; return kg+" kg"; }
+
+/* ======================= LUNCH ======================= */
+function viewLunch(q){
+  var t=todayKey(), tm=addDays(t,1);
+  var d=q.d||(lunchOn(t)||!lunchOn(tm)?t:tm);
+  var ev=lunchOn(d);
+  var seg='';
+  if(d===t||d===tm) seg='<div class="seg full" role="group" aria-label="Day" style="margin-top:4px"><button aria-pressed="'+(d===t)+'" onclick="go(\'#/lunch?d='+t+'\')">Today · '+fmtDate(t)+'</button><button aria-pressed="'+(d===tm)+'" onclick="go(\'#/lunch?d='+tm+'\')">Tomorrow · '+fmtDate(tm)+'</button></div>';
+  var body='';
+  if(!ev){
+    if(isMonday(d)) body='<div class="section"><div class="card pad"><p style="font-weight:500">Mondays are off</p><p class="sub">No lunch menu on a Monday. Monday food goes in as a custom order.</p><div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="#/custom/setup?d='+d+'">New custom order</a></div></div></div>';
+    else if(S.holidays[d]) body='<div class="section"><div class="card pad"><p style="font-weight:500">Holiday</p><p class="sub">No lunch on '+fmtDate(d)+'.</p><div class="btnrow" style="margin-top:12px"><button class="btn secondary" onclick="toggleHoliday(\''+d+'\')">Remove holiday</button></div></div></div>';
+    else{
+      body='<div class="section"><div class="card pad"><p style="font-weight:500">No menu for '+relLower(d)+' yet</p><p class="sub">Pick dishes from the lunch list, then take orders.</p></div>'+
+        '<div class="btnrow" style="margin-top:12px"><button class="btn text" onclick="toggleHoliday(\''+d+'\')">Mark '+relLower(d)+' a holiday</button></div></div>';
+      dock('<a class="btn primary" href="#/lunch/setup?d='+d+'">Set '+relLower(d)+'\'s menu</a>');
+    }
+  } else {
+    body=eventBody(ev);
+    dock('<button class="btn secondary" onclick="doneForDay(\''+ev.id+'\')">'+(ev.status==="done"?"Day summary":"Done for the day")+'</button><button class="btn primary" onclick="openOrder(\''+ev.id+'\')">Add order</button>');
+  }
+  $app.innerHTML=bar("Daily lunch","#/",'<a class="act" href="#/menu/lunch">Menu list</a>')+'<main class="page">'+seg+
+    (ev?'<div style="display:flex;align-items:baseline;gap:8px;margin-top:18px"><h2 class="title">'+relDate(d)+'</h2>'+(ev.status==="done"?'<span class="pill">Done for the day</span>':'')+'<a class="btn text" style="margin-left:auto" href="#/lunch/setup?d='+d+'">Edit menu</a></div>':'')+
+    body+(d!==t&&d!==tm?'':'<p class="foot">Past days are in History.</p>')+'</main>';
+  tabbar("home");
+}
+function toggleHoliday(d){
+  if(S.holidays[d]) delete S.holidays[d]; else S.holidays[d]=true;
+  save(); render(); toast(S.holidays[d]?fmtDate(d)+" marked a holiday":"Holiday removed");
+}
+
+/* shared body for an event: totals, the kitchen count, the orders */
+function eventBody(ev){
+  var st=eventStats(ev), kc=kitchenCount(ev);
+  var countTitle={lunch:"To cook",custom:"To cook",batter:"To make",drop:"To pack"}[ev.kind];
+  var rows=kc.map(function(c){
+    var it=c.it, v, unit="";
+    if(ev.kind==="batter"){ v=Math.round(c.q*100)/100; unit="kg"; }
+    else if(ev.kind==="drop"&&it.unit==="kg"){ v=Math.round(c.q*100)/100; unit="kg"; }
+    else { v=c.q; unit=it.unit==="portion"?"portions":""; }
+    var sub="";
+    if(ev.kind==="batter"&&it.topping&&c.top) sub='<div class="t2">'+fmtKg(c.top)+' with topping</div>';
+    if(ev.kind==="drop") sub='<div class="t2">'+priceDesc(it)+'</div>';
+    return '<div class="ci"><div class="cn">'+esc(it.name)+sub+'</div><div class="cv'+(v?'':' zero')+'">'+v+(unit&&v?'<small>'+unit+'</small>':'')+'</div></div>';
+  }).join("");
+  var miss=ev.orders.some(function(o){return o.lines.some(function(l){return lineMissingPrice(ev,l);});});
+  var orders=ev.orders.slice().sort(function(a,b){return (a.t||0)-(b.t||0);});
+  return '<div class="section"><div class="card strip num"><div><div class="lab">Orders</div><div class="v">'+st.n+'</div></div>'+
+      '<div><div class="lab">Total</div><div class="v money">'+rupee(st.total)+'</div></div>'+
+      '<div><div class="lab">Unpaid</div><div class="v">'+rupee(st.unpaid)+'</div></div></div>'+
+      (miss?'<p class="notice" style="margin-top:10px">Some items have no price yet, so the total is short. Set prices in the menu list or on the order.</p>':'')+'</div>'+
+    '<div class="section"><h2>'+countTitle+'<span class="aside">'+(ev.kind==="lunch"&&ev.combos&&ev.combos.length?"combos counted as dishes":"")+'</span></h2>'+
+      (kc.length?'<div class="card pad count">'+rows+'</div>':'<p class="empty">No items on this menu.</p>')+'</div>'+
+    '<div class="section"><h2>Orders<span class="aside num">'+(st.n?rupee(st.paid)+" paid":"")+'</span></h2>'+
+      (orders.length?'<div class="list">'+orders.map(function(o){return orderRow(ev,o);}).join("")+'</div>':'<p class="empty">No orders yet. Tap Add order when one comes in on WhatsApp.</p>')+'</div>';
+}
+function priceDesc(it){
+  if(it.rate===null||it.rate===undefined||it.rate==="") return "No price yet";
+  return rupee(it.rate)+" "+UNIT_LABEL[it.unit]+(it.pair?" · "+rupee(it.pair)+" for 2":"");
+}
+function orderRow(ev,o){
+  var t=orderTotal(ev,o);
+  var del=o.delivered?'<button class="chip on-del" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="true">'+I.check+'Handed over</button>':
+    '<button class="chip" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="false">'+I.circle+'Hand over</button>';
+  var pay=o.untracked?'<span class="pill">Payment not tracked</span>':(o.paid?'<button class="chip paid" onclick="togglePaid(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="true">'+I.check+'Paid</button>':
+    '<button class="chip unpaid" onclick="togglePaid(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="false">Unpaid</button>');
+  var chg=(Number(o.changeDue)>0&&!o.changeGiven)?'<button class="chip change" onclick="giveChange(\''+ev.id+'\',\''+o.id+'\')">Change due '+rupee(o.changeDue)+'</button>':'';
+  return '<div class="order"><button class="top" onclick="openOrder(\''+ev.id+'\',\''+o.id+'\')"><span class="who">'+esc(o.name||"No name")+'</span><span class="tag">'+(o.ch==="dm"?"DM":"Group")+'</span><span class="amt num">'+rupee(t)+'</span></button>'+
+    '<button class="what" onclick="openOrder(\''+ev.id+'\',\''+o.id+'\')">'+esc(orderWhat(ev,o))+'</button>'+
+    '<div class="ctl">'+del+pay+chg+'</div></div>';
+}
+function findOrder(evId,oId){ var ev=S.events[evId]; if(!ev) return {}; return {ev:ev,o:ev.orders.filter(function(o){return o.id===oId;})[0]}; }
+function toggleDel(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; f.o.delivered=!f.o.delivered; save(); render(); }
+function togglePaid(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; f.o.paid=!f.o.paid; f.o.paidAt=f.o.paid?Date.now():null; save(); render();
+  toast(f.o.paid?(f.o.name||"Order")+" paid "+rupee(orderTotal(f.ev,f.o)):"Marked unpaid",f.o.paid?function(){f.o.paid=false;f.o.paidAt=null;save();render();}:null); }
+function giveChange(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; f.o.changeGiven=true; save(); render();
+  toast("Change given to "+(f.o.name||"customer"),function(){f.o.changeGiven=false;save();render();}); }
+
+function doneForDay(evId){
+  var ev=S.events[evId]; if(!ev) return;
+  var wasDone=ev.status==="done";
+  if(!wasDone){ ev.status="done"; save(); render(); }
+  var st=eventStats(ev), kc=kitchenCount(ev).filter(function(c){return c.q;});
+  var undel=ev.orders.filter(function(o){return !o.delivered;}).length;
+  openSheet({title:"Day summary",short:true,body:
+    '<p class="sub" style="margin:0 0 12px">'+relDate(ev.date)+' · '+fmtDate(ev.date)+'. You can still add orders and edit the menu.</p>'+
+    '<div class="card strip num"><div><div class="lab">Orders</div><div class="v">'+st.n+'</div></div><div><div class="lab">Total</div><div class="v money">'+rupee(st.total)+'</div></div><div><div class="lab">Unpaid</div><div class="v">'+rupee(st.unpaid)+'</div></div></div>'+
+    '<p class="sub" style="margin-top:10px">'+(undel?undel+" not handed over yet":"All handed over")+' · '+rupee(st.paid)+' paid</p>'+
+    (kc.length?'<div class="section" style="margin-top:18px"><h2>Cooked</h2><div class="card pad count">'+kc.map(function(c){return '<div class="ci"><div class="cn">'+esc(c.it.name)+'</div><div class="cv">'+c.q+'</div></div>';}).join("")+'</div></div>':''),
+    foot:(wasDone?'<button class="btn secondary" onclick="undoDone(\''+ev.id+'\')">Not done yet</button>':'')+'<button class="btn primary" onclick="closeSheet()">Close</button>'});
+}
+function undoDone(id){ var ev=S.events[id]; if(ev){ ev.status="open"; save(); } closeSheet(); render(); }
+
+/* lunch setup: date first (today or tomorrow), grouped list, price for that day only, combos */
+var draft=null;
+function viewLunchSetup(q){
+  var t=todayKey(), tm=addDays(t,1);
+  var d=q.d||t;
+  var ev=lunchOn(d);
+  if(!draft||draft.kind!=="lunch"||draft.forDate!==d){
+    draft={kind:"lunch",forDate:d,date:d,sel:{},price:{},combos:[]};
+    if(ev){ ev.items.forEach(function(it){ draft.sel[it.id]=true; draft.price[it.id]=it.price; }); draft.combos=JSON.parse(JSON.stringify(ev.combos||[])); draft.date=ev.date; }
+  }
+  var dd=draft.date, blocked=isMonday(dd)?"Mondays are off. Monday food goes in as a custom order.":(S.holidays[dd]?fmtDate(dd)+" is marked a holiday. Remove it on the lunch screen first.":"");
+  var clash=!ev&&lunchOn(dd);
+  var groups=LUNCH_GROUPS.map(function(g){
+    var items=S.menus.lunch.filter(function(i){return i.group===g;}).sort(function(a,b){ var sa=draft.sel[a.id]?0:1, sb=draft.sel[b.id]?0:1; return sa-sb||a.name.localeCompare(b.name); });
+    if(!items.length) return "";
+    return '<div class="sgroup"><div class="grouphead">'+g+'</div><div class="list">'+items.map(function(it){
+      var on=!!draft.sel[it.id], lp=lastPostedText("lunch",it), pr=draft.price[it.id]!==undefined?draft.price[it.id]:it.price;
+      return '<div class="pick" data-name="'+esc(normName(it.name))+'"><label class="check grow" style="min-height:0;padding:0"><input type="checkbox" '+(on?'checked':'')+' onchange="lsToggle(\''+it.id+'\',this.checked)"><span class="grow"><span class="nm">'+esc(it.name)+'</span>'+(lp?'<span class="meta" style="display:block">'+lp+'</span>':'')+'</span></label>'+
+        (on?'<span class="money-in"><input type="number" inputmode="numeric" aria-label="Price for '+esc(it.name)+' on this day" value="'+(pr==null?"":pr)+'" placeholder="—" oninput="draft.price[\''+it.id+'\']=num(this.value)"></span>':'<span class="val muted num">'+(it.price==null?"No price":rupee(it.price))+'</span>')+'</div>';
+    }).join("")+'</div></div>';
+  }).join("");
+  var chosen=S.menus.lunch.filter(function(i){return draft.sel[i.id];});
+  var combos=draft.combos.map(function(c,ix){
+    return '<div class="card pad" style="margin-top:8px"><div style="display:flex;gap:8px;align-items:center"><input type="text" aria-label="Combo name" value="'+esc(c.name)+'" oninput="draft.combos['+ix+'].name=this.value" style="flex:1"><span class="money-in"><input type="number" inputmode="numeric" aria-label="Combo price" value="'+(c.price==null?"":c.price)+'" placeholder="—" oninput="draft.combos['+ix+'].price=num(this.value)"></span><button class="x" aria-label="Remove combo" onclick="draft.combos.splice('+ix+',1);render()">'+I.x+'</button></div>'+
+      '<p class="hint">Dishes in this combo</p>'+(chosen.length?chosen.map(function(it){ return '<label class="check" style="min-height:40px"><input type="checkbox" '+(c.dishes.indexOf(it.id)>=0?'checked':'')+' onchange="comboDish('+ix+',\''+it.id+'\',this.checked)">'+esc(it.name)+'</label>'; }).join(""):'<p class="hint">Tick dishes above first.</p>')+'</div>';
+  }).join("");
+  $app.innerHTML=bar(ev?"Edit menu":"Set menu","#/lunch?d="+d)+'<main class="page">'+
+    '<div class="field"><label class="f">Date</label><div class="seg full" role="group"><button aria-pressed="'+(dd===t)+'" onclick="draft.date=\''+t+'\';render()">Today · '+fmtDate(t)+'</button><button aria-pressed="'+(dd===tm)+'" onclick="draft.date=\''+tm+'\';render()">Tomorrow · '+fmtDate(tm)+'</button></div></div>'+
+    (blocked?'<p class="notice" style="margin-top:12px">'+blocked+'</p>':'')+(clash?'<p class="notice" style="margin-top:12px">'+relDate(dd)+' already has a menu. Edit that one instead.</p>':'')+
+    '<div class="section"><h2>Dishes<span class="aside num">'+chosen.length+' picked</span></h2><p class="sub" style="margin:-4px 0 8px">A price changed here is for this day only. Change it for good in the menu list.</p>'+'<input type="search" class="search" placeholder="Search dishes" aria-label="Search dishes" oninput="filterDishes(this.value)">'+groups+
+      '<button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'lunch\',true)">New dish</button></div>'+
+    '<div class="section"><h2>Combos<span class="aside">set fresh each day</span></h2><p class="sub" style="margin:-4px 0 0">The customer pays the combo price. The kitchen only sees the dishes.</p>'+combos+
+      '<button class="btn secondary block" style="margin-top:12px" onclick="draft.combos.push({id:uid(),name:\'Combo \'+(draft.combos.length+1),price:null,dishes:[]});render()">Add a combo</button></div>'+
+    '</main>';
+  dock('<button class="btn primary" '+(blocked||clash||!chosen.length?'disabled':'')+' onclick="saveLunch()">'+(ev?"Save menu":"Save menu · "+plural(chosen.length,"dish","dishes"))+'</button>');
+  tabbar("home");
+}
+function filterDishes(v){
+  var q=normName(v);
+  document.querySelectorAll(".sgroup").forEach(function(g){
+    var any=false;
+    g.querySelectorAll(".pick[data-name]").forEach(function(r){ var show=!q||r.getAttribute("data-name").indexOf(q)>=0; r.style.display=show?"":"none"; if(show) any=true; });
+    g.style.display=any?"":"none";
+  });
+}
+function lsToggle(id,on){ if(on) draft.sel[id]=true; else { delete draft.sel[id]; draft.combos.forEach(function(c){ c.dishes=c.dishes.filter(function(x){return x!==id;}); }); } render(); }
+function comboDish(ix,id,on){ var c=draft.combos[ix]; c.dishes=c.dishes.filter(function(x){return x!==id;}); if(on) c.dishes.push(id); }
+function saveLunch(){
+  var ev=lunchOn(draft.forDate), d=draft.date;
+  var items=S.menus.lunch.filter(function(i){return draft.sel[i.id];}).map(function(i){ var p=draft.price[i.id]!==undefined?draft.price[i.id]:i.price; return {id:i.id,name:i.name,group:i.group,price:p}; });
+  items.sort(function(a,b){ return LUNCH_GROUPS.indexOf(a.group)-LUNCH_GROUPS.indexOf(b.group); });
+  var combos=draft.combos.filter(function(c){return c.dishes.length;});
+  if(ev){
+    var keep={}; items.forEach(function(i){keep[i.id]=1;}); combos.forEach(function(c){keep["combo:"+c.id]=1;});
+    var dropped=ev.orders.some(function(o){return o.lines.some(function(l){return !keep[l.ref];});});
+    if(dropped&&!confirm("Some orders include a dish or combo you removed. Those lines will stop counting. Save anyway?")) return;
+    ev.items=items; ev.combos=combos; ev.date=d;
+  } else {
+    ev={id:uid(),kind:"lunch",date:d,status:"open",items:items,combos:combos,orders:[],createdAt:Date.now()};
+    S.events[ev.id]=ev;
+  }
+  save(); draft=null; go("#/lunch?d="+d); toast("Menu saved");
+}
+
+/* ======================= BATTER ======================= */
+function viewBatterList(){
+  var bs=liveBatches();
+  $app.innerHTML=bar("Batter","#/",'<a class="act" href="#/menu/batter">Menu list</a>')+'<main class="page">'+
+    '<div class="section" style="margin-top:8px"><h2>Open batches</h2>'+(bs.length?'<div class="list">'+bs.map(function(b){
+      var kg=0; kitchenCount(b).forEach(function(c){kg+=c.q;});
+      return '<a class="row" href="#/batter/'+b.id+'"><span class="grow"><span class="t1" style="display:block">'+relDate(b.date)+(relDate(b.date)!==fmtDate(b.date)?" · "+fmtDate(b.date):"")+'</span><span class="t2" style="display:block">'+esc(b.items.map(function(i){return i.name;}).join(", "))+'</span></span><span class="val num" style="text-align:right"><span style="display:block;font-weight:500">'+fmtKg(kg)+'</span><span class="t2" style="display:block">'+plural(b.orders.length,"order")+'</span></span>'+I.chev+'</a>';
+    }).join("")+'</div>':'<p class="empty">No batch open. Start one when you post the batter menu.</p>')+'</div>'+
+    '<p class="foot">Closed batches are in History.</p></main>';
+  dock('<a class="btn primary" href="#/batter/setup">New batch</a>');
+  tabbar("home");
+}
+function viewBatterSetup(q){
+  var ev=q.id?S.events[q.id]:null;
+  var key="batter:"+(q.id||"new");
+  if(!draft||draft.key!==key){
+    draft={key:key,kind:"batter",date:ev?ev.date:addDays(todayKey(),2),sel:{},rate:{},top:{}};
+    if(ev) ev.items.forEach(function(it){ draft.sel[it.id]=true; draft.rate[it.id]=it.rate; draft.top[it.id]=it.topping; });
+  }
+  var items=S.menus.batter.slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+  var chosen=items.filter(function(i){return draft.sel[i.id];});
+  $app.innerHTML=bar(ev?"Edit batch":"New batch",ev?"#/batter/"+ev.id:"#/batter")+'<main class="page">'+
+    '<div class="field"><label class="f" for="bdate">Pickup date</label><input type="date" id="bdate" value="'+draft.date+'" onchange="draft.date=this.value"></div>'+
+    '<div class="section"><h2>Items<span class="aside">rate per kg</span></h2><div class="list">'+items.map(function(it){
+      var on=!!draft.sel[it.id];
+      return '<div class="pick" style="flex-wrap:wrap"><label class="check grow" style="min-height:0;padding:0"><input type="checkbox" '+(on?'checked':'')+' onchange="bsToggle(\''+it.id+'\',this.checked)"><span class="grow"><span class="nm">'+esc(it.name)+'</span><span class="meta" style="display:block">'+lastPostedText("batter",it)+'</span></span></label>'+
+        (on?'<span class="money-in"><input type="number" inputmode="numeric" aria-label="Rate per kg for '+esc(it.name)+'" value="'+(draft.rate[it.id]==null?"":draft.rate[it.id])+'" oninput="draft.rate[\''+it.id+'\']=num(this.value)"></span>':'<span class="val muted num">'+(it.rate==null?"No price":rupee(it.rate)+"/kg")+'</span>')+
+        (on&&it.topping!=null?'<div style="width:100%;display:flex;align-items:center;gap:10px;padding:6px 0 0 34px"><span class="small muted grow">Topping, per kilo started</span><span class="money-in"><input type="number" inputmode="numeric" aria-label="Topping price per kilo" value="'+(draft.top[it.id]==null?"":draft.top[it.id])+'" oninput="draft.top[\''+it.id+'\']=num(this.value)"></span></div>':'')+'</div>';
+    }).join("")+'</div><button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'batter\',true)">New batter item</button></div></main>';
+  dock('<button class="btn primary" '+(!chosen.length||!draft.date?'disabled':'')+' onclick="saveBatter()">'+(ev?"Save batch":"Start batch")+'</button>');
+  tabbar("home");
+}
+function bsToggle(id,on){ var it=S.menus.batter.filter(function(i){return i.id===id;})[0]; if(on){ draft.sel[id]=true; if(draft.rate[id]===undefined) draft.rate[id]=it.rate; if(draft.top[id]===undefined) draft.top[id]=it.topping; } else delete draft.sel[id]; render(); }
+function saveBatter(){
+  var ev=draft.key!=="batter:new"?S.events[draft.key.split(":")[1]]:null;
+  var items=S.menus.batter.filter(function(i){return draft.sel[i.id];}).map(function(i){ return {id:i.id,name:i.name,rate:draft.rate[i.id],topping:i.topping==null?null:draft.top[i.id]}; });
+  if(ev){ ev.items=items; ev.date=draft.date; }
+  else { ev={id:uid(),kind:"batter",date:draft.date,status:"open",items:items,orders:[],createdAt:Date.now()}; S.events[ev.id]=ev; }
+  save(); draft=null; go("#/batter/"+ev.id); toast("Batch saved");
+}
+
+/* event screen for batter and drops */
+function viewEvent(id,backHash){
+  var ev=S.events[id]; if(!ev) return go(backHash);
+  var closed=ev.status==="closed";
+  var title=ev.kind==="batter"?"Batter":(ev.title||"Drop");
+  var editHref=ev.kind==="batter"?"#/batter/setup?id="+ev.id:"#/drops/setup?id="+ev.id;
+  $app.innerHTML=bar(title,closed?"#/history":backHash)+'<main class="page">'+
+    '<div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><h2 class="title">'+(ev.kind==="batter"?"Pickup ":"Collect ")+relLower(ev.date)+'</h2>'+(closed?'<span class="pill">Closed</span>':'')+'<a class="btn text" style="margin-left:auto" href="'+editHref+'">Edit</a></div>'+
+    '<p class="sub">'+fmtDate(ev.date)+(ev.imported?' · brought in from the old app':'')+'</p>'+
+    eventBody(ev)+
+    '<div class="section">'+(closed?'<button class="btn secondary" onclick="setClosed(\''+ev.id+'\',false)">Reopen</button>':'')+'</div></main>';
+  dock(closed?'':'<button class="btn secondary" onclick="setClosed(\''+ev.id+'\',true)">Close '+(ev.kind==="batter"?"batch":"drop")+'</button><button class="btn primary" onclick="openOrder(\''+ev.id+'\')">Add order</button>');
+  tabbar(closed?"history":"home");
+}
+function setClosed(id,on){
+  var ev=S.events[id]; if(!ev) return;
+  ev.status=on?"closed":"open"; save();
+  if(on){ go(ev.kind==="batter"?"#/batter":"#/drops"); toast((ev.kind==="batter"?"Batch":"Drop")+" closed. It's in History.",function(){ ev.status="open"; save(); go(evRoute(ev)); }); }
+  else { render(); toast("Reopened"); }
+}
+
+/* ======================= DROPS ======================= */
+function viewDropList(){
+  var ds=liveDrops(), byD={};
+  ds.forEach(function(d){ (byD[d.date]=byD[d.date]||[]).push(d); });
+  var dates=Object.keys(byD).sort();
+  $app.innerHTML=bar("Special drops","#/",'<a class="act" href="#/menu/drops">Menu list</a>')+'<main class="page">'+
+    (dates.length?dates.map(function(dt){
+      var list=byD[dt], n=list.reduce(function(a,d){return a+d.orders.length;},0);
+      return '<div class="section" style="margin-top:20px"><h2>Collect '+relLower(dt)+(relDate(dt)!==fmtDate(dt)?' <span class="muted" style="font-weight:400">'+fmtDate(dt)+'</span>':'')+
+        (list.length>1?'<a class="aside" href="#/drops/date/'+dt+'" style="color:var(--text);text-decoration:underline;text-underline-offset:3px">All '+n+' together</a>':'')+'</h2><div class="list">'+list.map(function(d){
+        return '<a class="row" href="#/drops/'+d.id+'"><span class="grow"><span class="t1" style="display:block">'+esc(d.title)+'</span><span class="t2" style="display:block">'+esc(d.items.map(function(i){return i.name;}).join(", "))+'</span></span><span class="val num" style="text-align:right"><span style="display:block;font-weight:500">'+plural(d.orders.length,"order")+'</span><span class="t2" style="display:block">'+rupee(eventStats(d).total)+'</span></span>'+I.chev+'</a>';
+      }).join("")+'</div></div>';
+    }).join(""):'<div class="section" style="margin-top:8px"><p class="empty">No drop open. Start one for a festival, ragi malt, lehya or anything else.</p></div>')+
+    '<p class="foot">Closed drops are in History.</p></main>';
+  dock('<a class="btn primary" href="#/drops/setup">New drop</a>');
+  tabbar("home");
+}
+function viewCollections(dt){
+  var list=events("drop").filter(function(d){return d.date===dt;}).sort(byDate);
+  var rows=[]; list.forEach(function(ev){ ev.orders.forEach(function(o){ rows.push({ev:ev,o:o}); }); });
+  rows.sort(function(a,b){ return normName(a.o.name)<normName(b.o.name)?-1:1; });
+  $app.innerHTML=bar("Collect "+fmtDate(dt),"#/drops")+'<main class="page"><p class="sub">'+list.length+' drops · '+rows.length+' orders, by name</p>'+
+    '<div class="section">'+(rows.length?'<div class="list">'+rows.map(function(r){ return orderRow(r.ev,r.o).replace('<span class="tag">','<span class="tag">'+esc(r.ev.title)+' · '); }).join("")+'</div>':'<p class="empty">No orders for this day yet.</p>')+'</div></main>';
+  tabbar("home");
+}
+function viewDropSetup(q){
+  var ev=q.id?S.events[q.id]:null;
+  var key="drop:"+(q.id||"new");
+  if(!draft||draft.key!==key){
+    draft={key:key,kind:"drop",title:ev?ev.title:"",date:ev?ev.date:addDays(todayKey(),3),items:ev?JSON.parse(JSON.stringify(ev.items)):[]};
+  }
+  var inDrop={}; draft.items.forEach(function(i){inDrop[i.id]=1;});
+  var list=S.menus.drops.slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+  $app.innerHTML=bar(ev?"Edit drop":"New drop",ev?"#/drops/"+ev.id:"#/drops")+'<main class="page">'+
+    '<div class="field"><label class="f" for="dtitle">Name</label><input type="text" id="dtitle" placeholder="Deepavali, ragi malt, lehya…" value="'+esc(draft.title)+'" oninput="draft.title=this.value;dropDockState()"></div>'+
+    '<div class="field"><label class="f" for="ddate">Collection date</label><input type="date" id="ddate" value="'+draft.date+'" onchange="draft.date=this.value"></div>'+
+    '<div class="section"><h2>In this drop<span class="aside num">'+draft.items.length+'</span></h2>'+
+      (draft.items.length?'<div class="list">'+draft.items.map(function(it,ix){
+        return '<div class="pick" style="flex-wrap:wrap"><span class="grow"><span class="nm">'+esc(it.name)+'</span></span><button class="x" aria-label="Remove '+esc(it.name)+'" onclick="draft.items.splice('+ix+',1);render()">'+I.x+'</button>'+
+          '<div style="width:100%;display:flex;gap:8px;align-items:center"><select aria-label="Sold" style="flex:1;height:38px" onchange="draft.items['+ix+'].unit=this.value;render()">'+["kg","piece","portion"].map(function(u){return '<option value="'+u+'" '+(it.unit===u?'selected':'')+'>'+UNIT_LABEL[u]+'</option>';}).join("")+'</select>'+
+          '<span class="money-in"><input type="number" inputmode="numeric" aria-label="Price" value="'+(it.rate==null?"":it.rate)+'" placeholder="—" oninput="draft.items['+ix+'].rate=num(this.value)"></span>'+
+          '</div>'+(it.unit!=="kg"?'<div style="width:100%;display:flex;gap:8px;align-items:center;justify-content:flex-end;padding-top:8px"><span class="small muted">Price for 2 (optional)</span><span class="money-in"><input type="number" inputmode="numeric" aria-label="Price for 2" value="'+(it.pair==null?"":it.pair)+'" placeholder="—" oninput="draft.items['+ix+'].pair=num(this.value)"></span></div>':'')+'</div>';
+      }).join("")+'</div>':'<p class="empty">Pick from the drops list below, or add a one-off.</p>')+'</div>'+
+    '<div class="section"><h2>From the drops list</h2><div class="list">'+list.filter(function(i){return !inDrop[i.id];}).map(function(it){
+      return '<button class="row" onclick="addDropItem(\''+it.id+'\')"><span class="grow"><span class="t1" style="display:block">'+esc(it.name)+'</span><span class="t2" style="display:block">'+priceDesc(it)+'</span></span><span class="small" style="font-weight:500">Add</span></button>';
+    }).join("")+'</div><button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'drops\',true)">One-off item</button></div></main>';
+  dock('<button class="btn primary" id="dropSave" onclick="saveDrop()">'+(ev?"Save drop":"Start drop")+'</button>');
+  dropDockState(); tabbar("home");
+}
+function dropDockState(){ var b=document.getElementById("dropSave"); if(b) b.disabled=!(draft.title.trim()&&draft.items.length&&draft.date); }
+function addDropItem(id){ var it=S.menus.drops.filter(function(i){return i.id===id;})[0]; draft.items.push({id:it.id,name:it.name,unit:it.unit,rate:it.rate,pair:it.pair||null}); render(); }
+function saveDrop(){
+  var ev=draft.key!=="drop:new"?S.events[draft.key.split(":")[1]]:null;
+  if(ev){ ev.title=draft.title.trim(); ev.date=draft.date; ev.items=draft.items; }
+  else { ev={id:uid(),kind:"drop",title:draft.title.trim(),date:draft.date,status:"open",items:draft.items,orders:[],createdAt:Date.now()}; S.events[ev.id]=ev; }
+  save(); draft=null; go("#/drops/"+ev.id); toast("Drop saved");
+}
+
+/* ======================= CUSTOM ======================= */
+function viewCustomList(){
+  var t=todayKey(), up=upcomingCustom();
+  $app.innerHTML=bar("Custom orders","#/")+'<main class="page">'+
+    '<div class="section" style="margin-top:8px"><h2>Coming up</h2>'+(up.length?'<div class="list">'+up.map(function(ev){
+      var o=ev.orders[0]||{lines:[]};
+      return '<a class="row" href="#/custom/'+ev.id+'"><span class="grow"><span class="t1" style="display:block">'+esc(o.name||"No name")+'</span><span class="t2" style="display:block">'+relDate(ev.date)+(relDate(ev.date)!==fmtDate(ev.date)?" · "+fmtDate(ev.date):"")+' · '+esc(orderWhat(ev,o))+'</span></span><span class="amt num">'+rupee(orderTotal(ev,o))+'</span>'+I.chev+'</a>';
+    }).join("")+'</div>':'<p class="empty">No custom orders coming up.</p>')+'</div><p class="foot">Past custom orders are in History.</p></main>';
+  dock('<a class="btn primary" href="#/custom/setup">New custom order</a>');
+  tabbar("home");
+}
+function viewCustomSetup(q){
+  var ev=q.id?S.events[q.id]:null;
+  var key="custom:"+(q.id||"new");
+  if(!draft||draft.key!==key){
+    var o=ev&&ev.orders[0];
+    draft={key:key,kind:"custom",name:o?o.name:"",ch:o?o.ch:"dm",date:ev?ev.date:(q.d||addDays(todayKey(),2)),lines:{},price:{}};
+    if(ev){ o.lines.forEach(function(l){ draft.lines[l.ref]=l.qty; if(l.price!=null) draft.price[l.ref]=l.price; }); }
+  }
+  var fake={kind:"custom",items:S.menus.lunch.map(function(i){return {id:i.id,name:i.name,price:i.price};}),combos:[]};
+  var total=0; Object.keys(draft.lines).forEach(function(ref){ total+=linePrice(fake,{ref:ref,qty:draft.lines[ref],price:draft.price[ref]}); });
+  var groups=LUNCH_GROUPS.map(function(g){
+    var items=S.menus.lunch.filter(function(i){return i.group===g;}).sort(function(a,b){ var qa=draft.lines[a.id]?0:1,qb=draft.lines[b.id]?0:1; return qa-qb||a.name.localeCompare(b.name); });
+    if(!items.length) return "";
+    return '<div class="sgroup"><div class="grouphead">'+g+'</div><div class="list">'+items.map(function(it){
+      var qn=draft.lines[it.id]||0, lp=linePrice(fake,{ref:it.id,qty:qn,price:draft.price[it.id]});
+      return '<div class="pick wrap" data-name="'+esc(normName(it.name))+'"><span class="grow"><span class="nm">'+esc(it.name)+'</span><span class="meta" style="display:block">'+(it.price==null?"No price":rupee(it.price)+" each")+'</span></span>'+
+        stepper("csStep('"+it.id+"',",qn)+
+        (qn?'<div class="lp">Line price <span class="money-in"><input type="number" inputmode="numeric" aria-label="Line price" value="'+lp+'" oninput="draft.price[\''+it.id+'\']=num(this.value);csTotal()"></span></div>':'')+'</div>';
+    }).join("")+'</div></div>';
+  }).join("");
+  $app.innerHTML=bar(ev?"Edit custom order":"New custom order",ev?"#/custom/"+ev.id:"#/custom")+'<main class="page">'+
+    '<div class="field"><label class="f" for="cname">Customer name</label><input type="text" id="cname" autocomplete="off" autocapitalize="words" value="'+esc(draft.name)+'" oninput="draft.name=this.value;csTotal()"></div>'+
+    '<div class="field"><label class="f" for="cdate">Date</label><input type="date" id="cdate" value="'+draft.date+'" onchange="draft.date=this.value"></div>'+
+    '<div class="field"><label class="f">Came in on</label><div class="seg" role="group"><button aria-pressed="'+(draft.ch==="dm")+'" onclick="draft.ch=\'dm\';render()">DM</button><button aria-pressed="'+(draft.ch==="group")+'" onclick="draft.ch=\'group\';render()">Group</button></div></div>'+
+    '<div class="section"><h2>Their menu</h2><p class="sub" style="margin:-4px 0 0">From the lunch list, at the standing price. Change a line\'s price if you agreed something else.</p>'+'<input type="search" class="search" placeholder="Search dishes" aria-label="Search dishes" oninput="filterDishes(this.value)">'+groups+
+    '<button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'lunch\',false)">New dish</button></div></main>';
+  dock('<div class="tot num" style="align-self:center;min-width:84px"><span class="small muted" style="display:block">Total</span><b id="csTot" style="font-size:20px">'+rupee(total)+'</b></div><button class="btn primary" id="csSave" onclick="saveCustom()">'+(ev?"Save":"Save order")+'</button>');
+  csTotal(); tabbar("home");
+}
+function stepper(fnPrefix,q){ return '<span class="step"><button aria-label="Less" '+(q?'':'disabled')+' onclick="'+fnPrefix+'-1)">−</button><span class="q">'+q+'</span><button aria-label="More" onclick="'+fnPrefix+'1)">+</button></span>'; }
+function csStep(ref,d){ var q=(draft.lines[ref]||0)+d; if(q<=0) delete draft.lines[ref]; else draft.lines[ref]=q; delete draft.price[ref]; render(); }
+function csTotal(){
+  var fake={kind:"custom",items:S.menus.lunch.map(function(i){return {id:i.id,name:i.name,price:i.price};}),combos:[]};
+  var t=0; Object.keys(draft.lines).forEach(function(ref){ t+=linePrice(fake,{ref:ref,qty:draft.lines[ref],price:draft.price[ref]}); });
+  var el=document.getElementById("csTot"); if(el) el.textContent=rupee(t);
+  var b=document.getElementById("csSave"); if(b) b.disabled=!(draft.name.trim()&&Object.keys(draft.lines).length&&draft.date);
+}
+function saveCustom(){
+  var ev=draft.key!=="custom:new"?S.events[draft.key.split(":")[1]]:null;
+  var refs=Object.keys(draft.lines);
+  var items=refs.map(function(ref){ var i=S.menus.lunch.filter(function(x){return x.id===ref;})[0]; return {id:i.id,name:i.name,group:i.group,price:i.price}; });
+  var lines=refs.map(function(ref){ return {ref:ref,qty:draft.lines[ref],price:draft.price[ref]!==undefined?draft.price[ref]:null}; });
+  if(ev){ var o=ev.orders[0]; ev.date=draft.date; ev.items=items; o.name=draft.name.trim(); o.ch=draft.ch; o.lines=lines; }
+  else { ev={id:uid(),kind:"custom",date:draft.date,status:"open",items:items,combos:[],createdAt:Date.now(),
+      orders:[{id:uid(),name:draft.name.trim(),ch:draft.ch,lines:lines,delivered:false,paid:false,paidAt:null,changeDue:0,changeGiven:false,t:Date.now()}]};
+    S.events[ev.id]=ev; }
+  save(); draft=null; go("#/custom/"+ev.id); toast("Custom order saved");
+}
+function viewCustom(id){
+  var ev=S.events[id]; if(!ev||!ev.orders[0]) return go("#/custom");
+  var o=ev.orders[0], kc=kitchenCount(ev).filter(function(c){return c.q;});
+  $app.innerHTML=bar("Custom order",isPast(ev)?"#/history":"#/custom",'<a class="act" href="#/custom/setup?id='+ev.id+'">Edit</a>')+'<main class="page">'+
+    '<h2 class="title" style="margin-top:6px">'+esc(o.name||"No name")+'</h2><p class="sub">'+relDate(ev.date)+(relDate(ev.date)!==fmtDate(ev.date)?" · "+fmtDate(ev.date):"")+' · '+(o.ch==="dm"?"DM":"Group")+'</p>'+
+    '<div class="section"><h2>To cook<span class="aside num">'+rupee(orderTotal(ev,o))+'</span></h2><div class="card pad count">'+kc.map(function(c){
+      var ln=o.lines.filter(function(l){return l.ref===c.it.id;})[0];
+      return '<div class="ci"><div class="cn">'+esc(c.it.name)+'<div class="t2 num">'+rupee(linePrice(ev,ln))+'</div></div><div class="cv">'+c.q+'</div></div>';
+    }).join("")+'</div></div>'+
+    '<div class="section"><div class="list">'+orderRow(ev,o)+'</div></div>'+
+    '<div class="section"><button class="btn danger" onclick="deleteCustom(\''+ev.id+'\')">Delete custom order</button></div></main>';
+  tabbar(isPast(ev)?"history":"home");
+}
+function deleteCustom(id){ var ev=S.events[id]; if(!ev) return; if(!confirm("Delete the custom order for "+(ev.orders[0].name||"this customer")+"? This can't be undone.")) return; delete S.events[id]; save(); go("#/custom"); toast("Custom order deleted"); }
+
+/* ======================= ORDER SHEET ======================= */
+var od=null;
+function openOrder(evId,oId){
+  var ev=S.events[evId]; if(!ev) return;
+  if(ev.kind==="custom"){ go("#/custom/setup?id="+ev.id); return; }
+  var o=oId?ev.orders.filter(function(x){return x.id===oId;})[0]:null;
+  od={evId:evId,oId:oId||null,name:o?o.name:"",ch:o?o.ch:"dm",lines:o?JSON.parse(JSON.stringify(o.lines)):[],
+      paid:o?!!o.paid:false,changeDue:o?(o.changeDue||0):0,changeGiven:o?!!o.changeGiven:false,untracked:o?!!o.untracked:false};
+  openSheet({title:o?"Edit order":"New order",body:'<div id="odBody"></div>',foot:'<div class="tot num"><span>Total</span><b id="odTot">₹0</b></div><button class="btn primary" id="odSave" onclick="saveOrder()">'+(o?"Save":"Save order")+'</button>'});
+  drawOrder();
+  if(!o) setTimeout(function(){ var n=document.getElementById("odName"); if(n) n.focus(); },280);
+}
+function drawOrder(){
+  var ev=S.events[od.evId], h="";
+  h+='<div class="field"><label class="f" for="odName">Name</label><input type="text" id="odName" autocomplete="off" autocapitalize="words" value="'+esc(od.name)+'" oninput="od.name=this.value;odTotals()"></div>';
+  h+='<div class="field"><label class="f">Came in on</label><div class="seg" role="group"><button aria-pressed="'+(od.ch==="dm")+'" onclick="od.ch=\'dm\';drawOrder()">DM</button><button aria-pressed="'+(od.ch==="group")+'" onclick="od.ch=\'group\';drawOrder()">Group</button></div></div>';
+  if(ev.kind==="lunch"){
+    if(ev.combos&&ev.combos.length) h+='<div class="grouphead">Combos</div><div class="list">'+ev.combos.map(function(c){ return countPick(ev,"combo:"+c.id,c.name,rupee(c.price)+" · "+c.dishes.map(function(d){var it=evItem(ev,d);return it?it.name:"";}).join(", ")); }).join("")+'</div>';
+    LUNCH_GROUPS.forEach(function(g){
+      var items=ev.items.filter(function(i){return i.group===g;}); if(!items.length) return;
+      h+='<div class="grouphead">'+g+'</div><div class="list">'+items.map(function(it){ return countPick(ev,it.id,it.name,it.price==null?"No price":rupee(it.price)+" each"); }).join("")+'</div>';
+    });
+  } else if(ev.kind==="batter"){
+    h+='<div class="grouphead">Items</div><div class="list">'+ev.items.map(function(it){
+      var lines=od.lines.map(function(l,ix){return {l:l,ix:ix};}).filter(function(x){return x.l.ref===it.id;});
+      return '<div class="pick" style="display:block"><div style="display:flex;align-items:baseline;gap:8px"><span class="nm grow">'+esc(it.name)+'</span><span class="meta num">'+(it.rate==null?"No price":rupee(it.rate)+"/kg")+'</span></div>'+
+        '<div class="wchips">'+[0.5,0.75,1].map(function(kg){return '<button class="chip" onclick="addW(\''+it.id+'\','+kg+')">'+kgLabel(kg)+'</button>';}).join("")+'<button class="chip" onclick="addW(\''+it.id+'\',null)">Other weight</button></div>'+
+        (lines.length?'<div style="margin-top:6px">'+lines.map(function(x){ return weightLine(ev,it,x.l,x.ix); }).join("")+'</div>':'')+'</div>';
+    }).join("")+'</div>';
+  } else if(ev.kind==="drop"){
+    h+='<div class="grouphead">Items</div><div class="list">'+ev.items.map(function(it){
+      if(it.unit==="kg"){
+        var ix=lineIx(it.id), l=ix>=0?od.lines[ix]:null;
+        return '<div class="pick" style="display:block"><div style="display:flex;align-items:baseline;gap:8px"><span class="nm grow">'+esc(it.name)+'</span><span class="meta num">'+priceDesc(it)+'</span></div>'+
+          '<div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap"><label class="small muted" for="kg_'+it.id+'">Quantity</label><span style="display:inline-flex;align-items:center;gap:6px"><input type="number" inputmode="decimal" step="0.05" min="0" id="kg_'+it.id+'" style="width:88px;height:38px;text-align:right" value="'+(l?l.qty:"")+'" placeholder="0" oninput="setKg(\''+it.id+'\',this.value)"><span class="small muted">kg</span></span>'+
+          '<span id="lp_'+it.id+'" style="margin-left:auto">'+(l&&l.qty?priceInput(ev,l,ix):'')+'</span></div></div>';
+      }
+      return countPick(ev,it.id,it.name,priceDesc(it));
+    }).join("")+'</div>';
+  }
+  if(od.oId){
+    h+='<div class="section"><h2>Payment</h2><div class="card pad">'+(od.untracked?'<p class="sub" style="margin:0">Brought in from the old app without payment tracking.</p>':
+      '<label class="check"><input type="checkbox" '+(od.paid?'checked':'')+' onchange="od.paid=this.checked;drawOrder()">Paid in full</label>')+
+      (od.paid?'<div style="display:flex;align-items:center;gap:10px;margin-top:6px"><span class="grow">Change to give back</span><span class="money-in"><input type="number" inputmode="numeric" aria-label="Change to give back" value="'+(od.changeDue||"")+'" placeholder="0" oninput="od.changeDue=num(this.value)||0"></span></div>'+
+        (od.changeDue>0?'<label class="check"><input type="checkbox" '+(od.changeGiven?'checked':'')+' onchange="od.changeGiven=this.checked">Change given</label>':'<p class="hint">If they paid extra and will collect the change later.</p>'):'')+
+      '</div></div><div class="section"><button class="btn danger" onclick="deleteOrder()">Delete order</button></div>';
+  }
+  document.getElementById("odBody").innerHTML=h;
+  odTotals();
+}
+function lineIx(ref){ for(var i=0;i<od.lines.length;i++) if(od.lines[i].ref===ref) return i; return -1; }
+function countPick(ev,ref,name,meta){
+  var ix=lineIx(ref), q=ix>=0?od.lines[ix].qty:0;
+  return '<div class="pick wrap"><span class="grow"><span class="nm">'+esc(name)+'</span><span class="meta" style="display:block">'+esc(meta)+'</span></span>'+
+    stepper("odStep('"+ref+"',",q)+(q?'<div class="lp">Line price '+priceInput(ev,od.lines[ix],ix)+'</div>':'')+'</div>';
+}
+function priceInput(ev,l,ix){ return '<span class="money-in"><input type="number" inputmode="numeric" aria-label="Line price" value="'+linePrice(ev,l)+'" oninput="od.lines['+ix+'].price=num(this.value);odTotals()"></span>'; }
+function weightLine(ev,it,l,ix){
+  return '<div class="wline"><span class="kg"><input type="number" inputmode="decimal" step="0.05" min="0" aria-label="Weight in kg" value="'+l.qty+'" onchange="setLineKg('+ix+',this.value)"> <span class="small muted">kg</span></span>'+
+    (it.topping!=null?'<label class="check" style="min-height:38px;padding:0;gap:8px"><input type="checkbox" '+(l.top?'checked':'')+' onchange="od.lines['+ix+'].top=this.checked;od.lines['+ix+'].price=null;drawOrder()"><span class="small">With topping</span></label>':'')+
+    '<span style="margin-left:auto">'+priceInput(ev,l,ix)+'</span><button class="x" style="margin-left:0" aria-label="Remove line" onclick="od.lines.splice('+ix+',1);drawOrder()">'+I.x+'</button></div>';
+}
+function odStep(ref,d){ var ix=lineIx(ref); if(ix<0){ if(d>0) od.lines.push({ref:ref,qty:1,price:null}); } else { var l=od.lines[ix]; l.qty+=d; l.price=null; if(l.qty<=0) od.lines.splice(ix,1); } drawOrder(); }
+function addW(ref,kg){
+  if(kg===null){ var v=prompt("Weight in kg (for example 1.5 or 0.3)"); kg=num(v); if(!kg||kg<=0) return; }
+  od.lines.push({ref:ref,qty:kg,top:false,price:null}); drawOrder();
+}
+function setLineKg(ix,v){ var kg=num(v); if(!kg||kg<=0){ od.lines.splice(ix,1); } else { od.lines[ix].qty=kg; od.lines[ix].price=null; } drawOrder(); }
+function setKg(ref,v){
+  var kg=num(v), ix=lineIx(ref), ev=S.events[od.evId];
+  if(!kg||kg<=0){ if(ix>=0) od.lines.splice(ix,1); }
+  else if(ix<0) od.lines.push({ref:ref,qty:kg,price:null});
+  else { od.lines[ix].qty=kg; od.lines[ix].price=null; }
+  ix=lineIx(ref); var slot=document.getElementById("lp_"+ref);
+  if(slot) slot.innerHTML=ix>=0?priceInput(ev,od.lines[ix],ix):"";
+  odTotals();
+}
+function odTotals(){
+  var ev=S.events[od.evId], t=od.lines.reduce(function(a,l){return a+linePrice(ev,l);},0);
+  var el=document.getElementById("odTot"); if(el) el.textContent=rupee(t);
+  var b=document.getElementById("odSave"); if(b) b.disabled=!(od.name.trim()&&od.lines.some(function(l){return Number(l.qty)>0;}));
+}
+function saveOrder(){
+  var ev=S.events[od.evId]; var lines=od.lines.filter(function(l){return Number(l.qty)>0;});
+  if(od.oId){
+    var o=ev.orders.filter(function(x){return x.id===od.oId;})[0];
+    o.name=od.name.trim(); o.ch=od.ch; o.lines=lines;
+    if(!o.untracked){ if(o.paid!==od.paid) o.paidAt=od.paid?Date.now():null; o.paid=od.paid; }
+    o.changeDue=od.paid?(od.changeDue||0):0; o.changeGiven=od.changeGiven;
+  } else {
+    ev.orders.push({id:uid(),name:od.name.trim(),ch:od.ch,lines:lines,delivered:false,paid:false,paidAt:null,changeDue:0,changeGiven:false,t:Date.now()});
+  }
+  save(); var nm=od.name.trim(); closeSheet(); render(); toast(od.oId?"Order saved":nm+" added");
+}
+function deleteOrder(){
+  var ev=S.events[od.evId]; var o=ev.orders.filter(function(x){return x.id===od.oId;})[0];
+  var ix=ev.orders.indexOf(o); ev.orders.splice(ix,1); save(); closeSheet(); render();
+  toast("Order for "+(o.name||"customer")+" deleted",function(){ ev.orders.splice(ix,0,o); save(); render(); });
+}
+
+/* ======================= NEW ITEM ======================= */
+var ni=null;
+function newItemSheet(kind,addToDraft){
+  ni={kind:kind,toDraft:addToDraft,name:"",group:"Curries",price:null,unit:"piece",pair:null,topping:null,save:kind!=="drops"};
+  var b='<div class="field"><label class="f" for="niName">Name</label><input type="text" id="niName" autocapitalize="words" oninput="ni.name=this.value;niState()"></div>';
+  if(kind==="lunch") b+='<div class="field"><label class="f" for="niGroup">Group</label><select id="niGroup" onchange="ni.group=this.value">'+LUNCH_GROUPS.map(function(g){return '<option>'+g+'</option>';}).join("")+'</select></div>'+
+    '<div class="field"><label class="f" for="niPrice">Price</label><span class="money-in"><input type="number" inputmode="numeric" id="niPrice" style="width:140px" oninput="ni.price=num(this.value)"></span></div>';
+  if(kind==="batter") b+='<div class="field"><label class="f" for="niPrice">Price per kg</label><span class="money-in"><input type="number" inputmode="numeric" id="niPrice" style="width:140px" oninput="ni.price=num(this.value)"></span></div>'+
+    '<div class="field"><label class="check"><input type="checkbox" onchange="ni.topping=this.checked?15:null">Offers a topping (₹15 per kilo started, editable later)</label></div>';
+  if(kind==="drops") b+='<div class="field"><label class="f" for="niUnit">Sold</label><select id="niUnit" onchange="ni.unit=this.value">'+["piece","kg","portion"].map(function(u){return '<option value="'+u+'">'+UNIT_LABEL[u]+'</option>';}).join("")+'</select></div>'+
+    '<div class="field"><label class="f" for="niPrice">Price</label><span class="money-in"><input type="number" inputmode="numeric" id="niPrice" style="width:140px" oninput="ni.price=num(this.value)"></span></div>'+
+    '<div class="field"><label class="f" for="niPair">Price for 2 (optional, per piece or portion)</label><span class="money-in"><input type="number" inputmode="numeric" id="niPair" style="width:140px" oninput="ni.pair=num(this.value)"></span></div>'+
+    (addToDraft?'<div class="field"><label class="check"><input type="checkbox" onchange="ni.save=this.checked">Save to drops menu list</label></div>':'');
+  openSheet({title:{lunch:"New dish",batter:"New batter item",drops:addToDraft?"One-off item":"New drop item"}[kind],short:true,body:b,
+    foot:'<button class="btn primary" id="niSave" disabled onclick="saveNewItem()">Add</button>'});
+  setTimeout(function(){ var n=document.getElementById("niName"); if(n) n.focus(); },280);
+}
+function niState(){ var b=document.getElementById("niSave"); if(b) b.disabled=!ni.name.trim(); }
+function saveNewItem(){
+  var id=uid(), nm=ni.name.trim(), item;
+  if(ni.kind==="lunch") item={id:id,name:nm,group:ni.group,price:ni.price,last:null};
+  if(ni.kind==="batter") item={id:id,name:nm,rate:ni.price,topping:ni.topping,last:null};
+  if(ni.kind==="drops") item={id:id,name:nm,unit:ni.unit,rate:ni.price,pair:ni.unit==="kg"?null:ni.pair};
+  if(ni.kind!=="drops"||ni.save||!ni.toDraft) S.menus[ni.kind].push(item);
+  if(draft&&ni.toDraft){
+    if(draft.kind==="lunch"){ draft.sel[id]=true; draft.price[id]=item.price; }
+    if(draft.kind==="batter"){ draft.sel[id]=true; draft.rate[id]=item.rate; draft.top[id]=item.topping; }
+    if(draft.kind==="drop") draft.items.push({id:id,name:nm,unit:item.unit,rate:item.rate,pair:item.pair});
+  }
+  save(); closeSheet(); render(); toast(nm+" added");
+}
+
+/* ======================= MENU LISTS ======================= */
+function viewMenu(kind,q){
+  var title={lunch:"Lunch menu list",batter:"Batter menu list",drops:"Drops menu list"}[kind];
+  var back={lunch:"#/lunch",batter:"#/batter",drops:"#/drops"}[kind];
+  var items=S.menus[kind].slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+  var body;
+  function row(it){
+    var meta=kind==="lunch"?(it.price==null?"No price yet":rupee(it.price)):kind==="batter"?(it.rate==null?"No price yet":rupee(it.rate)+" per kg")+(it.topping!=null?" · topping "+rupee(it.topping)+" per kilo started":""):priceDesc(it);
+    var lp=kind==="drops"?"":lastPostedText(kind,it);
+    return '<button class="row" onclick="editItem(\''+kind+'\',\''+it.id+'\')"><span class="grow"><span class="t1" style="display:block">'+esc(it.name)+'</span><span class="t2 num" style="display:block">'+esc(meta)+(lp?" · "+lp:"")+'</span></span>'+I.chev+'</button>';
+  }
+  if(kind==="lunch") body=LUNCH_GROUPS.map(function(g){ var g2=items.filter(function(i){return i.group===g;}); return g2.length?'<div class="grouphead">'+g+' · '+g2.length+'</div><div class="list">'+g2.map(row).join("")+'</div>':""; }).join("");
+  else body='<div class="list" style="margin-top:12px">'+items.map(row).join("")+'</div>';
+  var unpriced=items.filter(function(i){ return (kind==="lunch"?i.price:i.rate)==null; }).length;
+  $app.innerHTML=bar(title,back)+'<main class="page"><p class="sub">'+items.length+' items'+(unpriced?' · '+unpriced+' with no price yet':'')+'. Changes here apply to new menus; menus already set keep their prices.</p>'+body+'</main>';
+  dock('<button class="btn primary" onclick="newItemSheet(\''+kind+'\',false)">New item</button>');
+  tabbar("home");
+}
+function editItem(kind,id){
+  var it=S.menus[kind].filter(function(i){return i.id===id;})[0]; if(!it) return;
+  ni={kind:kind,id:id,name:it.name,group:it.group,price:kind==="lunch"?it.price:it.rate,unit:it.unit,pair:it.pair,topping:it.topping};
+  var b='<div class="field"><label class="f" for="eiName">Name</label><input type="text" id="eiName" value="'+esc(it.name)+'" oninput="ni.name=this.value"></div>';
+  if(kind==="lunch") b+='<div class="field"><label class="f">Group</label><select onchange="ni.group=this.value">'+LUNCH_GROUPS.map(function(g){return '<option '+(g===it.group?'selected':'')+'>'+g+'</option>';}).join("")+'</select></div>';
+  if(kind==="drops") b+='<div class="field"><label class="f">Sold</label><select onchange="ni.unit=this.value">'+["piece","kg","portion"].map(function(u){return '<option value="'+u+'" '+(u===it.unit?'selected':'')+'>'+UNIT_LABEL[u]+'</option>';}).join("")+'</select></div>';
+  b+='<div class="field"><label class="f">'+(kind==="batter"?"Price per kg":"Price")+'</label><span class="money-in"><input type="number" inputmode="numeric" style="width:140px" value="'+(ni.price==null?"":ni.price)+'" oninput="ni.price=num(this.value)"></span></div>';
+  if(kind==="batter"&&it.topping!=null) b+='<div class="field"><label class="f">Topping, per kilo started</label><span class="money-in"><input type="number" inputmode="numeric" style="width:140px" value="'+it.topping+'" oninput="ni.topping=num(this.value)"></span></div>';
+  if(kind==="drops") b+='<div class="field"><label class="f">Price for 2 (optional)</label><span class="money-in"><input type="number" inputmode="numeric" style="width:140px" value="'+(it.pair==null?"":it.pair)+'" oninput="ni.pair=num(this.value)"></span></div>';
+  b+='<div class="section"><button class="btn danger" onclick="removeItem()">Remove from list</button><p class="hint">Menus and orders that already use it keep it.</p></div>';
+  openSheet({title:"Edit item",short:true,body:b,foot:'<button class="btn primary" onclick="saveItemEdit()">Save</button>'});
+}
+function saveItemEdit(){
+  var it=S.menus[ni.kind].filter(function(i){return i.id===ni.id;})[0];
+  it.name=ni.name.trim()||it.name;
+  if(ni.kind==="lunch"){ it.group=ni.group; it.price=ni.price; }
+  if(ni.kind==="batter"){ it.rate=ni.price; if(it.topping!=null) it.topping=ni.topping; }
+  if(ni.kind==="drops"){ it.unit=ni.unit; it.rate=ni.price; it.pair=ni.unit==="kg"?null:ni.pair; }
+  save(); closeSheet(); render(); toast("Saved");
+}
+function removeItem(){
+  var arr=S.menus[ni.kind], ix=-1; arr.forEach(function(i,k){ if(i.id===ni.id) ix=k; });
+  if(ix<0) return; var it=arr.splice(ix,1)[0]; save(); closeSheet(); render();
+  toast(it.name+" removed",function(){ arr.splice(ix,0,it); save(); render(); });
+}
+
+/* ======================= HISTORY ======================= */
+function viewHistory(q){
+  var f=q.f||"all";
+  var og=owedGroups(), ch=changeRows();
+  var past=events().filter(isPast).filter(function(e){return f==="all"||e.kind===f;}).sort(function(a,b){return byDate(b,a);});
+  var owedHtml=og.length?og.map(function(g){
+    return '<div class="card" style="margin-top:8px"><div class="pad" style="display:flex;align-items:baseline;gap:10px;padding-bottom:4px"><span style="font-weight:500;flex:1">'+esc(g.name)+'</span><span class="amt num" style="font-weight:700">'+rupee(g.total)+'</span></div>'+
+      g.rows.map(function(r){
+        return '<div class="row" style="padding-top:8px;padding-bottom:8px"><a class="grow" href="'+evRoute(r.ev)+'" style="color:inherit;text-decoration:none"><span class="t1 small" style="display:block;font-weight:400">'+esc(evLabel(r.ev))+'</span><span class="t2" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(orderWhat(r.ev,r.o))+'</span></a>'+
+          '<span class="val num small">'+rupee(r.t)+'</span><button class="chip unpaid" onclick="togglePaid(\''+r.ev.id+'\',\''+r.o.id+'\')">Mark paid</button></div>';
+      }).join("")+'</div>';
+  }).join(""):'<p class="empty">Nobody owes anything.</p>';
+  var chHtml=ch.length?'<div class="list">'+ch.map(function(r){
+    return '<div class="row"><span class="grow"><span class="t1" style="display:block">'+esc(r.o.name||"No name")+'</span><span class="t2" style="display:block">'+esc(evLabel(r.ev))+'</span></span><span class="val num" style="font-weight:500">'+rupee(r.o.changeDue)+'</span><button class="chip" onclick="giveChange(\''+r.ev.id+'\',\''+r.o.id+'\')">Given</button></div>';
+  }).join("")+'</div>':'<p class="empty">No change owed to anyone.</p>';
+  var fl=[["all","All"],["lunch","Lunch"],["batter","Batter"],["drop","Drops"],["custom","Custom"]];
+  $app.innerHTML='<header class="bar"><h1 style="padding-left:8px">History</h1></header><main class="page">'+
+    '<div class="section" style="margin-top:4px"><h2>Unpaid<span class="aside num">'+(og.length?rupee(og.reduce(function(a,g){return a+g.total;},0))+" · oldest first":"")+'</span></h2>'+owedHtml+'</div>'+
+    '<div class="section"><h2>Change to give</h2>'+chHtml+'</div>'+
+    '<div class="section"><h2>Past</h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="go(\'#/history?f='+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
+      (past.length?'<div class="list" style="margin-top:10px">'+past.map(function(ev){ var st=eventStats(ev);
+        return '<a class="row" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+st.n+' '+(st.n===1?"order":"orders")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="amt num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</div>':'<p class="empty" style="margin-top:10px">Nothing here yet.</p>')+'</div>'+
+    '<div class="section"><h2>Data</h2><div class="card pad"><p class="small" id="syncState">'+(SYNC.on?esc(syncText()):"Everything is saved on this phone. Export a backup now and then.")+'</p>'+
+      (S.meta.imported?'<p class="small muted" style="margin-top:6px">'+esc(S.meta.imported)+'</p>':'')+
+      '<div class="btnrow" style="margin-top:10px"><button class="btn secondary" onclick="pickFile(\'old\')">Bring in old app data</button><button class="btn secondary" onclick="exportBackup()">Export backup</button><button class="btn text" onclick="pickFile(\'restore\')">Restore a backup</button></div></div></div>'+
+    '<p class="foot">'+BUILD+'</p></main>';
+  tabbar("history");
+}
+
+/* ======================= DATA: backup, restore, old app import ======================= */
+function exportBackup(){
+  var blob=new Blob([JSON.stringify(S,null,1)],{type:"application/json"});
+  var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="south-savory-v2-backup-"+todayKey()+".json";
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+  toast("Backup downloaded");
+}
+var fileMode=null;
+function pickFile(mode){ fileMode=mode; var f=document.getElementById("fileIn"); f.value=""; f.click(); }
+document.getElementById("fileIn").addEventListener("change",function(e){
+  var file=e.target.files[0]; if(!file) return;
+  var r=new FileReader();
+  r.onload=function(){
+    var data; try{ data=JSON.parse(r.result); }catch(err){ toast("That file isn't a backup"); return; }
+    if(fileMode==="restore"){
+      if(!data||data.version!==2||!data.events){ toast("That isn't a backup from this app"); return; }
+      if(!confirm("Replace everything on this phone with this backup?")) return;
+      S=data; save(); render(); toast("Backup restored");
+    } else {
+      if(!data||!data.days){ toast("That isn't a backup from the old app"); return; }
+      var res=importOld(data); save(); render(); toast(res);
+    }
+  };
+  r.readAsText(file);
+});
+
+/* The old app's batter and specials history comes across as order summaries — who ordered,
+   what, how much — with every line carrying the exact rupee amount the old app recorded,
+   so no total moves. Lunch history stays in the old app. Old prices he set himself
+   update the menu lists. Running it twice adds nothing twice. */
+function importOld(old){
+  S.meta.oldKeys=S.meta.oldKeys||{};
+  var nb=0,nd=0,unpaidN=0,unpaidAmt=0,pricesN=0;
+  var BS={half:0.5,threeq:0.75,kilo:1};
+  function oldBatterPrice(b,size,top){
+    var base=(size==="threeq"&&(b.prices.threeq==null||b.prices.threeq===""))?Math.round(0.75*Number(b.prices.kilo||0)):Number(b.prices[size]||0);
+    return base+(top?Number(b.prices.top||0):0);
+  }
+  function menuItem(kind,name){ return S.menus[kind].filter(function(i){return normName(i.name)===normName(name);})[0]; }
+  Object.keys(old.batter||{}).forEach(function(k){
+    var b=old.batter[k]; if(!b||!b.prices) return;
+    var key="batter:"+k; if(S.meta.oldKeys[key]) return;
+    var mi=menuItem("batter",b.type||"Batter");
+    var item={id:mi?mi.id:uid(),name:b.type||"Batter",rate:Number(b.prices.kilo)||null,topping:b.top?Number(b.prices.top||0):null};
+    var ev={id:uid(),kind:"batter",date:b.date||k,status:b.closed?"closed":"open",items:[item],orders:[],createdAt:Date.now(),imported:true};
+    (b.slips||[]).forEach(function(sl){
+      var lines=[];
+      Object.keys(sl.items||{}).forEach(function(key2){
+        var q=Number(sl.items[key2])||0; if(!q) return; var p=String(key2).split("|"), size=p[1], top=p[2]==="top";
+        lines.push({ref:item.id,qty:Math.round(BS[size]*q*1000)/1000,top:top,price:q*oldBatterPrice(b,size,top)});
+      });
+      if(!lines.length) return;
+      var o={id:uid(),name:sl.name||"",ch:sl.ch||"group",lines:lines,delivered:!!sl.collected,paid:!!sl.paid,paidAt:sl.paidAt||null,changeDue:0,changeGiven:false,t:sl.t||Date.now()};
+      if(!o.paid){ unpaidN++; unpaidAmt+=orderTotal(ev,o); }
+      ev.orders.push(o);
+    });
+    var anon=(b.orders||[]).filter(function(o){return Number(o.q)>0;});
+    if(anon.length) ev.orders.push({id:uid(),name:"Taps without a name",ch:"group",untracked:true,delivered:true,paid:false,t:anon[0].t||0,
+      lines:anon.map(function(o){ return {ref:item.id,qty:Math.round((BS[o.size]||0)*o.q*1000)/1000,top:!!o.top,price:Number(o.q)*Number(o.p||0)}; })});
+    if(!ev.orders.length&&b.closed===undefined) return;
+    S.events[ev.id]=ev; S.meta.oldKeys[key]=1; nb++;
+  });
+  Object.keys(old.special||{}).forEach(function(k){
+    var sp=old.special[k]; if(!sp) return;
+    var key="drop:"+(sp.id||k); if(S.meta.oldKeys[key]) return;
+    var ev={id:uid(),kind:"drop",title:sp.title||"Drop",date:sp.deliveryDate||todayKey(),status:sp.closed?"closed":"open",items:[],orders:[],createdAt:Date.now(),imported:true};
+    var itemsById={}; (sp.items||[]).forEach(function(it){ itemsById[it.id]=it; });
+    function refFor(lineId){
+      var parts=String(lineId).split("::"), it=itemsById[parts[0]]; if(!it) return null;
+      var sub=parts[1], isW=it.priceMode==="weight", sz=!isW&&sub&&it.sizes?it.sizes.filter(function(s){return s.id===sub;})[0]:null;
+      var id="old_"+parts[0]+(isW?"":(sz?"_"+sub:""));
+      if(!evItem(ev,id)){
+        if(isW) ev.items.push({id:id,name:it.n,unit:"kg",rate:Number(it.ratePerKg)||null,pair:null});
+        else ev.items.push({id:id,name:it.n+(sz&&sz.label?" ("+sz.label+")":(it.u&&it.u!=="piece"?" ("+it.u+")":"")),unit:"piece",rate:sz?Number(sz.p):Number(it.p),pair:null});
+      }
+      return {id:id,grams:isW?Number(sub):null,unitPrice:isW?Math.round((Number(it.ratePerKg)||0)*Number(sub)/1000):(sz?Number(sz.p):Number(it.p||0))};
+    }
+    (sp.slips||[]).forEach(function(sl){
+      var lines=[];
+      Object.keys(sl.items||{}).forEach(function(lid){
+        var q=Number(sl.items[lid])||0; if(!q) return; var r=refFor(lid); if(!r) return;
+        lines.push({ref:r.id,qty:r.grams?Math.round(q*r.grams)/1000:q,price:q*r.unitPrice});
+      });
+      if(!lines.length) return;
+      var o={id:uid(),name:sl.name||"",ch:sl.ch||"group",lines:lines,delivered:!!sl.collected,paid:!!sl.paid,paidAt:sl.paidAt||null,changeDue:0,changeGiven:false,t:sl.t||Date.now()};
+      if(!o.paid){ unpaidN++; unpaidAmt+=orderTotal(ev,o); }
+      ev.orders.push(o);
+    });
+    var anon=(sp.orders||[]).filter(function(o){return Number(o.q)>0&&refFor(o.id2);});
+    if(anon.length) ev.orders.push({id:uid(),name:"Taps without a name",ch:"group",untracked:true,delivered:true,paid:false,t:0,
+      lines:anon.map(function(o){ var r=refFor(o.id2); return {ref:r.id,qty:r.grams?Math.round(o.q*r.grams)/1000:o.q,price:Number(o.q)*Number(o.p||0)}; })});
+    (sp.items||[]).forEach(function(it){
+      if(menuItem("drops",it.n)) return;
+      var unit="piece",rate=num(it.p);
+      if(it.priceMode==="weight"){ unit="kg"; rate=num(it.ratePerKg); }
+      else if(it.u==="kg"){ unit="kg"; }
+      else if(it.u==="½ kg"&&rate!=null){ unit="kg"; rate=rate*2; }
+      else if(it.u==="250 g"&&rate!=null){ unit="kg"; rate=rate*4; }
+      else if(it.sizes&&it.sizes.length) rate=null;
+      S.menus.drops.push({id:uid(),name:it.n,unit:unit,rate:rate,pair:null});
+    });
+    S.events[ev.id]=ev; S.meta.oldKeys[key]=1; nd++;
+  });
+  /* his own prices from the old app win over the seed */
+  function setP(kind,name,field,v){ var it=menuItem(kind,name); if(it&&v!=null&&v!==""&&isFinite(Number(v))&&it[field]!==Number(v)){ it[field]=Number(v); pricesN++; } }
+  Object.keys(old.dishPrice||{}).forEach(function(n){ setP("lunch",n,"price",(old.dishPrice[n]||{}).ala); });
+  if(old.compPrice){ setP("lunch","Rice","price",old.compPrice.rice); setP("lunch","Curd rice","price",old.compPrice.curd); }
+  if(old.flatPrice){ setP("lunch","Ragi ball","price",old.flatPrice.ragi); setP("lunch","Menthya ball","price",old.flatPrice.mudde); }
+  Object.keys(old.batPrice||{}).forEach(function(t){ var p=old.batPrice[t]||{}; setP("batter",t,"rate",p.kilo); if(p.top!=null) setP("batter",t,"topping",p.top); });
+  var msg="Brought in "+nb+" batter "+(nb===1?"batch":"batches")+" and "+nd+" "+(nd===1?"drop":"drops")+" · "+unpaidN+" unpaid "+(unpaidN===1?"order":"orders")+" worth "+rupee(unpaidAmt)+(pricesN?" · "+pricesN+" of your prices applied":"");
+  if(!nb&&!nd&&!pricesN) return "Nothing new in that file. It was brought in before.";
+  S.meta.imported=msg+" ("+fmtDate(todayKey())+")";
+  return msg;
+}
+
+/* ======================= SHEET + TOAST ======================= */
+var sheetOpen=false;
+function openSheet(o){
+  var root=document.getElementById("sheetRoot");
+  root.innerHTML='<div class="scrim" onclick="closeSheet()"></div><div class="sheet'+(o.short?' short':'')+'" role="dialog" aria-modal="true" aria-label="'+esc(o.title)+'">'+
+    '<div class="drag"><div class="grab" aria-hidden="true"></div><div class="sh"><button class="btn text" onclick="closeSheet()">Cancel</button><h2>'+esc(o.title)+'</h2><span style="min-width:72px"></span></div></div>'+
+    '<div class="sb">'+o.body+'</div>'+(o.foot?'<div class="sf">'+o.foot+'</div>':'')+'</div>';
+  sheetOpen=true; document.body.style.overflow="hidden";
+  /* swipe down on the grabber or title bar to dismiss, as on iOS */
+  var sh=root.querySelector(".sheet"), dg=root.querySelector(".drag"), y0=null, dy=0;
+  dg.addEventListener("pointerdown",function(e){ if(e.target.closest("button")) return; y0=e.clientY; dy=0; sh.classList.add("dragging"); dg.setPointerCapture(e.pointerId); });
+  dg.addEventListener("pointermove",function(e){ if(y0===null) return; dy=Math.max(0,e.clientY-y0); sh.style.transform="translateY("+dy+"px)"; });
+  function end(){ if(y0===null) return; y0=null; sh.classList.remove("dragging"); sh.style.transform=""; if(dy>110) closeSheet(); }
+  dg.addEventListener("pointerup",end); dg.addEventListener("pointercancel",end);
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ root.querySelector(".scrim").classList.add("show"); root.querySelector(".sheet").classList.add("show"); }); });
+}
+function closeSheet(instant){
+  var root=document.getElementById("sheetRoot"); if(!sheetOpen) return;
+  sheetOpen=false; document.body.style.overflow="";
+  if(SYNC.needRender) setTimeout(softRender,300);
+  var s=root.querySelector(".sheet"), sc=root.querySelector(".scrim");
+  if(instant||!s){ root.innerHTML=""; return; }
+  s.classList.remove("show"); sc.classList.remove("show"); setTimeout(function(){ if(!sheetOpen) root.innerHTML=""; },260);
+}
+document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&sheetOpen) closeSheet(); });
+var toastT=null;
+function toast(msg,undo){
+  var t=document.getElementById("toast");
+  t.innerHTML='<span>'+esc(msg)+'</span>'+(undo?'<button id="toastUndo">Undo</button>':'');
+  if(undo) document.getElementById("toastUndo").onclick=function(){ undo(); t.classList.remove("show"); };
+  t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove("show"); },undo?5000:2600);
+}
+
+save(); render(); syncStart();
+</script>
+</body>
+</html>

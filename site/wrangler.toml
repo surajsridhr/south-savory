@@ -1,0 +1,9 @@
+name = "south-savory"
+compatibility_date = "2025-09-01"
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "south-savory"
+# Replaced with the real id by `npx wrangler d1 create south-savory` (see DEPLOY.md).
+database_id = "00000000-0000-0000-0000-000000000000"

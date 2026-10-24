@@ -1,0 +1,7 @@
+event,service_date,dow,offered_at,unit,price,stated_cap,order_cutoff,order_messages,units_ordered,late_orders,notes
+Onion Masala Vade,2026-06-08,Mon,2026-06-08 10:48,piece,Rs.20 / 2 pcs,150,15:00,19,136,1,Order window 10:48-13:05; closed early at cap
+Wheat Aloo Paratha,2026-07-07,Tue,2026-07-07 15:44,paratha,Rs.65 each,25,17:30,6,24,0,24 of 25 cap sold; 1 order amended 2->4
+Wheat Chapati,2026-07-08,Wed,2026-07-08 12:03,chapati,not posted,30,16:30,2,8,0,8 of 30 cap; weakest special
+Onion Masala Vade,2026-07-10,Fri,2026-07-09 20:55,piece,Rs.20 / 2 pcs,,15:00,11,92,0,Posted night before with lunch menu
+Maddur Vada,2026-08-02,Sun,2026-08-02 11:04,piece,Rs.50 for 1 / Rs.90 for 2,,15:30,10,47,1,Same-day post; 1 late order accepted
+Varamahalakshmi Obbattu (Kobbari + Bele),2026-08-20,Thu,2026-08-16 11:25,piece,Rs.45 each,,2026-08-18 12:00,14,88,0,Kobbari 38 + Bele 50; 13 distinct households; kitchen closed 2 lunch days to produce it

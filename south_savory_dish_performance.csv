@@ -1,0 +1,47 @@
+dish,appearances,dates,total_meal_units,avg_meal_units_per_appearance,total_ordering_households,avg_households_per_appearance,repeat_gaps_days
+Baby Potato Fry,1,2026-06-28,16,16.0,8,8.0,
+Vangibath,1,2026-07-16,10,10.0,8,8.0,
+Bisibelebath,2,2026-06-27;2026-08-09,19,9.5,12,6.0,43
+Palak Peas Bath,1,2026-06-07,9,9.0,5,5.0,
+Mixed Sprouts Usli,1,2026-06-13,8,8.0,5,5.0,
+Pepper Kootu,1,2026-07-19,8,8.0,5,5.0,
+Ash Gourd Majjige Huli,1,2026-07-26,8,8.0,5,5.0,
+Huruli Saaru,1,2026-06-16,7,7.0,2,2.0,
+Beetroot Palya,1,2026-07-07,7,7.0,3,3.0,
+Carrot Beans Potato Huli,1,2026-07-18,7,7.0,5,5.0,
+Tomato Dal Rasam,5,2026-06-13;2026-06-28;2026-07-14;2026-07-30;2026-08-12,31,6.2,18,3.6,15;16;16;13
+Pudina Rice,2,2026-06-14;2026-07-31,12,6.0,6,3.0,47
+Bendekayi (Okra) Sambar,2,2026-06-30;2026-08-02,12,6.0,7,3.5,33
+Sabbakki Soppu Kootu,1,2026-06-09,6,6.0,7,7.0,
+Pepper Jeera Rasam,1,2026-07-01,6,6.0,3,3.0,
+Green Gram Usli,1,2026-07-01,6,6.0,3,3.0,
+Methi Soppu Alasande Kalu Huli,1,2026-07-21,6,6.0,3,3.0,
+Puliyogre,2,2026-06-19;2026-07-22,11,5.5,6,3.0,33
+Avial,3,2026-06-20;2026-07-17;2026-08-14,15,5.0,11,3.7,27;28
+Mixed Vegetable Kootu,1,2026-06-21,5,5.0,5,5.0,
+Beans Bele Palya,1,2026-07-14,5,5.0,4,4.0,
+Dantina Soppu Alasande Kalu Huli,2,2026-06-06;2026-07-28,9,4.5,6,3.0,52
+Tomato Rasam,2,2026-07-07;2026-08-18,7,3.5,3,1.5,42
+Vegetable Bath,2,2026-06-24;2026-07-29,5,2.5,1,0.5,35
+Mixed Sprouts Huli,2,2026-06-26;2026-08-25,5,2.5,3,1.5,60
+Pongal,1,2026-06-12,2,2.0,2,2.0,
+Kadale Gojju,1,2026-06-12,2,2.0,2,2.0,
+Onion Potato Drumstick Huli,1,2026-07-04,2,2.0,2,2.0,
+Heerekayi (Ridge Gourd) Dal,1,2026-07-09,2,2.0,2,2.0,
+Balekayi (Raw Banana) Palya,1,2026-08-12,2,2.0,1,1.0,
+Vegetable Sambar,3,2026-06-10;2026-07-15;2026-08-16,5,1.7,3,1.0,35;32
+Hasi Kootu,2,2026-07-02;2026-08-29,2,1.0,3,1.5,58
+Mixed Soppu Huli,1,2026-06-25,1,1.0,1,1.0,
+Vegetable Pulav,1,2026-07-03,1,1.0,1,1.0,
+Radish Sambar,1,2026-07-10,1,1.0,1,1.0,
+Tomato Peas Bath,2,2026-07-08;2026-08-15,1,0.5,1,0.5,38
+Palak Majjige Huli,2,2026-07-05;2026-08-04,0,0.0,0,0.0,30
+Mangalore Cucumber Huli,1,2026-07-12,0,0.0,0,0.0,
+Methi Soppu Peas Bath,1,2026-07-25,0,0.0,1,1.0,
+Potato Brinjal Palya,1,2026-07-30,0,0.0,0,0.0,
+Lemon Capsicum Bath,1,2026-08-08,0,0.0,0,0.0,
+Pepper Rasam,1,2026-08-11,0,0.0,0,0.0,
+Bendekayi (Okra) Gojju,1,2026-08-11,0,0.0,0,0.0,
+Horsegram Usli,1,2026-08-18,0,0.0,0,0.0,
+Capsicum Peas Bath,1,2026-08-26,0,0.0,0,0.0,
+Onion Capsicum Gojju,1,2026-09-01,0,0.0,0,0.0,

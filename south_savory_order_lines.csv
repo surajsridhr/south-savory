@@ -1,0 +1,372 @@
+ordered_date,ordered_time,ordered_dow,service_date,household_id,stream,item_type,item,qty,after_1030_cutoff,qty_confidence
+2026-06-05,19:53,Fri,,C001,batter,batter,Dosa,1.0,,high
+2026-06-05,20:52,Fri,,C002,batter,batter,Dosa,1.0,,high
+2026-06-05,21:31,Fri,,C003,batter,batter,Dosa,1.5,,high
+2026-06-06,07:02,Sat,,C004,batter,batter,Dosa,1.0,,high
+2026-06-06,08:34,Sat,2026-06-06,C004,lunch,main_dish_alacarte,Dantina soppu Alasande Kalu huli,1,False,medium
+2026-06-06,08:41,Sat,2026-06-06,C005,lunch,combo,Combo 1,2,False,medium
+2026-06-06,08:41,Sat,2026-06-06,C005,lunch,addon,Ragi ball,1,False,medium
+2026-06-06,08:41,Sat,2026-06-06,C005,lunch,addon,Menthya mudde,1,False,medium
+2026-06-06,09:48,Sat,2026-06-06,C006,lunch,addon,Ragi ball,1,False,medium
+2026-06-06,09:48,Sat,2026-06-06,C006,lunch,main_dish_alacarte,Dantina soppu Alasande Kalu huli,1,False,medium
+2026-06-06,10:20,Sat,2026-06-06,C007,lunch,addon,Menthya mudde,1,False,medium
+2026-06-06,10:20,Sat,2026-06-06,C007,lunch,main_dish_alacarte,Dantina soppu Alasande Kalu huli,2,False,medium
+2026-06-06,12:22,Sat,2026-06-06,C008,lunch,main_dish_alacarte,Dantina soppu Alasande Kalu huli,2,True,medium
+2026-06-06,12:22,Sat,2026-06-06,C008,lunch,addon,Mudde (type unspecified),2,True,medium
+2026-06-06,21:19,Sat,2026-06-07,C009,lunch,combo,Combo 2,3,False,medium
+2026-06-07,04:11,Sun,2026-06-07,C010,lunch,main_dish_alacarte,Palak peas rice,1,False,medium
+2026-06-07,07:25,Sun,2026-06-07,C010,lunch,combo,Combo 2,1,False,medium
+2026-06-07,08:00,Sun,2026-06-07,C011,lunch,combo,Combo 2,2,False,medium
+2026-06-07,08:01,Sun,2026-06-07,C012,lunch,combo,Combo 2,2,False,medium
+2026-06-07,09:17,Sun,2026-06-07,C013,lunch,addon,Ragi ball,1,False,medium
+2026-06-07,09:17,Sun,2026-06-07,C013,lunch,addon,Menthya mudde,1,False,medium
+2026-06-08,10:54,Mon,2026-06-08,C014,evening_special,special,Onion Masala Vade,10,,high
+2026-06-08,10:55,Mon,2026-06-08,C012,evening_special,special,Onion Masala Vade,10,,high
+2026-06-08,11:15,Mon,2026-06-08,C007,evening_special,special,Onion Masala Vade,14,,high
+2026-06-08,11:21,Mon,2026-06-08,C015,evening_special,special,Onion Masala Vade,6,,high
+2026-06-08,11:23,Mon,2026-06-08,C016,evening_special,special,Onion Masala Vade,4,,high
+2026-06-08,11:25,Mon,2026-06-08,C017,evening_special,special,Onion Masala Vade,4,,high
+2026-06-08,11:26,Mon,2026-06-08,C018,evening_special,special,Onion Masala Vade,10,,high
+2026-06-08,11:27,Mon,2026-06-08,C013,evening_special,special,Onion Masala Vade,4,,high
+2026-06-08,11:28,Mon,2026-06-08,C019,evening_special,special,Onion Masala Vade,10,,high
+2026-06-08,11:29,Mon,2026-06-08,C020,evening_special,special,Onion Masala Vade,10,,high
+2026-06-08,11:45,Mon,2026-06-08,C004,evening_special,special,Onion Masala Vade,6,,high
+2026-06-08,11:51,Mon,2026-06-08,C006,evening_special,special,Onion Masala Vade,4,,high
+2026-06-08,11:56,Mon,2026-06-08,C021,evening_special,special,Onion Masala Vade,6,,high
+2026-06-08,12:25,Mon,2026-06-08,C022,evening_special,special,Onion Masala Vade,10,,high
+2026-06-08,12:28,Mon,2026-06-08,C023,evening_special,special,Onion Masala Vade,6,,high
+2026-06-08,12:33,Mon,2026-06-08,C024,evening_special,special,Onion Masala Vade,6,,high
+2026-06-08,12:46,Mon,2026-06-08,C025,evening_special,special,Onion Masala Vade,6,,high
+2026-06-08,12:53,Mon,2026-06-08,C026,evening_special,special,Onion Masala Vade,4,,high
+2026-06-08,13:08,Mon,2026-06-08,C027,evening_special,special,Onion Masala Vade,6,,high
+2026-06-08,22:07,Mon,2026-06-09,C026,lunch,addon,Menthya mudde,1,False,medium
+2026-06-08,22:07,Mon,2026-06-09,C026,lunch,main_dish_alacarte,Sabbakki soppu kootu,1,False,medium
+2026-06-08,22:58,Mon,2026-06-09,C028,lunch,combo,Combo 2,1,False,medium
+2026-06-09,07:42,Tue,2026-06-09,C029,lunch,addon,Ragi ball,1,False,medium
+2026-06-09,07:42,Tue,2026-06-09,C029,lunch,addon,Menthya mudde,1,False,medium
+2026-06-09,07:42,Tue,2026-06-09,C029,lunch,main_dish_alacarte,Sabbakki soppu kootu,1,False,medium
+2026-06-09,07:49,Tue,2026-06-09,C012,lunch,main_dish_alacarte,Sabbakki soppu kootu,1,False,medium
+2026-06-09,09:19,Tue,2026-06-09,C025,lunch,combo,Combo 2,1,False,medium
+2026-06-09,09:19,Tue,2026-06-09,C025,lunch,addon,Menthya mudde,1,False,medium
+2026-06-09,10:28,Tue,2026-06-09,C030,lunch,addon,Menthya mudde,1,False,medium
+2026-06-09,10:45,Tue,2026-06-09,C031,lunch,combo,Combo 2,1,True,medium
+2026-06-09,20:04,Tue,,C014,batter,batter,Idly,1.0,,high
+2026-06-09,20:10,Tue,,C021,batter,batter,Idly,1.5,,high
+2026-06-09,20:12,Tue,,C032,batter,batter,Idly,1.0,,high
+2026-06-09,20:25,Tue,,C033,batter,batter,Idly,1.0,,high
+2026-06-09,21:27,Tue,,C034,batter,batter,Idly,0.5,,high
+2026-06-09,22:00,Tue,,C035,batter,batter,Idly,0.5,,high
+2026-06-10,07:04,Wed,,C036,batter,batter,Idly,3.0,,high
+2026-06-11,11:25,Thu,,C037,batter,batter,Idly,0.5,,high
+2026-06-11,16:29,Thu,,C038,batter,batter,Idly,0.5,,high
+2026-06-12,10:23,Fri,2026-06-12,C030,lunch,addon,Menthya mudde,1,False,medium
+2026-06-12,10:30,Fri,2026-06-12,C039,lunch,combo,Combo 2,2,False,medium
+2026-06-12,21:41,Fri,2026-06-13,C040,lunch,main_dish_alacarte,Tomato Dal Rasam,2,False,medium
+2026-06-12,21:41,Fri,2026-06-13,C040,lunch,main_dish_alacarte,Mixed sprouts usli,2,False,medium
+2026-06-12,21:53,Fri,2026-06-13,C041,lunch,addon,Ragi ball,2,False,medium
+2026-06-12,21:53,Fri,2026-06-13,C041,lunch,main_dish_alacarte,Tomato Dal Rasam,1,False,medium
+2026-06-13,01:11,Sat,2026-06-13,C013,lunch,addon,Ragi ball,1,False,medium
+2026-06-13,01:11,Sat,2026-06-13,C013,lunch,main_dish_alacarte,Mixed sprouts usli,1,False,medium
+2026-06-13,09:02,Sat,2026-06-13,C042,lunch,addon,Ragi ball,1,False,medium
+2026-06-13,09:02,Sat,2026-06-13,C042,lunch,main_dish_alacarte,Mixed sprouts usli,1,False,medium
+2026-06-13,10:23,Sat,2026-06-13,C029,lunch,addon,Ragi ball,1,False,medium
+2026-06-13,10:23,Sat,2026-06-13,C029,lunch,main_dish_alacarte,Mixed sprouts usli,1,False,medium
+2026-06-13,10:40,Sat,,C043,batter,batter,Paddu + toppings,0.5,,high
+2026-06-13,11:00,Sat,,C044,batter,batter,Paddu,0.5,,high
+2026-06-13,11:04,Sat,,C045,batter,batter,Paddu + toppings,1.0,,high
+2026-06-13,13:05,Sat,,C029,batter,batter,Paddu + toppings,0.5,,high
+2026-06-13,21:10,Sat,,C046,batter,batter,Paddu,0.5,,high
+2026-06-13,22:04,Sat,2026-06-14,C010,lunch,combo,Combo 2,2,False,medium
+2026-06-14,07:22,Sun,,C004,batter,batter,Paddu,1.0,,high
+2026-06-14,07:35,Sun,,C015,batter,batter,Paddu,1.0,,high
+2026-06-14,08:02,Sun,2026-06-14,C021,lunch,combo,Combo 2,3,False,medium
+2026-06-14,10:00,Sun,2026-06-14,C011,lunch,combo,Combo 2,2,False,medium
+2026-06-14,13:04,Sun,2026-06-14,C041,lunch,combo,Combo 2,1,True,medium
+2026-06-16,06:56,Tue,2026-06-16,C047,lunch,main_dish_alacarte,Huruli Saru,5,False,medium
+2026-06-16,07:26,Tue,2026-06-16,C033,lunch,main_dish_alacarte,Huruli Saru,2,False,medium
+2026-06-17,08:13,Wed,,C029,lunch,addon,Ragi ball,1,False,medium
+2026-06-17,09:01,Wed,,C025,lunch,combo,Combo 2,1,False,medium
+2026-06-18,17:34,Thu,,C001,batter,batter,Adai,0.75,,high
+2026-06-18,17:50,Thu,,C067,batter,batter,Adai,0.5,,high
+2026-06-18,20:24,Thu,2026-06-19,C037,lunch,main_dish_alacarte,Puliyogre,2,False,medium
+2026-06-18,20:32,Thu,2026-06-19,C045,lunch,main_dish_alacarte,Puliyogre,1,False,medium
+2026-06-19,07:59,Fri,2026-06-19,C052,lunch,main_dish_alacarte,Puliyogre,1,False,medium
+2026-06-19,08:02,Fri,2026-06-19,C033,lunch,main_dish_alacarte,Puliyogre,2,False,medium
+2026-06-19,08:32,Fri,,C036,batter,batter,Adai,1.0,,high
+2026-06-20,21:16,Sat,2026-06-21,C036,lunch,addon,Menthya mudde,2,False,medium
+2026-06-20,21:16,Sat,2026-06-21,C036,lunch,main_dish_alacarte,Mixed Vegetable kootu,2,False,medium
+2026-06-21,07:40,Sun,2026-06-21,C012,lunch,combo,Combo 2,1,False,medium
+2026-06-21,07:40,Sun,2026-06-21,C012,lunch,addon,Ragi ball,2,False,medium
+2026-06-21,08:45,Sun,2026-06-21,C006,lunch,combo,Combo 2,1,False,medium
+2026-06-21,08:45,Sun,2026-06-21,C006,lunch,addon,Ragi ball,2,False,medium
+2026-06-21,10:08,Sun,2026-06-21,C018,lunch,addon,Ragi ball,2,False,medium
+2026-06-21,11:43,Sun,2026-06-21,C009,lunch,main_dish_alacarte,Mixed Vegetable kootu,1,True,medium
+2026-06-22,10:43,Mon,,C068,batter,batter,Idly,1.0,,high
+2026-06-22,10:45,Mon,,C048,batter,batter,Idly,0.5,,high
+2026-06-22,10:45,Mon,,C033,batter,batter,Idly,1.0,,high
+2026-06-22,10:52,Mon,,C044,batter,batter,Idly,0.5,,high
+2026-06-22,12:28,Mon,,C002,batter,batter,Idly,0.75,,high
+2026-06-22,18:47,Mon,,C029,batter,batter,Idly,0.5,,high
+2026-06-22,20:56,Mon,,C034,batter,batter,Idly,0.5,,high
+2026-06-22,21:31,Mon,,C037,batter,batter,Idly,0.5,,high
+2026-06-23,08:40,Tue,,C045,batter,batter,Idly,0.5,,high
+2026-06-23,09:08,Tue,,C025,batter,batter,Idly,1.0,,high
+2026-06-25,08:20,Thu,2026-06-25,C069,lunch,combo,Combo 2,1,False,medium
+2026-06-25,08:20,Thu,2026-06-25,C069,lunch,addon,Menthya mudde,1,False,medium
+2026-06-25,11:27,Thu,,C002,batter,batter,Set Dosa,1.0,,high
+2026-06-25,11:27,Thu,,C043,batter,batter,Set Dosa,1.0,,high
+2026-06-25,11:36,Thu,,C023,batter,batter,Set Dosa,1.0,,high
+2026-06-25,12:05,Thu,,C037,batter,batter,Set Dosa,0.5,,high
+2026-06-25,12:21,Thu,,C029,batter,batter,Set Dosa,0.5,,high
+2026-06-25,12:43,Thu,,C048,batter,batter,Set Dosa,0.5,,high
+2026-06-25,22:10,Thu,,C042,batter,batter,Set Dosa,0.5,,high
+2026-06-25,23:09,Thu,,C034,batter,batter,Set Dosa,0.5,,high
+2026-06-26,06:33,Fri,,C070,batter,batter,Set Dosa,0.5,,high
+2026-06-26,08:02,Fri,,C004,batter,batter,Set Dosa,0.5,,high
+2026-06-26,08:04,Fri,,C044,batter,batter,Set Dosa,0.5,,high
+2026-06-26,10:35,Fri,2026-06-26,C024,lunch,addon,Ragi ball,1,True,medium
+2026-06-26,10:35,Fri,2026-06-26,C024,lunch,main_dish_alacarte,Mixed Sprouts Huli,1,True,medium
+2026-06-26,12:13,Fri,,C038,batter,batter,Set Dosa,0.5,,high
+2026-06-26,21:09,Fri,2026-06-27,C048,lunch,combo,Combo 2,1,False,medium
+2026-06-26,21:35,Fri,2026-06-27,C071,lunch,combo,Combo 1,2,False,medium
+2026-06-27,07:35,Sat,2026-06-27,C037,lunch,combo,Combo 1,1,False,medium
+2026-06-27,07:44,Sat,2026-06-27,C005,lunch,combo,Combo 1,4,False,medium
+2026-06-28,09:34,Sun,2026-06-28,C005,lunch,combo,Combo 1,2,False,medium
+2026-06-28,09:34,Sun,2026-06-28,C005,lunch,addon,Ragi ball,1,False,medium
+2026-06-28,09:34,Sun,2026-06-28,C005,lunch,main_dish_alacarte,Baby potato fry,2,False,medium
+2026-06-28,10:13,Sun,2026-06-28,C038,lunch,main_dish_alacarte,Baby potato fry,1,False,medium
+2026-06-28,10:18,Sun,2026-06-28,C003,lunch,main_dish_alacarte,Baby potato fry,2,False,medium
+2026-06-28,10:19,Sun,2026-06-28,C022,lunch,main_dish_alacarte,Baby potato fry,2,False,medium
+2026-06-28,10:22,Sun,2026-06-28,C072,lunch,addon,Menthya mudde,2,False,medium
+2026-06-28,10:22,Sun,2026-06-28,C018,lunch,combo,Combo 2,1,False,medium
+2026-06-28,10:22,Sun,2026-06-28,C018,lunch,addon,Ragi ball,1,False,medium
+2026-06-28,10:22,Sun,2026-06-28,C018,lunch,main_dish_alacarte,Baby potato fry,1,False,medium
+2026-06-28,10:24,Sun,2026-06-28,C046,lunch,combo,Combo 2,3,False,medium
+2026-06-28,10:27,Sun,2026-06-28,C033,lunch,main_dish_alacarte,Tomato Dal Rasam,2,False,medium
+2026-06-29,10:32,Mon,,C002,batter,batter,Dosa,1.0,,high
+2026-06-29,10:32,Mon,,C001,batter,batter,Dosa,1,,high
+2026-06-29,10:50,Mon,,C048,batter,batter,Dosa,0.5,,high
+2026-06-29,10:57,Mon,,C073,batter,batter,Dosa,1.0,,high
+2026-06-29,22:45,Mon,2026-06-30,C071,lunch,combo,Combo 1,1,False,medium
+2026-06-29,22:45,Mon,2026-06-30,C071,lunch,main_dish_alacarte,Bendekayi Sambar,1,False,medium
+2026-06-30,06:37,Tue,,C004,batter,batter,Dosa,0.5,,high
+2026-06-30,09:29,Tue,,C043,batter,batter,Dosa,1.0,,high
+2026-06-30,09:29,Tue,,C032,batter,batter,Dosa,1.0,,high
+2026-06-30,09:31,Tue,2026-06-30,C006,lunch,main_dish_alacarte,Bendekayi Sambar,1,False,medium
+2026-06-30,09:43,Tue,2026-06-30,C012,lunch,combo,Combo 2,1,False,medium
+2026-06-30,11:16,Tue,2026-06-30,C018,lunch,addon,Ragi ball,1,True,medium
+2026-06-30,13:29,Tue,,C045,batter,batter,Dosa,1,,high
+2026-07-01,06:55,Wed,2026-07-01,C012,lunch,combo,Combo 2,1,False,medium
+2026-07-01,06:55,Wed,2026-07-01,C012,lunch,main_dish_alacarte,Green gram usli,2,False,medium
+2026-07-01,07:44,Wed,2026-07-01,C007,lunch,addon,Menthya mudde,1,False,medium
+2026-07-01,07:44,Wed,2026-07-01,C007,lunch,main_dish_alacarte,Pepper Jeera Rasam,1,False,medium
+2026-07-01,07:44,Wed,2026-07-01,C007,lunch,main_dish_alacarte,Green gram usli,1,False,medium
+2026-07-01,09:07,Wed,2026-07-01,C035,lunch,combo,Combo 2,1,False,medium
+2026-07-01,09:07,Wed,2026-07-01,C035,lunch,addon,Ragi ball,2,False,medium
+2026-07-01,21:43,Wed,2026-07-02,C071,lunch,combo,Combo 1,1,False,medium
+2026-07-03,10:05,Fri,,C048,batter,batter,Idly,1.0,,high
+2026-07-03,10:11,Fri,,C044,batter,batter,Idly,0.5,,high
+2026-07-03,10:31,Fri,2026-07-03,C024,lunch,main_dish_alacarte,Vegetable Pulav,1,True,medium
+2026-07-03,10:31,Fri,,C034,batter,batter,Idly,0.5,,high
+2026-07-03,10:57,Fri,,C002,batter,batter,Idly,0.75,,high
+2026-07-03,19:58,Fri,,C075,batter,batter,Idly,0.5,,high
+2026-07-03,20:02,Fri,,C004,batter,batter,Idly,0.5,,high
+2026-07-03,20:08,Fri,,C007,batter,batter,Idly,1.0,,high
+2026-07-03,22:48,Fri,2026-07-04,C071,lunch,combo,Combo 1,1,False,medium
+2026-07-04,08:11,Sat,2026-07-04,C026,lunch,addon,Ragi ball,1,False,medium
+2026-07-04,08:16,Sat,2026-07-04,C026,lunch,main_dish_alacarte,"Onion, Potato & drumstick huli",1,False,medium
+2026-07-04,09:26,Sat,,C037,batter,batter,Idly,0.5,,high
+2026-07-04,09:34,Sat,,C038,batter,batter,Idly,0.5,,high
+2026-07-04,09:49,Sat,,C058,batter,batter,Idly,1.0,,high
+2026-07-04,14:16,Sat,,C039,batter,batter,Idly,1.0,,high
+2026-07-06,22:20,Mon,2026-07-07,C071,lunch,main_dish_alacarte,Tomato Rasam,1,False,medium
+2026-07-06,22:20,Mon,2026-07-07,C071,lunch,main_dish_alacarte,Beetroot palya,1,False,medium
+2026-07-07,08:00,Tue,2026-07-07,C025,lunch,main_dish_alacarte,Tomato Rasam,2,False,medium
+2026-07-07,08:00,Tue,2026-07-07,C025,lunch,main_dish_alacarte,Beetroot palya,1,False,medium
+2026-07-07,08:14,Tue,2026-07-07,C012,lunch,addon,Ragi ball,2,False,medium
+2026-07-07,08:14,Tue,2026-07-07,C012,lunch,main_dish_alacarte,Beetroot palya,2,False,medium
+2026-07-07,10:12,Tue,,C048,batter,batter,Paddu + toppings,0.5,,high
+2026-07-07,10:14,Tue,,C023,batter,batter,Paddu,1.0,,high
+2026-07-07,10:30,Tue,,C043,batter,batter,Paddu + toppings,0.5,,high
+2026-07-07,10:46,Tue,,C044,batter,batter,Paddu + toppings,0.5,,high
+2026-07-07,15:47,Tue,2026-07-07,C040,evening_special,special,Wheat Aloo Paratha,4,,high
+2026-07-07,15:58,Tue,2026-07-07,C002,evening_special,special,Wheat Aloo Paratha,10,,high
+2026-07-07,16:16,Tue,2026-07-07,C012,evening_special,special,Wheat Aloo Paratha,2,,high
+2026-07-07,16:34,Tue,2026-07-07,C004,evening_special,special,Wheat Aloo Paratha,2,,high
+2026-07-07,16:38,Tue,2026-07-07,C032,evening_special,special,Wheat Aloo Paratha,4,,high
+2026-07-07,17:14,Tue,2026-07-07,C044,evening_special,special,Wheat Aloo Paratha,2,,high
+2026-07-07,19:44,Tue,,C024,batter,batter,Paddu + toppings,1.0,,high
+2026-07-07,21:09,Tue,2026-07-08,C071,lunch,combo,Combo 1,1,False,medium
+2026-07-08,09:41,Wed,,C044,batter,batter,Paddu + toppings,0.75,,high
+2026-07-08,12:54,Wed,2026-07-08,C013,evening_special,special,Wheat Chapati,4,,high
+2026-07-08,13:00,Wed,2026-07-08,C071,evening_special,special,Wheat Chapati,4,,high
+2026-07-09,06:58,Thu,2026-07-09,C076,lunch,combo,Combo 1,1,False,medium
+2026-07-09,07:27,Thu,2026-07-09,C071,lunch,main_dish_alacarte,Heerekayi dal (Ridge gourd),1,False,medium
+2026-07-09,21:10,Thu,2026-07-10,C040,evening_special,special,Onion Masala Vade,10,,high
+2026-07-09,21:34,Thu,2026-07-10,C077,evening_special,special,Onion Masala Vade,8,,high
+2026-07-09,21:39,Thu,2026-07-10,C071,lunch,combo,Combo 2,1,False,medium
+2026-07-09,21:40,Thu,2026-07-10,C071,evening_special,special,Onion Masala Vade,2,,high
+2026-07-09,22:14,Thu,2026-07-10,C021,evening_special,special,Onion Masala Vade,8,,high
+2026-07-09,22:25,Thu,2026-07-10,C022,evening_special,special,Onion Masala Vade,12,,high
+2026-07-10,05:20,Fri,2026-07-10,C078,evening_special,special,Onion Masala Vade,6,,high
+2026-07-10,06:08,Fri,2026-07-10,C063,evening_special,special,Onion Masala Vade,8,,high
+2026-07-10,06:28,Fri,2026-07-10,C012,evening_special,special,Onion Masala Vade,12,,high
+2026-07-10,09:23,Fri,2026-07-10,C044,evening_special,special,Onion Masala Vade,8,,high
+2026-07-10,10:39,Fri,2026-07-10,C007,evening_special,special,Onion Masala Vade,8,,high
+2026-07-10,11:05,Fri,2026-07-10,C018,evening_special,special,Onion Masala Vade,10,,high
+2026-07-13,08:29,Mon,,C032,batter,batter,Idly,1.0,,high
+2026-07-13,09:19,Mon,,C048,batter,batter,Idly,0.5,,high
+2026-07-13,09:47,Mon,,C071,batter,batter,Idly,0.5,,high
+2026-07-13,11:17,Mon,,C037,batter,batter,Idly,1.0,,high
+2026-07-13,11:28,Mon,,C033,batter,batter,Idly,1.0,,high
+2026-07-13,11:57,Mon,,C079,batter,batter,Idly,1.0,,high
+2026-07-13,12:00,Mon,,C080,batter,batter,Idly,0.5,,high
+2026-07-13,22:13,Mon,2026-07-14,C071,lunch,combo,Combo 2,1,False,medium
+2026-07-14,09:04,Tue,,C002,batter,batter,Idly,0.75,,high
+2026-07-14,09:25,Tue,,C044,batter,batter,Idly,0.5,,high
+2026-07-14,09:32,Tue,2026-07-14,C025,lunch,combo,Combo 2,1,False,medium
+2026-07-14,09:32,Tue,2026-07-14,C025,lunch,addon,Ragi ball,1,False,medium
+2026-07-14,09:40,Tue,,C039,batter,batter,Idly,1.0,,high
+2026-07-14,09:57,Tue,2026-07-14,C006,lunch,addon,Menthya mudde,1,False,medium
+2026-07-14,09:57,Tue,2026-07-14,C006,lunch,main_dish_alacarte,Tomato Dal Rasam,1,False,medium
+2026-07-14,09:57,Tue,2026-07-14,C006,lunch,main_dish_alacarte,Beans bele palya,1,False,medium
+2026-07-14,10:57,Tue,2026-07-14,C073,lunch,combo,Combo 1,1,True,medium
+2026-07-14,10:57,Tue,2026-07-14,C073,lunch,addon,Ragi ball,1,True,medium
+2026-07-15,07:05,Wed,2026-07-15,C071,lunch,main_dish_alacarte,Vegetable sambar,1,False,medium
+2026-07-15,22:02,Wed,2026-07-16,C071,lunch,combo,Combo 1,1,False,medium
+2026-07-16,06:01,Thu,2026-07-16,C081,lunch,main_dish_alacarte,Vangibath,1,False,medium
+2026-07-16,06:43,Thu,2026-07-16,C061,lunch,main_dish_alacarte,Vangibath,3,False,medium
+2026-07-16,07:19,Thu,2026-07-16,C021,lunch,combo,Combo 1,2,False,medium
+2026-07-16,07:58,Thu,2026-07-16,C034,lunch,combo,Combo 2,1,False,medium
+2026-07-16,08:15,Thu,2026-07-16,C034,lunch,addon,Ragi ball,1,False,medium
+2026-07-16,09:28,Thu,2026-07-16,C026,lunch,addon,Ragi ball,1,False,medium
+2026-07-16,09:32,Thu,2026-07-16,C007,lunch,main_dish_alacarte,Vangibath,1,False,medium
+2026-07-16,10:09,Thu,2026-07-16,C003,lunch,main_dish_alacarte,Vangibath,1,False,medium
+2026-07-16,20:17,Thu,,C001,batter,batter,Set Dosa,1.5,,high
+2026-07-16,20:18,Thu,,C001,batter,batter,Set Dosa,2.0,,high
+2026-07-16,20:26,Thu,,C019,batter,batter,Set Dosa,1.0,,high
+2026-07-16,20:36,Thu,,C002,batter,batter,Set Dosa,1.0,,high
+2026-07-16,20:52,Thu,2026-07-17,C026,lunch,main_dish_alacarte,Avial,1,False,medium
+2026-07-16,20:52,Thu,2026-07-17,C026,lunch,addon,Ragi ball,1,False,medium
+2026-07-16,21:23,Thu,2026-07-17,C034,lunch,main_dish_alacarte,Avial,1,False,medium
+2026-07-16,21:35,Thu,,C029,batter,batter,Set Dosa,0.5,,high
+2026-07-16,21:53,Thu,2026-07-17,C039,lunch,main_dish_alacarte,Avial,2,False,medium
+2026-07-16,22:37,Thu,2026-07-17,C071,lunch,main_dish_alacarte,Avial,2,False,medium
+2026-07-17,07:49,Fri,2026-07-17,C029,lunch,addon,Ragi ball,1,False,medium
+2026-07-17,07:49,Fri,2026-07-17,C029,lunch,addon,Menthya mudde,1,False,medium
+2026-07-17,07:49,Fri,2026-07-17,C029,lunch,main_dish_alacarte,Avial,1,False,medium
+2026-07-17,07:52,Fri,,C044,batter,batter,Set Dosa,0.5,,high
+2026-07-17,10:33,Fri,2026-07-17,C030,lunch,main_dish_alacarte,Avial,1,True,medium
+2026-07-17,11:07,Fri,2026-07-17,C035,lunch,main_dish_alacarte,Avial,1,True,medium
+2026-07-17,11:31,Fri,2026-07-17,C050,lunch,main_dish_alacarte,Avial,1,True,medium
+2026-07-17,21:32,Fri,2026-07-18,C019,lunch,addon,Ragi ball,4,False,medium
+2026-07-17,21:38,Fri,2026-07-18,C082,lunch,main_dish_alacarte,"Carrot, beans & potato Huli",3,False,medium
+2026-07-17,22:00,Fri,2026-07-18,C081,lunch,main_dish_alacarte,"Carrot, beans & potato Huli",1,False,medium
+2026-07-18,06:29,Sat,2026-07-18,C004,lunch,main_dish_alacarte,"Carrot, beans & potato Huli",1,False,medium
+2026-07-18,07:29,Sat,2026-07-18,C036,lunch,addon,Ragi ball,2,False,medium
+2026-07-18,07:29,Sat,2026-07-18,C036,lunch,main_dish_alacarte,"Carrot, beans & potato Huli",2,False,medium
+2026-07-19,05:46,Sun,2026-07-19,C081,lunch,main_dish_alacarte,Pepper kootu,1,False,medium
+2026-07-19,07:17,Sun,2026-07-19,C071,lunch,combo,Combo 2,1,False,medium
+2026-07-19,07:28,Sun,2026-07-19,C058,lunch,main_dish_alacarte,Pepper kootu,3,False,medium
+2026-07-19,08:54,Sun,2026-07-19,C004,lunch,main_dish_alacarte,Pepper kootu,1,False,medium
+2026-07-19,08:57,Sun,2026-07-19,C012,lunch,main_dish_alacarte,Pepper kootu,2,False,medium
+2026-07-20,08:44,Mon,,C002,batter,batter,Dosa,2.0,,high
+2026-07-20,09:13,Mon,,C014,batter,batter,Dosa,1.0,,high
+2026-07-20,09:31,Mon,,C004,batter,batter,Dosa,0.5,,high
+2026-07-20,09:41,Mon,,C034,batter,batter,Dosa,0.5,,high
+2026-07-21,07:41,Tue,2026-07-21,C085,lunch,combo,Combo 2,1,False,medium
+2026-07-21,07:41,Tue,2026-07-21,C085,lunch,addon,Ragi ball,2,False,medium
+2026-07-21,08:57,Tue,,C002,batter,batter,Dosa,2.5,,high
+2026-07-21,09:32,Tue,2026-07-21,C046,lunch,combo,Combo 2,4,False,medium
+2026-07-21,10:57,Tue,2026-07-21,C006,lunch,addon,Ragi ball,1,True,medium
+2026-07-21,10:57,Tue,2026-07-21,C006,lunch,main_dish_alacarte,Methi soppu & alasande kalu huli,1,True,medium
+2026-07-22,07:27,Wed,2026-07-22,C033,lunch,main_dish_alacarte,Puliyogre,3,False,medium
+2026-07-22,07:55,Wed,,C038,batter,batter,Dosa,0.5,,high
+2026-07-22,08:46,Wed,2026-07-22,C037,lunch,main_dish_alacarte,Puliyogre,2,False,medium
+2026-07-24,13:20,Fri,,C001,batter,batter,Idly,1.5,,high
+2026-07-24,13:36,Fri,,C048,batter,batter,Idly,0.5,,high
+2026-07-24,14:00,Fri,,C038,batter,batter,Idly,0.5,,high
+2026-07-24,20:50,Fri,2026-07-25,C069,lunch,addon,Ragi ball,2,False,medium
+2026-07-24,20:52,Fri,,C044,batter,batter,Idly,0.5,,high
+2026-07-24,21:35,Fri,,C007,batter,batter,Idly,1.0,,high
+2026-07-25,07:45,Sat,,C035,batter,batter,Idly,0.5,,high
+2026-07-25,21:29,Sat,2026-07-26,C021,lunch,combo,Combo 1,1,False,medium
+2026-07-25,21:59,Sat,2026-07-26,C085,lunch,combo,Combo 1,1,False,medium
+2026-07-26,08:13,Sun,2026-07-26,C023,lunch,main_dish_alacarte,Ash gourd Majjige Huli,2,False,medium
+2026-07-26,08:18,Sun,2026-07-26,C012,lunch,combo,Combo 2,1,False,medium
+2026-07-26,08:18,Sun,2026-07-26,C012,lunch,main_dish_alacarte,Ash gourd Majjige Huli,1,False,medium
+2026-07-26,08:24,Sun,2026-07-26,C058,lunch,main_dish_alacarte,Ash gourd Majjige Huli,2,False,medium
+2026-07-27,21:52,Mon,2026-07-28,C069,lunch,combo,Combo 2,1,False,medium
+2026-07-28,12:53,Tue,,C043,batter,batter,Paddu + toppings,0.5,,high
+2026-07-28,18:01,Tue,,C034,batter,batter,Paddu,0.5,,high
+2026-07-28,18:25,Tue,,C028,batter,batter,Paddu,0.5,,high
+2026-07-28,19:52,Tue,,C024,batter,batter,Paddu + toppings,1.0,,high
+2026-07-28,20:52,Tue,2026-07-29,C061,lunch,combo,Combo 2,5,False,medium
+2026-07-29,08:27,Wed,,C004,batter,batter,Paddu,0.5,,high
+2026-07-31,07:31,Fri,2026-07-31,C012,lunch,combo,Combo 2,3,False,medium
+2026-07-31,07:31,Fri,2026-07-31,C012,lunch,addon,Ragi ball,2,False,medium
+2026-07-31,11:14,Fri,2026-07-31,C040,lunch,combo,Combo 2,1,True,medium
+2026-07-31,11:14,Fri,2026-07-31,C040,lunch,addon,Menthya mudde,1,True,medium
+2026-07-31,19:00,Fri,,C087,batter,batter,Set Dosa,1.0,,high
+2026-07-31,19:00,Fri,,C023,batter,batter,Set Dosa,1.0,,high
+2026-07-31,19:14,Fri,,C034,batter,batter,Set Dosa,0.5,,high
+2026-07-31,19:16,Fri,,C001,batter,batter,Set Dosa,1,,high
+2026-08-01,06:25,Sat,,C088,batter,batter,Set Dosa,1.0,,high
+2026-08-02,09:33,Sun,2026-08-02,C008,lunch,addon,Mudde (type unspecified),3,False,medium
+2026-08-02,09:33,Sun,2026-08-02,C008,lunch,main_dish_alacarte,Bendekayi Sambar,4,False,medium
+2026-08-02,09:33,Sun,2026-08-02,C018,lunch,addon,Mudde (type unspecified),3,False,medium
+2026-08-02,09:33,Sun,2026-08-02,C018,lunch,main_dish_alacarte,Bendekayi Sambar,4,False,medium
+2026-08-02,10:21,Sun,2026-08-02,C029,lunch,addon,Ragi ball,1,False,medium
+2026-08-02,11:29,Sun,2026-08-02,C039,evening_special,special,Maddur Vada,8,,high
+2026-08-02,11:57,Sun,2026-08-02,C071,evening_special,special,Maddur Vada,3,,high
+2026-08-02,11:59,Sun,2026-08-02,C089,evening_special,special,Maddur Vada,4,,high
+2026-08-02,12:00,Sun,2026-08-02,C021,evening_special,special,Maddur Vada,10,,high
+2026-08-02,12:36,Sun,2026-08-02,C010,evening_special,special,Maddur Vada,2,,high
+2026-08-02,12:45,Sun,2026-08-02,C032,evening_special,special,Maddur Vada,2,,high
+2026-08-02,13:01,Sun,2026-08-02,C042,evening_special,special,Maddur Vada,8,,high
+2026-08-02,13:23,Sun,2026-08-02,C034,evening_special,special,Maddur Vada,2,,high
+2026-08-02,14:08,Sun,2026-08-02,C026,evening_special,special,Maddur Vada,2,,high
+2026-08-02,16:28,Sun,2026-08-02,C035,evening_special,special,Maddur Vada,6,,high
+2026-08-05,08:34,Wed,,C038,batter,batter,Idly,0.5,,high
+2026-08-08,20:39,Sat,2026-08-09,C078,lunch,combo,Combo 2,1,False,medium
+2026-08-08,21:36,Sat,2026-08-09,C004,lunch,combo,Combo 2,1,False,medium
+2026-08-09,06:13,Sun,2026-08-09,C081,lunch,combo,Combo 2,1,False,medium
+2026-08-09,06:53,Sun,2026-08-09,C010,lunch,combo,Combo 2,4,False,medium
+2026-08-09,08:44,Sun,2026-08-09,C034,lunch,combo,Combo 2,1,False,medium
+2026-08-09,09:06,Sun,2026-08-09,C048,lunch,combo,Combo 2,1,False,medium
+2026-08-09,10:44,Sun,2026-08-09,C012,lunch,combo,Combo 1,1,True,medium
+2026-08-09,10:44,Sun,2026-08-09,C012,lunch,addon,Ragi ball,1,True,medium
+2026-08-09,11:19,Sun,2026-08-09,C033,lunch,main_dish_alacarte,Bisibelebath,1,True,medium
+2026-08-11,22:21,Tue,2026-08-12,C090,lunch,combo,Combo 2,2,False,medium
+2026-08-13,20:12,Thu,2026-08-14,C026,lunch,main_dish_alacarte,Avial,1,False,medium
+2026-08-13,21:57,Thu,2026-08-14,C091,lunch,main_dish_alacarte,Avial,2,False,medium
+2026-08-14,09:17,Fri,2026-08-14,C037,lunch,main_dish_alacarte,Avial,2,False,medium
+2026-08-14,10:50,Fri,2026-08-14,C026,lunch,addon,Menthya mudde,1,True,medium
+2026-08-16,09:50,Sun,2026-08-16,C011,lunch,main_dish_alacarte,Vegetable sambar,3,False,medium
+2026-08-16,10:16,Sun,2026-08-16,C012,lunch,combo,Combo 2,1,False,medium
+2026-08-16,11:28,Sun,2026-08-20,C048,festival_special,special,Bele Obbattu,5,,high
+2026-08-16,12:36,Sun,2026-08-20,C036,festival_special,special,Bele Obbattu,10,,high
+2026-08-16,12:39,Sun,2026-08-20,C052,festival_special,special,Kobbari Obbattu,8,,high
+2026-08-16,12:57,Sun,2026-08-20,C014,festival_special,special,Kobbari Obbattu,4,,high
+2026-08-16,12:57,Sun,2026-08-20,C014,festival_special,special,Bele Obbattu,4,,high
+2026-08-16,13:09,Sun,2026-08-20,C002,festival_special,special,Kobbari Obbattu,4,,high
+2026-08-16,13:09,Sun,2026-08-20,C002,festival_special,special,Bele Obbattu,2,,high
+2026-08-16,13:10,Sun,2026-08-20,C034,festival_special,special,Kobbari Obbattu,2,,high
+2026-08-16,13:10,Sun,2026-08-20,C034,festival_special,special,Bele Obbattu,2,,high
+2026-08-16,14:07,Sun,2026-08-20,C010,festival_special,special,Kobbari Obbattu,2,,high
+2026-08-16,14:07,Sun,2026-08-20,C010,festival_special,special,Bele Obbattu,2,,high
+2026-08-16,14:21,Sun,2026-08-20,C048,festival_special,special,Kobbari Obbattu,8,,high
+2026-08-16,14:21,Sun,2026-08-20,C048,festival_special,special,Bele Obbattu,6,,high
+2026-08-16,16:03,Sun,2026-08-20,C092,festival_special,special,Bele Obbattu,6,,high
+2026-08-16,16:33,Sun,2026-08-20,C078,festival_special,special,Bele Obbattu,5,,high
+2026-08-17,12:44,Mon,2026-08-20,C020,festival_special,special,Kobbari Obbattu,2,,high
+2026-08-17,12:44,Mon,2026-08-20,C020,festival_special,special,Bele Obbattu,2,,high
+2026-08-17,13:11,Mon,2026-08-20,C026,festival_special,special,Kobbari Obbattu,2,,high
+2026-08-17,13:50,Mon,2026-08-20,C075,festival_special,special,Kobbari Obbattu,2,,high
+2026-08-17,13:50,Mon,2026-08-20,C075,festival_special,special,Bele Obbattu,2,,high
+2026-08-17,13:53,Mon,2026-08-20,C080,festival_special,special,Kobbari Obbattu,4,,high
+2026-08-17,13:53,Mon,2026-08-20,C080,festival_special,special,Bele Obbattu,4,,high
+2026-08-25,09:16,Tue,2026-08-25,C019,lunch,main_dish_alacarte,Mixed Sprouts Huli,2,False,medium
+2026-08-25,09:17,Tue,2026-08-25,C033,lunch,main_dish_alacarte,Mixed Sprouts Huli,2,False,medium
+2026-08-29,11:28,Sat,2026-08-29,C077,lunch,combo,Combo 1,1,True,medium
+2026-08-29,11:54,Sat,2026-08-29,C021,lunch,addon,Curd rice,4,True,medium
