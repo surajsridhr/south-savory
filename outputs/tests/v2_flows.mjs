@@ -93,7 +93,9 @@ async function lunchFlow(browser) {
   ok('delivery list never says "Combo"', !/combo/i.test(what), what);
   await page.locator('.order', { hasText: 'Priya' }).locator('text=Hand over').click();
   ok('a handed-over order moves out of "To hand over"', (await page.locator('.section', { hasText: 'Handed over, not paid' }).locator('.order', { hasText: 'Priya' }).count()) === 1);
-  ok('the still-to-hand-over box shows what is left', (await page.textContent('.leftbox')).includes('1 order'));
+  { const h = await page.textContent('.section:has(h2:text("To hand over")) h2'); ok('what is left sits with "To hand over": 1 order, 2 portions', h.includes('1 order') && h.includes('2 portions'), h); }
+  { const order = await page.$$eval('main .section h2', hs => hs.map(h => h.firstChild.textContent.trim()));
+    ok('hierarchy: To cook comes before the orders', order.indexOf('To cook') >= 0 && order.indexOf('To cook') < order.indexOf('To hand over'), order.join(' > ')); }
   ok('the status strip says how much to cook', (await page.textContent('.strip')).includes('To cook') && (await page.textContent('.strip')).includes('portions'));
   await page.locator('.order', { hasText: 'Priya' }).locator('text=Unpaid').click();
   ok('handed over and paid goes to Done', (await page.locator('.section', { hasText: 'Done' }).locator('.order', { hasText: 'Priya' }).count()) === 1);
@@ -353,8 +355,32 @@ async function darkShots(browser) {
   await ctx.close();
 }
 
+// a menu set by mistake can be emptied, or cleared and set later
+async function clearMenuFlow(browser) {
+  const { ctx, page, errors } = await fresh(browser, { time: '2026-10-24T09:00:00' });
+  await page.click('a.tile[href="#/lunch"]');
+  await page.click('.dock >> text=Set today');
+  await page.locator('.pick input[type=checkbox]').nth(0).check();
+  await page.locator('.pick input[type=checkbox]').nth(1).check();
+  await page.click('text=Untick all');
+  ok('Untick all empties the picked dishes', await ev(page, () => Object.keys(draft.sel).length === 0) && await page.isDisabled('.dock button'));
+  await page.locator('.pick input[type=checkbox]').nth(0).check();
+  await page.click('.dock >> text=Save menu'); await page.waitForTimeout(300);
+  await ev(page, () => { const e = lunchOn(todayKey()); e.orders.push({ id: uid(), name: 'Test', ch: 'dm', lines: [{ ref: e.items[0].id, qty: 1, price: null }], delivered: false, paid: false, t: 1 }); save(); render(); });
+  await page.click('text=Edit menu');
+  page.once('dialog', d => d.accept());
+  await page.click("text=Clear today's menu");
+  await page.waitForTimeout(300);
+  ok('clearing removes the menu and its orders', await ev(page, () => !lunchOn(todayKey())));
+  ok('after clearing, the day can be set again', (await page.textContent('.dock')).includes("Set today's menu"));
+  await page.click('.toast >> text=Undo'); await page.waitForTimeout(200);
+  ok('clearing can be undone', await ev(page, () => { const e = lunchOn(todayKey()); return e && e.orders.length === 1; }));
+  ok('clear flow: no page errors', errors.length === 0, errors.join(' | '));
+  await ctx.close();
+}
+
 const browser = await chromium.launch();
-for (const f of [fromDiskFlow, lunchFlow, mondayFlow, batterFlow, dropFlow, customFlow, importFlow, darkShots]) {
+for (const f of [fromDiskFlow, lunchFlow, clearMenuFlow, mondayFlow, batterFlow, dropFlow, customFlow, importFlow, darkShots]) {
   try { await f(browser); } catch (e) { ok(f.name + ' ran to the end', false, e.message.split('\n')[0]); }
 }
 await browser.close();
