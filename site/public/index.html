@@ -121,6 +121,18 @@ button.row:hover{background:color-mix(in srgb,var(--raised) 45%,transparent)}
 .strip{display:grid;grid-template-columns:repeat(3,1fr)}
 .strip > div{padding:12px 14px}
 .strip > div + div{border-left:1px solid var(--border)}
+.strip.four{grid-template-columns:1fr 1fr}
+.strip.four > div:nth-child(3){border-left:0}
+.strip.four > div:nth-child(n+3){border-top:1px solid var(--border)}
+.strip.four .v{white-space:normal;line-height:1.25}
+.leftbox{margin-top:10px;border:1.5px solid var(--hue);border-radius:var(--radius-card);padding:12px 14px;background:color-mix(in srgb,var(--hue) 7%,var(--surface))}
+.leftbox .lb-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.leftbox .lb-h span{font-weight:500}
+.leftbox .lb-h b{color:var(--hue);font-weight:500;font-size:17px}
+.leftbox .lb-items{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:var(--fs-small);color:var(--muted)}
+.leftbox .lb-items b{color:var(--text);font-weight:500}
+.leftbox.done{border-color:var(--border);background:var(--surface)}
+.leftbox.done .lb-h b{color:var(--muted)}
 .strip .lab{font-size:var(--fs-small);color:var(--muted)}
 .strip .v{font-size:20px;font-weight:500;margin-top:2px;white-space:nowrap}
 .strip .v.money{font-weight:700}
@@ -264,7 +276,7 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 <input type="file" id="fileIn" accept="application/json,.json" hidden>
 <script>
 "use strict";
-var BUILD="v2.1 — costs tab · 2026-10-25";
+var BUILD="v2.2 — orders split by hand-over · 2026-10-28";
 var KEY="southsavory.v2";
 /* Starting menu lists, pulled from the old app (south-savory-tally.html):
    lunch dishes from its SEED list; prices only where the old app had his own figure
@@ -508,10 +520,11 @@ function orderWhat(ev,o){
 }
 
 /* the kitchen count */
-function kitchenCount(ev){
+function kitchenCount(ev,only){
   var by={};
   ev.items.forEach(function(it){ by[it.id]={it:it,q:0,top:0}; });
   ev.orders.forEach(function(o){
+    if(only&&!only(o)) return;
     (o.lines||[]).forEach(function(ln){
       var q=Number(ln.qty)||0; if(!q) return;
       if(isCombo(ln.ref)){ var c=evCombo(ev,ln.ref); if(c) c.dishes.forEach(function(d){ if(by[d]) by[d].q+=q; }); return; }
@@ -728,6 +741,15 @@ function toggleHoliday(d){
   save(); render(); toast(S.holidays[d]?fmtDate(d)+" marked a holiday":"Holiday removed");
 }
 
+/* how much, in the units the kitchen works in: "12 portions", "4.5 kg", "3 kg · 10 pieces" */
+function qtyText(ev,kc){
+  var t={};
+  kc.forEach(function(c){ if(!c.q) return;
+    var u=ev.kind==="batter"||(ev.kind==="drop"&&c.it.unit==="kg")?"kg":(ev.kind==="drop"&&c.it.unit==="piece")?"pc":"portion";
+    t[u]=(t[u]||0)+c.q; });
+  var out=[]; if(t.portion) out.push(plural(Math.round(t.portion*100)/100,"portion")); if(t.kg) out.push(fmtKg(t.kg)); if(t.pc) out.push(plural(t.pc,"piece"));
+  return out.join(" · ")||"0";
+}
 /* shared body for an event: totals, the kitchen count, the orders */
 function eventBody(ev){
   var st=eventStats(ev), kc=kitchenCount(ev);
@@ -744,14 +766,36 @@ function eventBody(ev){
   }).join("");
   var miss=ev.orders.some(function(o){return o.lines.some(function(l){return lineMissingPrice(ev,l);});});
   var orders=ev.orders.slice().sort(function(a,b){return (a.t||0)-(b.t||0);});
-  return '<div class="section"><div class="card strip num"><div><div class="lab">Orders</div><div class="v">'+st.n+'</div></div>'+
+  var makeWord={lunch:"To cook",custom:"To cook",batter:"To make",drop:"To pack"}[ev.kind];
+  var real=ev.orders.filter(function(o){return !o.untracked;}), left=real.filter(function(o){return !o.delivered;});
+  var leftBox='';
+  if(real.length&&left.length<real.length){
+    var lkc=kitchenCount(ev,function(o){return !o.untracked&&!o.delivered;}).filter(function(c){return c.q;});
+    leftBox=left.length?'<div class="leftbox"><div class="lb-h"><span>Still to hand over</span><b class="num">'+plural(left.length,"order")+' · '+esc(qtyText(ev,lkc))+'</b></div>'+
+        '<div class="lb-items">'+lkc.map(function(c){ var kgU=ev.kind==="batter"||(ev.kind==="drop"&&c.it.unit==="kg"); return '<span>'+esc(c.it.name)+' <b class="num">'+(kgU?fmtKg(c.q):c.q)+'</b></span>'; }).join("")+'</div></div>'
+      :'<div class="leftbox done"><div class="lb-h"><span>Everything handed over</span><b class="num">'+plural(real.length,"order")+'</b></div></div>';
+  }
+  return '<div class="section"><div class="card strip four num"><div><div class="lab">Orders</div><div class="v">'+st.n+'</div></div>'+
+      '<div><div class="lab">'+makeWord+'</div><div class="v">'+esc(qtyText(ev,kc))+'</div></div>'+
       '<div><div class="lab">Total</div><div class="v money">'+rupee(st.total)+'</div></div>'+
-      '<div><div class="lab">Unpaid</div><div class="v">'+rupee(st.unpaid)+'</div></div></div>'+
+      '<div><div class="lab">Unpaid</div><div class="v">'+rupee(st.unpaid)+'</div></div></div>'+leftBox+
       (miss?'<p class="notice" style="margin-top:10px">Some items have no price yet, so the total is short. Set prices in the menu list or on the order.</p>':'')+'</div>'+
     '<div class="section"><h2>'+countTitle+'<span class="aside">'+(ev.kind==="lunch"&&ev.combos&&ev.combos.length?"combos counted as dishes":"")+'</span></h2>'+
       (kc.length?'<div class="card pad count">'+rows+'</div>':'<p class="empty">No items on this menu.</p>')+'</div>'+
-    '<div class="section"><h2>Orders<span class="aside num">'+(st.n?rupee(st.paid)+" paid":"")+'</span></h2>'+
-      (orders.length?'<div class="list">'+orders.map(function(o){return orderRow(ev,o);}).join("")+'</div>':'<p class="empty">No orders yet. Tap Add order when one comes in on WhatsApp.</p>')+'</div>';
+    orderSections(ev,orders);
+}
+/* orders still to hand over first, then handed over but unpaid, then done */
+function orderSections(ev,orders){
+  if(!orders.length) return '<div class="section"><h2>Orders</h2><p class="empty">No orders yet. Tap Add order when one comes in on WhatsApp.</p></div>';
+  var toGo=orders.filter(function(o){return !o.delivered;});
+  var owe=orders.filter(function(o){return o.delivered&&!o.paid&&!o.untracked;});
+  var done=orders.filter(function(o){return o.delivered&&(o.paid||o.untracked);});
+  toGo.sort(function(a,b){ return (a.paid?1:0)-(b.paid?1:0)||(a.t||0)-(b.t||0); });
+  function sec(title,list,aside){ return list.length?'<div class="section"><h2>'+title+'<span class="aside num">'+aside+'</span></h2><div class="list">'+list.map(function(o){return orderRow(ev,o);}).join("")+'</div></div>':''; }
+  function sum(list){ return rupee(list.reduce(function(a,o){return a+orderTotal(ev,o);},0)); }
+  return sec("To hand over",toGo,plural(toGo.length,"order"))+
+    sec("Handed over, not paid",owe,sum(owe))+
+    sec("Done",done,plural(done.length,"order")+" · "+sum(done));
 }
 function priceDesc(it){
   if(it.rate===null||it.rate===undefined||it.rate==="") return "No price yet";

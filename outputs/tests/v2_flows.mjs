@@ -91,8 +91,12 @@ async function lunchFlow(browser) {
   ok('day total 260 (180 + 80)', st.total === 260, JSON.stringify(st));
   const what = await page.locator('.order .what').first().textContent();
   ok('delivery list never says "Combo"', !/combo/i.test(what), what);
-  await page.locator('.order').first().locator('text=Hand over').click();
-  await page.locator('.order').first().locator('text=Unpaid').click();
+  await page.locator('.order', { hasText: 'Priya' }).locator('text=Hand over').click();
+  ok('a handed-over order moves out of "To hand over"', (await page.locator('.section', { hasText: 'Handed over, not paid' }).locator('.order', { hasText: 'Priya' }).count()) === 1);
+  ok('the still-to-hand-over box shows what is left', (await page.textContent('.leftbox')).includes('1 order'));
+  ok('the status strip says how much to cook', (await page.textContent('.strip')).includes('To cook') && (await page.textContent('.strip')).includes('portions'));
+  await page.locator('.order', { hasText: 'Priya' }).locator('text=Unpaid').click();
+  ok('handed over and paid goes to Done', (await page.locator('.section', { hasText: 'Done' }).locator('.order', { hasText: 'Priya' }).count()) === 1);
   await shot(page, '05-lunch-day-orders');
   const st2 = await ev(page, () => eventStats(Object.values(S.events)[0]));
   ok('paid 180 / unpaid 80', st2.paid === 180 && st2.unpaid === 80, JSON.stringify(st2));
