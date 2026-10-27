@@ -63,7 +63,7 @@ async function lunchFlow(browser) {
   await page.fill('input.search', '');
   await shot(page, '03-lunch-setup');
   await page.click('.dock .btn.primary');
-  ok('day price stays on the day, not the list', await ev(page, (id) => S.menus.lunch.filter(i => i.id === id)[0].price === null, beans));
+  ok('a price typed for an unpriced dish goes into the menu list', await ev(page, (id) => S.menus.lunch.filter(i => i.id === id)[0].price === 75, beans));
 
   // order 1: Priya, Combo 1 x1 + Chapathi x2 = 120 + 2*30 = 180
   await page.click('.dock >> text=Add order');
@@ -379,8 +379,25 @@ async function clearMenuFlow(browser) {
   await ctx.close();
 }
 
+// a dish with no price can be priced from the set-menu screen without putting it on the menu
+async function listPriceFlow(browser) {
+  const { ctx, page, errors } = await fresh(browser, { time: '2026-10-24T09:00:00' });
+  await page.click('a.tile[href="#/lunch"]');
+  await page.click('.dock >> text=Set today');
+  await page.fill('input[aria-label="Price for Bisibelebath in the menu list"]', '70');
+  ok('unpriced dish: price saved to the menu list without picking it', await ev(page, () => { const i = S.menus.lunch.filter(i => i.name === 'Bisibelebath')[0]; return i.price === 70 && !draft.sel[i.id]; }));
+  ok('no menu was set for the day', await ev(page, () => !lunchOn(todayKey())));
+  await page.locator('.pick', { hasText: 'Tomato Rasam' }).locator('input[type=checkbox]').check();
+  await page.fill('input[aria-label="Price for Tomato Rasam on this day"]', '55');
+  ok('a dish that has a price keeps its list price; the change is for the day', await ev(page, () => S.menus.lunch.filter(i => i.name === 'Tomato Rasam')[0].price === 50));
+  await page.goto(URL + '#/menu/lunch'); await page.reload();
+  ok('menu list shows the new price', (await page.locator('.row', { hasText: 'Bisibelebath' }).textContent()).includes('₹70'));
+  ok('list price flow: no page errors', errors.length === 0, errors.join(' | '));
+  await ctx.close();
+}
+
 const browser = await chromium.launch();
-for (const f of [fromDiskFlow, lunchFlow, clearMenuFlow, mondayFlow, batterFlow, dropFlow, customFlow, importFlow, darkShots]) {
+for (const f of [fromDiskFlow, lunchFlow, clearMenuFlow, listPriceFlow, mondayFlow, batterFlow, dropFlow, customFlow, importFlow, darkShots]) {
   try { await f(browser); } catch (e) { ok(f.name + ' ran to the end', false, e.message.split('\n')[0]); }
 }
 await browser.close();

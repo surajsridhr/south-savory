@@ -839,7 +839,9 @@ function viewLunchSetup(q){
     return '<div class="sgroup"><div class="grouphead">'+g+'</div><div class="list">'+items.map(function(it){
       var on=!!draft.sel[it.id], lp=lastPostedText("lunch",it), pr=draft.price[it.id]!==undefined?draft.price[it.id]:it.price;
       return '<div class="pick" data-name="'+esc(normName(it.name))+'"><label class="check grow" style="min-height:0;padding:0"><input type="checkbox" '+(on?'checked':'')+' onchange="lsToggle(\''+it.id+'\',this.checked)"><span class="grow"><span class="nm">'+esc(it.name)+'</span>'+(lp?'<span class="meta" style="display:block">'+lp+'</span>':'')+'</span></label>'+
-        (on?'<span class="money-in"><input type="number" inputmode="numeric" aria-label="Price for '+esc(it.name)+' on this day" value="'+(pr==null?"":pr)+'" placeholder="—" oninput="draft.price[\''+it.id+'\']=num(this.value)"></span>':'<span class="val muted num">'+(it.price==null?"No price":rupee(it.price))+'</span>')+'</div>';
+        (on?'<span class="money-in"><input type="number" inputmode="numeric" aria-label="Price for '+esc(it.name)+' on this day" value="'+(pr==null?"":pr)+'" placeholder="—" oninput="draft.price[\''+it.id+'\']=num(this.value);fillListPrice(\''+it.id+'\',this.value)"></span>'
+          :it.price==null?'<span class="money-in"><input type="number" inputmode="numeric" aria-label="Price for '+esc(it.name)+' in the menu list" placeholder="Set" oninput="fillListPrice(\''+it.id+'\',this.value,true)"></span>'
+          :'<span class="val muted num">'+rupee(it.price)+'</span>')+'</div>';
     }).join("")+'</div></div>';
   }).join("");
   var chosen=S.menus.lunch.filter(function(i){return draft.sel[i.id];});
@@ -850,7 +852,7 @@ function viewLunchSetup(q){
   $app.innerHTML=bar(ev?"Edit menu":"Set menu","#/lunch?d="+d)+'<main class="page">'+
     '<div class="field"><label class="f">Date</label><div class="seg full" role="group"><button aria-pressed="'+(dd===t)+'" onclick="draft.date=\''+t+'\';render()">Today · '+fmtDate(t)+'</button><button aria-pressed="'+(dd===tm)+'" onclick="draft.date=\''+tm+'\';render()">Tomorrow · '+fmtDate(tm)+'</button></div></div>'+
     (blocked?'<p class="notice" style="margin-top:12px">'+blocked+'</p>':'')+(clash?'<p class="notice" style="margin-top:12px">'+relDate(dd)+' already has a menu. Edit that one instead.</p>':'')+
-    '<div class="section"><h2>Dishes<span class="aside num">'+chosen.length+' picked'+(chosen.length?' · <button class="btn text" style="height:auto;padding:0;font-size:inherit" onclick="untickAll()">Untick all</button>':'')+'</span></h2><p class="sub" style="margin:-4px 0 8px">A price changed here is for this day only. Change it for good in the menu list.</p>'+'<input type="search" class="search" placeholder="Search dishes" aria-label="Search dishes" oninput="filterDishes(this.value)">'+groups+
+    '<div class="section"><h2>Dishes<span class="aside num">'+chosen.length+' picked'+(chosen.length?' · <button class="btn text" style="height:auto;padding:0;font-size:inherit" onclick="untickAll()">Untick all</button>':'')+'</span></h2><p class="sub" style="margin:-4px 0 8px">A dish with no price gets it for good when you type one here. Changing an existing price here is for this day only.</p>'+'<input type="search" class="search" placeholder="Search dishes" aria-label="Search dishes" oninput="filterDishes(this.value)">'+groups+
       '<button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'lunch\',true)">New dish</button></div>'+
     '<div class="section"><h2>Combos<span class="aside">set fresh each day</span></h2><p class="sub" style="margin:-4px 0 0">The customer pays the combo price. The kitchen only sees the dishes.</p>'+combos+
       '<button class="btn secondary block" style="margin-top:12px" onclick="draft.combos.push({id:uid(),name:\'Combo \'+(draft.combos.length+1),price:null,dishes:[]});render()">Add a combo</button></div>'+
@@ -858,6 +860,16 @@ function viewLunchSetup(q){
     '</main>';
   dock('<button class="btn primary" '+(blocked||clash||!chosen.length?'disabled':'')+' onclick="saveLunch()">'+(ev?"Save menu":"Save menu · "+plural(chosen.length,"dish","dishes"))+'</button>');
   tabbar("home");
+}
+/* a dish with no price yet: the price typed here goes into the menu list for good,
+   whether or not the dish is on this day's menu. A dish that already has a list price
+   keeps it; a price changed on a picked dish is for that day only. */
+var listFilled={};
+function fillListPrice(id,v,unticked){
+  var it=S.menus.lunch.filter(function(i){return i.id===id;})[0]; if(!it) return;
+  if(it.price!=null&&!listFilled[id]) return;
+  var n=num(v); it.price=n; listFilled[id]=n!=null; save();
+  if(unticked&&n!=null) clearTimeout(fillListPrice.t), fillListPrice.t=setTimeout(function(){ toast(it.name+" saved at "+rupee(n)+" in the menu list"); },900);
 }
 function untickAll(){ draft.sel={}; draft.combos.forEach(function(c){ c.dishes=[]; }); render(); }
 function clearLunch(id){
