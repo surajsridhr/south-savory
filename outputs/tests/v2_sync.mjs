@@ -108,6 +108,11 @@ await A.page.evaluate(() => { S.costs.ings.push({ id: uid(), name: 'Toor dal', p
 await wait(700); await sync(A.page); await sync(B.page);
 ok('an ingredient and the overhead reach the other phone', await state(B.page, () => !!ingByName('Toor dal') && S.costs.overhead === 18));
 
+// deleting a whole batch on one phone removes it on the other
+await A.page.evaluate(() => { const e = events('batter')[0]; delete S.events[e.id]; save(); });
+await wait(700); await sync(A.page); await sync(B.page);
+ok('a deleted batch disappears on the other phone', await state(B.page, () => events('batter').length === 0));
+
 ok('no page errors', [...A.errors, ...B.errors].length === 0, [...A.errors, ...B.errors].join(' | '));
 await browser.close();
 console.log(`\n${pass} passed, ${fail} failed`);

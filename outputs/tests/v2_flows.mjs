@@ -379,6 +379,36 @@ async function clearMenuFlow(browser) {
   await ctx.close();
 }
 
+// a batch or a drop can be deleted from its edit screen, orders and all, with undo
+async function deleteEventFlow(browser) {
+  const { ctx, page, errors } = await fresh(browser, { time: '2026-10-24T09:00:00' });
+  const ids = await ev(page, () => {
+    const idly = S.menus.batter[0];
+    const b = { id: uid(), kind: 'batter', date: addDays(todayKey(), 2), status: 'open', items: [{ id: idly.id, name: idly.name, rate: 120, topping: null }], orders: [], createdAt: Date.now() };
+    b.orders.push({ id: uid(), name: 'Anu', ch: 'dm', lines: [{ ref: idly.id, qty: 1, price: null }], delivered: true, paid: false, t: 1 });
+    const d = { id: uid(), kind: 'drop', title: 'Lehya', date: addDays(todayKey(), 3), status: 'open', items: [], orders: [], createdAt: Date.now() };
+    S.events[b.id] = b; S.events[d.id] = d; save(); return [b.id, d.id];
+  });
+  ok('an unpaid batter order shows in History before deleting', await ev(page, () => owedGroups().some(g => g.name === 'Anu')));
+  await page.evaluate(id => go('#/batter/setup?id=' + id), ids[0]); await page.waitForTimeout(200);
+  ok('the edit batch screen offers Delete this batch', (await page.locator('text=Delete this batch').count()) === 1);
+  ok('the hint says its orders go too', (await page.textContent('main')).includes('its 1 order, paid or not'));
+  let msg = ''; page.once('dialog', d => { msg = d.message(); d.accept(); });
+  await page.click('text=Delete this batch'); await page.waitForTimeout(300);
+  ok('deleting asks first and names the unpaid order', msg.includes('1 order') && msg.includes('1 unpaid'), msg);
+  ok('the batch is gone, and so is its unpaid amount', await ev(page, id => !S.events[id] && !owedGroups().some(g => g.name === 'Anu'), ids[0]));
+  ok('after deleting, the batter list shows', await ev(page, () => location.hash === '#/batter'));
+  await page.click('.toast >> text=Undo'); await page.waitForTimeout(200);
+  ok('deleting a batch can be undone, orders included', await ev(page, id => S.events[id] && S.events[id].orders.length === 1, ids[0]));
+  await page.evaluate(id => go('#/drops/setup?id=' + id), ids[1]); await page.waitForTimeout(200);
+  let asked = false; page.once('dialog', d => { asked = true; d.accept(); });
+  await page.click('text=Delete this drop'); await page.waitForTimeout(300);
+  ok('a drop with no orders deletes without asking', !asked && await ev(page, id => !S.events[id], ids[1]));
+  ok('a new batch screen has no delete button', await (async () => { await page.evaluate(() => go('#/batter/setup')); await page.waitForTimeout(200); return (await page.locator('text=Delete this batch').count()) === 0; })());
+  ok('delete flow: no page errors', errors.length === 0, errors.join(' | '));
+  await ctx.close();
+}
+
 // a dish with no price can be priced from the set-menu screen without putting it on the menu
 async function listPriceFlow(browser) {
   const { ctx, page, errors } = await fresh(browser, { time: '2026-10-24T09:00:00' });
@@ -397,7 +427,7 @@ async function listPriceFlow(browser) {
 }
 
 const browser = await chromium.launch();
-for (const f of [fromDiskFlow, lunchFlow, clearMenuFlow, listPriceFlow, mondayFlow, batterFlow, dropFlow, customFlow, importFlow, darkShots]) {
+for (const f of [fromDiskFlow, lunchFlow, clearMenuFlow, deleteEventFlow, listPriceFlow, mondayFlow, batterFlow, dropFlow, customFlow, importFlow, darkShots]) {
   try { await f(browser); } catch (e) { ok(f.name + ' ran to the end', false, e.message.split('\n')[0]); }
 }
 await browser.close();

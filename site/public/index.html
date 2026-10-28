@@ -1107,7 +1107,8 @@ function viewBatterSetup(q){
       return '<div class="pick" style="flex-wrap:wrap"><label class="check grow" style="min-height:0;padding:0"><input type="checkbox" '+(on?'checked':'')+' onchange="bsToggle(\''+it.id+'\',this.checked)"><span class="grow"><span class="nm">'+esc(it.name)+'</span><span class="meta" style="display:block">'+lastPostedText("batter",it)+'</span></span></label>'+
         (on?'<span class="money-in"><input type="number" inputmode="numeric" aria-label="Rate per kg for '+esc(it.name)+'" value="'+(draft.rate[it.id]==null?"":draft.rate[it.id])+'" oninput="draft.rate[\''+it.id+'\']=num(this.value)"></span>':'<span class="val muted num">'+(it.rate==null?"No price":rupee(it.rate)+"/kg")+'</span>')+
         (on&&it.topping!=null?'<div style="width:100%;display:flex;align-items:center;gap:10px;padding:6px 0 0 34px"><span class="small muted grow">Topping, per kilo started</span><span class="money-in"><input type="number" inputmode="numeric" aria-label="Topping price per kilo" value="'+(draft.top[it.id]==null?"":draft.top[it.id])+'" oninput="draft.top[\''+it.id+'\']=num(this.value)"></span></div>':'')+'</div>';
-    }).join("")+'</div><button class="btn secondary block" onclick="newItemSheet(\'batter\',true)">New batter item</button></div></main>';
+    }).join("")+'</div><button class="btn secondary block" onclick="newItemSheet(\'batter\',true)">New batter item</button></div>'+
+    (ev?deleteEventSection(ev):'')+'</main>';
   dock('<button class="btn primary" '+(!chosen.length||!draft.date?'disabled':'')+' onclick="saveBatter()">'+(ev?"Save batch":"Start batch")+'</button>');
   tabbar("home");
 }
@@ -1139,6 +1140,20 @@ function setClosed(id,on){
   ev.status=on?"closed":"open"; save();
   if(on){ go(ev.kind==="batter"?"#/batter":"#/drops"); toast((ev.kind==="batter"?"Batch":"Drop")+" closed. It's in History.",function(){ ev.status="open"; save(); go(evRoute(ev)); }); }
   else { render(); toast("Reopened"); }
+}
+
+/* deleting a batch or drop takes its orders with it, unpaid ones included; undo brings it all back */
+function deleteEventSection(ev){
+  var what=ev.kind==="batter"?"batch":"drop";
+  return '<div class="section"><button class="btn danger" onclick="deleteEvent(\''+ev.id+'\')">Delete this '+what+'</button><p class="hint">'+
+    (ev.orders.length?'Removes it and its '+plural(ev.orders.length,"order")+', paid or not.':'Removes it. It has no orders.')+'</p></div>';
+}
+function deleteEvent(id){
+  var ev=S.events[id]; if(!ev) return;
+  var what=ev.kind==="batter"?"batch":"drop", unpaid=ev.orders.filter(function(o){return !o.paid;}).length;
+  if(ev.orders.length&&!confirm("Delete this "+what+"? Its "+plural(ev.orders.length,"order")+" will be removed too"+(unpaid?", including "+unpaid+" unpaid":"")+".")) return;
+  delete S.events[id]; save(); draft=null; go(ev.kind==="batter"?"#/batter":"#/drops");
+  toast((ev.kind==="batter"?"Batch":"Drop")+" deleted",function(){ S.events[id]=ev; save(); go(evRoute(ev)); });
 }
 
 /* ======================= DROPS ======================= */
@@ -1186,7 +1201,8 @@ function viewDropSetup(q){
       }).join("")+'</div>':'<p class="empty">Pick from the drops list below, or add a one-off.</p>')+'</div>'+
     '<div class="section"><h2>From the drops list</h2><div class="list">'+list.filter(function(i){return !inDrop[i.id];}).map(function(it){
       return '<button class="row" onclick="addDropItem(\''+it.id+'\')"><span class="grow"><span class="t1" style="display:block">'+esc(it.name)+'</span><span class="t2" style="display:block">'+priceDesc(it)+'</span></span><span class="small" style="font-weight:500">Add</span></button>';
-    }).join("")+'</div><button class="btn secondary block" onclick="newItemSheet(\'drops\',true)">One-off item</button></div></main>';
+    }).join("")+'</div><button class="btn secondary block" onclick="newItemSheet(\'drops\',true)">One-off item</button></div>'+
+    (ev?deleteEventSection(ev):'')+'</main>';
   dock('<button class="btn primary" id="dropSave" onclick="saveDrop()">'+(ev?"Save drop":"Start drop")+'</button>');
   dropDockState(); tabbar("home");
 }
