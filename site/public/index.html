@@ -412,8 +412,12 @@ input[type=text],input[type=number],input[type=date],input[type=search],select,t
 .btn,.chip,.order .ctl .chip,.seg button{font-size:15px;font-weight:500;gap:8px}
 .chip svg{width:16px;height:16px}
 input[type=text],input[type=number],input[type=date],input[type=search],select,.money-in input,.wline .kg input{height:var(--ctl-h)}
-/* inside a label panel, everything starts 21 px in: the 5 px rule inset plus 16 */
+/* inside a label panel, everything starts 21 px in: the 5 px rule inset plus 16. The panel
+   also pads 5 px top and bottom, so rows measure their 12 px from the rule, not the edge:
+   every control keeps at least 8 px of air inside its container */
+.list,.card:not(.pad){padding-top:5px;padding-bottom:5px}
 .card.pad,.card > .pad{padding-left:21px;padding-right:21px}
+.card.pad{padding-top:17px;padding-bottom:17px}
 /* the brand signature on Home: the supplied wordmark, never retyped */
 .brandhead{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) var(--pad) 6px}
 .sswordmark{width:220px;height:auto;color:var(--text);display:block}
@@ -1772,7 +1776,7 @@ function viewHistory(q){
   var owedHtml=og.length?og.map(function(g){
     return '<div class="card" style="margin-top:8px"><div class="pad" style="display:flex;align-items:baseline;gap:10px;padding-bottom:4px"><span style="font-weight:500;flex:1">'+esc(g.name)+'</span><span class="amt num" style="font-weight:700">'+rupee(g.total)+'</span></div>'+
       g.rows.map(function(r){
-        return '<div class="row" style="padding-top:8px;padding-bottom:8px"><a class="grow" href="'+evRoute(r.ev)+'" style="color:inherit;text-decoration:none"><span class="t1 small" style="display:block;font-weight:400">'+esc(evLabel(r.ev))+'</span><span class="t2" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(orderWhat(r.ev,r.o))+'</span></a>'+
+        return '<div class="row"><a class="grow" href="'+evRoute(r.ev)+'" style="color:inherit;text-decoration:none"><span class="t1 small" style="display:block;font-weight:400">'+esc(evLabel(r.ev))+'</span><span class="t2" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(orderWhat(r.ev,r.o))+'</span></a>'+
           '<span class="val num small">'+rupee(r.t)+'</span><button class="chip unpaid" onclick="togglePaid(\''+r.ev.id+'\',\''+r.o.id+'\')">Mark paid</button></div>';
       }).join("")+'</div>';
   }).join(""):'<p class="empty">Nobody owes anything.</p>';
