@@ -39,15 +39,14 @@ function loginPage(wrong) {
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--ground:#F6EEDB;--label:#FFFCF5;--edge:#E4D6B6;--rule:rgba(168,76,50,.55);--field:#CDBF9E;--text:#143825;--muted:#4E5E4C;--lid-a:#2C6646;--lid-b:#143825;--lid-edge:#0B2216;--on:#FFFCF5;--warn-bg:#F9DCC7;--warn:#7A2E14;--ember:#EF6922}
-@media (prefers-color-scheme: dark){:root{--ground:#11301F;--label:#1A4230;--edge:#0A2215;--rule:rgba(246,238,219,.28);--field:#2E5440;--text:#FFFCF5;--muted:#BFC8B4;--lid-a:#FFFCF5;--lid-b:#E6D9B8;--lid-edge:#B3A27A;--on:#143825;--warn-bg:#4A2A17;--warn:#F7B48C}}
 *{box-sizing:border-box;margin:0}body{background:var(--ground);color:var(--text);font:400 15px/1.45 "Work Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:18px}
 form{width:100%;max-width:360px;padding:30px 26px;border-radius:12px;background:var(--label);border:1px solid var(--edge);box-shadow:inset 0 0 0 5px var(--label),inset 0 0 0 6px var(--rule),0 1px 1px rgba(70,45,20,.12),0 10px 22px -10px rgba(70,45,20,.4)}
 h1{margin:0}h1 svg{width:220px;height:auto;display:block;color:var(--text)}p{color:var(--muted);font-size:14px;margin-top:10px}
 label{display:block;font-size:14px;font-weight:500;margin:24px 0 8px}
 input{width:100%;height:48px;border:1px solid var(--field);border-radius:8px;background:var(--label);box-shadow:inset 0 2px 3px rgba(70,45,20,.14);color:var(--text);padding:0 14px;font-size:16px}
 input:focus{outline:2px solid var(--text);outline-offset:2px}
-button{width:100%;height:48px;margin-top:20px;border:1px solid var(--lid-edge);border-radius:12px;background:linear-gradient(rgba(255,255,255,.16),rgba(255,255,255,0) 45%),linear-gradient(var(--lid-a),var(--lid-b));color:var(--on);font-size:16px;font-weight:500;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 0 var(--lid-edge),0 6px 10px -4px rgba(70,45,20,.4);font-family:inherit}
-button:active{transform:translateY(3px);box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
+button{width:100%;height:48px;margin-top:20px;border:1px solid var(--lid-edge);border-radius:12px;background:linear-gradient(rgba(255,255,255,.16),rgba(255,255,255,0) 45%),linear-gradient(var(--lid-a),var(--lid-b));color:var(--on);font-size:16px;font-weight:500;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 0 var(--lid-edge),0 6px 10px -4px rgba(70,45,20,.4);font-family:inherit}
+button:active{transform:translateY(2px);box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
 .err{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:10px 12px;margin-top:16px;font-size:14px}
 </style></head><body><form method="post" action="/login">
 <h1>${WORDMARK}</h1><p>Enter the kitchen password. Each phone asks once.</p>

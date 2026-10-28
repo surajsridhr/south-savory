@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F6EEDB" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#11301F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F6EEDB">
 <title>South Savory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,20 +28,6 @@
   --fs-title:26px; --fs-section:18px; --fs-kpi:30px; --fs-body:15px; --fs-small:13px;
   --bar:56px; --tabbar:64px;
   color-scheme:light;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --ground:#11301F; --surface:#11301F; --raised:#0E2919; --active:#16392A;
-    --border:rgba(246,238,219,.10); --rule:rgba(246,238,219,.08); --control:#2E5440;
-    --text:#FFFCF5; --muted:#BFC8B4;
-    --primary:#F6EEDB; --on-primary:#143825;
-    --hue:#F58A4F;
-    --positive:#9BCB9F; --pill-positive-bg:#22472F; --pill-positive-ink:#CFE0C4;
-    --pill-warning-bg:#4A2A17; --pill-warning-ink:#F7B48C;
-    --pill-neutral-bg:#183D2A; --pill-neutral-ink:#E6E0CF;
-    --negative:#FF8A70;
-    color-scheme:dark;
-  }
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
@@ -276,15 +261,6 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
   --kolam:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.1'%3E%3Ccircle r='14'/%3E%3Ccircle cx='28' r='14'/%3E%3Ccircle cy='28' r='14'/%3E%3Ccircle cx='28' cy='28' r='14'/%3E%3C/g%3E%3Ccircle cx='14' cy='14' r='1.8'/%3E%3C/svg%3E");
   --kolam-border:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10'%3E%3Cpath d='M0 5 4 1 8 5 4 9Z M8 5 12 1 16 5 12 9Z' fill='none' stroke='%23000' stroke-width='1'/%3E%3Ccircle cx='4' cy='5' r='1.3'/%3E%3Ccircle cx='12' cy='5' r='1.3'/%3E%3C/svg%3E");
 }
-@media (prefers-color-scheme: dark){
-  :root{
-    --label:#1A4230; --label-rule:rgba(246,238,219,.28); --label-edge:#0A2215; --sh:0,0,0;
-    --pouch-a:#0F2C1D; --pouch-b:#0A2215;
-    --lid-a:#FFFCF5; --lid-b:#E6D9B8; --lid-edge:#B3A27A;
-    --cloth:#22472F; --cloth-edge:#3C6A4E;
-    --well:#0C2618; --field-edge:#2E5440;
-  }
-}
 body{background:var(--ground)}
 h1,h2,.title{font-family:var(--serif)}
 .bar{background:var(--ground);box-shadow:0 1px 0 var(--label-edge)}
@@ -337,8 +313,8 @@ button.row:active,a.row:active{background:var(--well)}
 .btn{border-radius:12px;transition:transform .08s ease,box-shadow .08s ease}
 .btn.primary{color:var(--on-primary);border:1px solid var(--lid-edge);
   background:linear-gradient(rgba(255,255,255,.16),rgba(255,255,255,0) 45%),linear-gradient(var(--lid-a),var(--lid-b));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 0 var(--lid-edge),0 6px 10px -4px rgba(var(--sh),.4)}
-.btn.primary:active{transform:translateY(3px);box-shadow:inset 0 2px 4px rgba(0,0,0,.3),0 0 0 var(--lid-edge)}
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 0 var(--lid-edge),0 6px 10px -4px rgba(var(--sh),.4)}
+.btn.primary:active{transform:translateY(2px);box-shadow:inset 0 2px 4px rgba(0,0,0,.3),0 0 0 var(--lid-edge)}
 /* the rest are label stock, edged like the panels */
 .btn.secondary,.chip,.step{background:var(--label);border:1px solid var(--field-edge);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 0 var(--field-edge),0 3px 6px -3px rgba(var(--sh),.3)}
@@ -360,7 +336,7 @@ button.row:active,a.row:active{background:var(--well)}
 
 /* recessed: the day switch, fields, tick boxes */
 .seg{background:var(--well);border-radius:12px;padding:4px;gap:4px;box-shadow:inset 0 2px 4px rgba(var(--sh),.2)}
-.seg button{border-radius:9px;height:38px}
+.seg button{border-radius:9px;height:36px}
 .seg button[aria-pressed="true"]{background:var(--label);color:var(--text);
   box-shadow:inset 0 0 0 3px var(--label),inset 0 0 0 4px var(--label-rule),0 2px 4px rgba(var(--sh),.25)}
 input[type=text],input[type=number],input[type=date],input[type=search],select,textarea{
@@ -394,9 +370,50 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--text);outline-offset:
 .sheet{background:var(--ground);border-radius:16px 16px 0 0;box-shadow:0 -1px 0 var(--label-edge),0 -12px 30px rgba(var(--sh),.3)}
 .sheet .grab{background:var(--label-rule)}
 .sheet .sf{border-top:1px solid var(--label-edge);background:var(--ground)}
-.toast{border-radius:12px;border:1px solid var(--lid-edge);background:linear-gradient(var(--lid-a),var(--lid-b))}
+/* notifications are black, so they never read as the green primary action */
+.toast{border-radius:12px;border:1px solid #000;color:#FFFCF5;background:linear-gradient(#2A2A2A,#141414);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 20px rgba(0,0,0,.3)}
+.toast button{color:#FFFCF5}
 .leftline b{font-weight:600}
 :focus-visible{outline:2px solid var(--text);outline-offset:3px;border-radius:8px}
+/* ---------- one spacing system for every control ----------
+   Every control is 44 tall, Apple's minimum hit region. Controls with an edge sit 12 apart
+   (HIG accessibility: about 12 pt around elements with a bezel), and a group of them sits 16
+   below the content it acts on. Text buttons carry no side padding, so their words line up
+   with the 18 px content edge, and keep a 44 px hit region. Bars, sheets and the dock share
+   that 18 px edge. */
+:root{--ctl-h:44px;--ctl-pad:16px;--ctl-gap:12px;--ctl-above:16px}
+.btn{height:var(--ctl-h);padding:0 var(--ctl-pad)}
+.btn.text,.btn.danger{padding:0;min-width:44px}
+.btn.icon{width:var(--ctl-h);padding:0}
+.btn svg{width:20px;height:20px;flex:none}
+.btn.block{margin-top:var(--ctl-above)}
+.btnrow{gap:var(--ctl-gap);margin-top:var(--ctl-above)}
+.section > .btn.danger + .hint{margin-top:4px}
+.chip,.order .ctl .chip{height:var(--ctl-h);padding:0 var(--ctl-pad);font-size:14px}
+.order .ctl,.filters,.wchips,.btnrow{gap:var(--ctl-gap)}
+.order .ctl{margin-top:var(--ctl-gap)}
+.step{height:var(--ctl-h)}
+.x{height:var(--ctl-h)}
+.dock{padding:var(--ctl-gap) var(--pad)}
+.dock .in{gap:var(--ctl-gap)}
+.sheet .sf{padding:var(--ctl-gap) var(--pad) calc(var(--ctl-gap) + env(safe-area-inset-bottom));gap:var(--ctl-gap)}
+.sheet .sh{padding:0 var(--pad)}
+.sheet .sh .btn.text{justify-content:flex-start}
+.bar{padding-left:10px;padding-right:10px}
+.strip .v.neg{color:#F7B48C}
+/* one shape for every control: the 12 px corner of the label panels. Buttons, chips,
+   steppers, fields and the day switch all share it; a part nested inside another
+   (the switch's selected day) steps in by its 4 px inset to 8 px so the curves stay
+   concentric. Same type on every control: 15 px, medium. */
+:root{--ctl-r:12px;--ctl-r-in:8px}
+.btn,.chip,.step,.seg,.toast,.tabbar a,
+input[type=text],input[type=number],input[type=date],input[type=search],select,textarea{border-radius:var(--ctl-r)}
+.seg button{border-radius:var(--ctl-r-in)}
+.btn,.chip,.order .ctl .chip,.seg button{font-size:15px;font-weight:500;gap:8px}
+.chip svg{width:16px;height:16px}
+input[type=text],input[type=number],input[type=date],input[type=search],select,.money-in input,.wline .kg input{height:var(--ctl-h)}
+/* inside a label panel, everything starts 21 px in: the 5 px rule inset plus 16 */
+.card.pad,.card > .pad{padding-left:21px;padding-right:21px}
 /* the brand signature on Home: the supplied wordmark, never retyped */
 .brandhead{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) var(--pad) 6px}
 .sswordmark{width:220px;height:auto;color:var(--text);display:block}
@@ -866,11 +883,11 @@ function viewLunch(q){
   if(d===t||d===tm) seg='<div class="seg full" role="group" aria-label="Day" style="margin-top:4px"><button aria-pressed="'+(d===t)+'" onclick="go(\'#/lunch?d='+t+'\')">Today · '+fmtDate(t)+'</button><button aria-pressed="'+(d===tm)+'" onclick="go(\'#/lunch?d='+tm+'\')">Tomorrow · '+fmtDate(tm)+'</button></div>';
   var body='';
   if(!ev){
-    if(isMonday(d)) body='<div class="section"><div class="card pad"><p style="font-weight:500">Mondays are off</p><p class="sub">No lunch menu on a Monday. Monday food goes in as a custom order.</p><div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="#/custom/setup?d='+d+'">New custom order</a></div></div></div>';
-    else if(S.holidays[d]) body='<div class="section"><div class="card pad"><p style="font-weight:500">Holiday</p><p class="sub">No lunch on '+fmtDate(d)+'.</p><div class="btnrow" style="margin-top:12px"><button class="btn secondary" onclick="toggleHoliday(\''+d+'\')">Remove holiday</button></div></div></div>';
+    if(isMonday(d)) body='<div class="section"><div class="card pad"><p style="font-weight:500">Mondays are off</p><p class="sub">No lunch menu on a Monday. Monday food goes in as a custom order.</p><div class="btnrow"><a class="btn secondary" href="#/custom/setup?d='+d+'">New custom order</a></div></div></div>';
+    else if(S.holidays[d]) body='<div class="section"><div class="card pad"><p style="font-weight:500">Holiday</p><p class="sub">No lunch on '+fmtDate(d)+'.</p><div class="btnrow"><button class="btn secondary" onclick="toggleHoliday(\''+d+'\')">Remove holiday</button></div></div></div>';
     else{
       body='<div class="section"><div class="card pad"><p style="font-weight:500">No menu for '+relLower(d)+' yet</p><p class="sub">Pick dishes from the lunch list, then take orders.</p></div>'+
-        '<div class="btnrow" style="margin-top:12px"><button class="btn text" onclick="toggleHoliday(\''+d+'\')">Mark '+relLower(d)+' a holiday</button></div></div>';
+        '<div class="btnrow"><button class="btn text" onclick="toggleHoliday(\''+d+'\')">Mark '+relLower(d)+' a holiday</button></div></div>';
       dock('<a class="btn primary" href="#/lunch/setup?d='+d+'">Set '+relLower(d)+'\'s menu</a>');
     }
   } else {
@@ -1006,9 +1023,9 @@ function viewLunchSetup(q){
     '<div class="field"><label class="f">Date</label><div class="seg full" role="group"><button aria-pressed="'+(dd===t)+'" onclick="draft.date=\''+t+'\';render()">Today · '+fmtDate(t)+'</button><button aria-pressed="'+(dd===tm)+'" onclick="draft.date=\''+tm+'\';render()">Tomorrow · '+fmtDate(tm)+'</button></div></div>'+
     (blocked?'<p class="notice" style="margin-top:12px">'+blocked+'</p>':'')+(clash?'<p class="notice" style="margin-top:12px">'+relDate(dd)+' already has a menu. Edit that one instead.</p>':'')+
     '<div class="section"><h2>Dishes<span class="aside num">'+chosen.length+' picked'+(chosen.length?' · <button class="btn text" style="height:auto;padding:0;font-size:inherit" onclick="untickAll()">Untick all</button>':'')+'</span></h2><p class="sub" style="margin:-4px 0 8px">A dish with no price gets it for good when you type one here. Changing an existing price here is for this day only.</p>'+'<input type="search" class="search" placeholder="Search dishes" aria-label="Search dishes" oninput="filterDishes(this.value)">'+groups+
-      '<button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'lunch\',true)">New dish</button></div>'+
+      '<button class="btn secondary block" onclick="newItemSheet(\'lunch\',true)">New dish</button></div>'+
     '<div class="section"><h2>Combos<span class="aside">set fresh each day</span></h2><p class="sub" style="margin:-4px 0 0">The customer pays the combo price. The kitchen only sees the dishes.</p>'+combos+
-      '<button class="btn secondary block" style="margin-top:12px" onclick="draft.combos.push({id:uid(),name:\'Combo \'+(draft.combos.length+1),price:null,dishes:[]});render()">Add a combo</button></div>'+
+      '<button class="btn secondary block" onclick="draft.combos.push({id:uid(),name:\'Combo \'+(draft.combos.length+1),price:null,dishes:[]});render()">Add a combo</button></div>'+
     (ev?'<div class="section"><button class="btn danger" onclick="clearLunch(\''+ev.id+'\')">Clear '+relLower(ev.date)+'\'s menu</button><p class="hint">Removes the menu'+(ev.orders.length?' and its '+plural(ev.orders.length,"order"):'')+'. You can set it again any time.</p></div>':'')+
     '</main>';
   dock('<button class="btn primary" '+(blocked||clash||!chosen.length?'disabled':'')+' onclick="saveLunch()">'+(ev?"Save menu":"Save menu · "+plural(chosen.length,"dish","dishes"))+'</button>');
@@ -1086,7 +1103,7 @@ function viewBatterSetup(q){
       return '<div class="pick" style="flex-wrap:wrap"><label class="check grow" style="min-height:0;padding:0"><input type="checkbox" '+(on?'checked':'')+' onchange="bsToggle(\''+it.id+'\',this.checked)"><span class="grow"><span class="nm">'+esc(it.name)+'</span><span class="meta" style="display:block">'+lastPostedText("batter",it)+'</span></span></label>'+
         (on?'<span class="money-in"><input type="number" inputmode="numeric" aria-label="Rate per kg for '+esc(it.name)+'" value="'+(draft.rate[it.id]==null?"":draft.rate[it.id])+'" oninput="draft.rate[\''+it.id+'\']=num(this.value)"></span>':'<span class="val muted num">'+(it.rate==null?"No price":rupee(it.rate)+"/kg")+'</span>')+
         (on&&it.topping!=null?'<div style="width:100%;display:flex;align-items:center;gap:10px;padding:6px 0 0 34px"><span class="small muted grow">Topping, per kilo started</span><span class="money-in"><input type="number" inputmode="numeric" aria-label="Topping price per kilo" value="'+(draft.top[it.id]==null?"":draft.top[it.id])+'" oninput="draft.top[\''+it.id+'\']=num(this.value)"></span></div>':'')+'</div>';
-    }).join("")+'</div><button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'batter\',true)">New batter item</button></div></main>';
+    }).join("")+'</div><button class="btn secondary block" onclick="newItemSheet(\'batter\',true)">New batter item</button></div></main>';
   dock('<button class="btn primary" '+(!chosen.length||!draft.date?'disabled':'')+' onclick="saveBatter()">'+(ev?"Save batch":"Start batch")+'</button>');
   tabbar("home");
 }
@@ -1165,7 +1182,7 @@ function viewDropSetup(q){
       }).join("")+'</div>':'<p class="empty">Pick from the drops list below, or add a one-off.</p>')+'</div>'+
     '<div class="section"><h2>From the drops list</h2><div class="list">'+list.filter(function(i){return !inDrop[i.id];}).map(function(it){
       return '<button class="row" onclick="addDropItem(\''+it.id+'\')"><span class="grow"><span class="t1" style="display:block">'+esc(it.name)+'</span><span class="t2" style="display:block">'+priceDesc(it)+'</span></span><span class="small" style="font-weight:500">Add</span></button>';
-    }).join("")+'</div><button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'drops\',true)">One-off item</button></div></main>';
+    }).join("")+'</div><button class="btn secondary block" onclick="newItemSheet(\'drops\',true)">One-off item</button></div></main>';
   dock('<button class="btn primary" id="dropSave" onclick="saveDrop()">'+(ev?"Save drop":"Start drop")+'</button>');
   dropDockState(); tabbar("home");
 }
@@ -1214,7 +1231,7 @@ function viewCustomSetup(q){
     '<div class="field"><label class="f" for="cdate">Date</label><input type="date" id="cdate" value="'+draft.date+'" onchange="draft.date=this.value"></div>'+
     '<div class="field"><label class="f">Came in on</label><div class="seg" role="group"><button aria-pressed="'+(draft.ch==="dm")+'" onclick="draft.ch=\'dm\';render()">DM</button><button aria-pressed="'+(draft.ch==="group")+'" onclick="draft.ch=\'group\';render()">Group</button></div></div>'+
     '<div class="section"><h2>Their menu</h2><p class="sub" style="margin:-4px 0 0">From the lunch list, at the standing price. Change a line\'s price if you agreed something else.</p>'+'<input type="search" class="search" placeholder="Search dishes" aria-label="Search dishes" oninput="filterDishes(this.value)">'+groups+
-    '<button class="btn secondary block" style="margin-top:12px" onclick="newItemSheet(\'lunch\',false)">New dish</button></div></main>';
+    '<button class="btn secondary block" onclick="newItemSheet(\'lunch\',false)">New dish</button></div></main>';
   dock('<div class="tot num" style="align-self:center;min-width:84px"><span class="small muted" style="display:block">Total</span><b id="csTot" style="font-size:20px">'+rupee(total)+'</b></div><button class="btn primary" id="csSave" onclick="saveCustom()">'+(ev?"Save":"Save order")+'</button>');
   csTotal(); tabbar("home");
 }
@@ -1584,7 +1601,7 @@ function viewCostItem(kind,id,q){
       return '<button aria-pressed="'+(t===tt[0])+'" onclick="setDishTier(\''+id+'\','+tt[0]+')">'+tt[1].replace("Up to 1 vegetable","Up to 1 veg").replace("2 vegetables","2 veg")+'</button>';
     }).join("")+'</div><p class="hint">'+(guessed?"First guess from its price. Change it if the ingredients say otherwise.":t?"":"Pick the tier closest to what goes in, or give it its own recipe.")+'</p></div>'+
     (t?'<div class="section">'+marginCard(per,price,"portions",tr?null:"The "+TIERS[t-1][1].toLowerCase()+" tier has no recipe yet.")+
-      '<div class="btnrow" style="margin-top:8px"><a class="btn text" href="#/costs/tier/'+t+'">'+(tr?"Edit":"Set up")+' the tier recipe</a></div></div>':'')+
+      '<div class="btnrow"><a class="btn text" href="#/costs/tier/'+t+'">'+(tr?"Edit":"Set up")+' the tier recipe</a></div></div>':'')+
     '</main>';
   dock('<button class="btn primary" onclick="ownRecipe(\''+id+'\')">Give it its own recipe</button>');
   tabbar("costs");
@@ -1622,7 +1639,7 @@ function viewRecipe(rid,kind,it){
   if(!isTier&&kind==="lunch"&&rd.isNew) back="#/costs/item/lunch/"+it.id+"?tier=1";
   $app.innerHTML=bar(title,back)+'<main class="page"><p class="sub">'+esc(sub)+'</p>'+
     '<div class="section"><h2>Ingredients</h2><div class="card pad" id="rdLines">'+rdLinesHtml()+'</div>'+
-      '<div class="btnrow" style="margin-top:8px"><button class="btn secondary" onclick="addRecipeLine()">Add ingredient</button></div></div>'+
+      '<div class="btnrow"><button class="btn secondary" onclick="addRecipeLine()">Add ingredient</button></div></div>'+
     '<div class="section"><h2>Makes</h2><div style="display:flex;align-items:center;gap:10px"><input type="number" inputmode="decimal" id="rdMakes" style="width:110px;text-align:right" value="'+(rd.makes==null?"":rd.makes)+'" oninput="rd.makes=num(this.value);rdSum()" aria-label="How much it makes"><span>'+rd.unit+'</span></div>'+
       '<p class="hint">How much this '+(rd.unit==="portions"?"pot":"batch")+' gives you. Cost per '+MAKES_WORD[rd.unit]+' is the total divided by this.</p></div>'+
     '<div class="section"><h2>Cost</h2><div id="rdSum">'+rdSumHtml(kind,it)+'</div></div>'+
@@ -1737,10 +1754,10 @@ function viewMonth(q){
   }).join("");
   var miss=Object.keys(rep.missing).sort(function(a,b){return rep.missing[b]-rep.missing[a];});
   $app.innerHTML=bar("Monthly report","#/costs")+'<main class="page">'+
-    '<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><button class="btn secondary" aria-label="Previous month" onclick="go(\'#/costs/month?m='+addMonths(ym,-1)+'\')">'+I.back+'</button>'+
+    '<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><button class="btn secondary icon" aria-label="Previous month" onclick="go(\'#/costs/month?m='+addMonths(ym,-1)+'\')">'+I.back+'</button>'+
       '<h2 class="title" style="flex:1;text-align:center;font-size:20px">'+monthName(ym)+'</h2>'+
-      '<button class="btn secondary" aria-label="Next month" '+(ym>=thisM?'disabled':'')+' onclick="go(\'#/costs/month?m='+addMonths(ym,1)+'\')"><span style="display:flex;transform:scaleX(-1)">'+I.back+'</span></button></div>'+
-    '<div class="section"><div class="card strip num"><div><div class="lab">Revenue</div><div class="v money">'+rupee(t.rev)+'</div></div><div><div class="lab">Cost</div><div class="v">'+rupee(t.cost)+'</div></div><div><div class="lab">Profit</div><div class="v money" style="color:'+(profit<0?'var(--negative)':'var(--text)')+'">'+rupee(profit)+'</div></div></div>'+
+      '<button class="btn secondary icon" aria-label="Next month" '+(ym>=thisM?'disabled':'')+' onclick="go(\'#/costs/month?m='+addMonths(ym,1)+'\')"><span style="display:flex;transform:scaleX(-1)">'+I.back+'</span></button></div>'+
+    '<div class="section"><div class="card strip num"><div><div class="lab">Revenue</div><div class="v money">'+rupee(t.rev)+'</div></div><div><div class="lab">Cost</div><div class="v">'+rupee(t.cost)+'</div></div><div><div class="lab">Profit</div><div class="v money'+(profit<0?' neg':'')+'">'+rupee(profit)+'</div></div></div>'+
       (t.unc?'<p class="notice" style="margin-top:10px">'+rupee(t.unc)+' of sales are from items with no cost yet, so they\'re left out of profit: '+esc(miss.slice(0,6).join(", "))+(miss.length>6?" and "+(miss.length-6)+" more":"")+'. Cost them to complete the month.</p>':'')+
       '<p class="hint">Revenue is what every order was worth, paid or not. Costs use today\'s ingredient prices and '+overhead()+'% overhead.</p></div>'+
     '<div class="section"><h2>By category</h2>'+(catRows?'<div class="list">'+catRows+'</div>':'<p class="empty">No orders this month.</p>')+'</div></main>';
@@ -1771,7 +1788,7 @@ function viewHistory(q){
         return '<a class="row" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+st.n+' '+(st.n===1?"order":"orders")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="amt num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</div>':'<p class="empty" style="margin-top:10px">Nothing here yet.</p>')+'</div>'+
     '<div class="section"><h2>Data</h2><div class="card pad"><p class="small" id="syncState">'+(SYNC.on?esc(syncText()):"Everything is saved on this phone. Export a backup now and then.")+'</p>'+
       (S.meta.imported?'<p class="small muted" style="margin-top:6px">'+esc(S.meta.imported)+'</p>':'')+
-      '<div class="btnrow" style="margin-top:10px"><button class="btn secondary" onclick="pickFile(\'old\')">Bring in old app data</button><button class="btn secondary" onclick="exportBackup()">Export backup</button><button class="btn text" onclick="pickFile(\'restore\')">Restore a backup</button></div></div></div>'+
+      '<div class="btnrow"><button class="btn secondary" onclick="pickFile(\'old\')">Bring in old app data</button><button class="btn secondary" onclick="exportBackup()">Export backup</button><button class="btn text" onclick="pickFile(\'restore\')">Restore a backup</button></div></div></div>'+
     '<div class="foot signoff">'+SS_MARK+'<span>South Savory · '+BUILD+'</span></div></main>';
   tabbar("history");
 }
