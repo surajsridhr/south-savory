@@ -3,43 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f4f3f1" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F6EEDB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11301F" media="(prefers-color-scheme: dark)">
 <title>South Savory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23143825'/%3E%3Ctext x='32' y='41' font-family='Georgia,serif' font-size='26' font-weight='700' text-anchor='middle' fill='%23F6EEDB'%3ESS%3C/text%3E%3Ccircle cx='46' cy='20' r='3.5' fill='%23EF6922'/%3E%3C/svg%3E">
 <style>
-/* Achromatic ledger (taste-skill app sheet, seed 549999267), with one face from the brief:
-   a stone ground from the kitchen's own world instead of #f8f8f8. Chrome is ink; the one
-   hue (#1d5fbf) marks the counts the kitchen cooks against. */
 :root{
-  --ground:#f4f3f1; --surface:#ffffff; --raised:#eeeeee; --active:#e9e8e5;
-  --border:#e6e6e6; --rule:#f0f0f0; --control:#d4d4d4;
-  --text:#0a0a0a; --muted:#5f5f5f;
-  --primary:#141414; --on-primary:#ffffff;
-  --hue:#1d5fbf;
-  --positive:#2e7d32; --pill-positive-bg:#dcfae5; --pill-positive-ink:#04250e;
-  --pill-warning-bg:#fffbeb; --pill-warning-ink:#92400e;
-  --pill-neutral-bg:#eeeeee; --pill-neutral-ink:#3d3d3d;
-  --negative:#c4242a;
-  --radius-card:8px; --radius-control:6px;
-  --gap:12px; --pad:16px;
-  --font:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-  --fs-title:24px; --fs-section:16px; --fs-kpi:30px; --fs-body:15px; --fs-small:13px;
-  --bar:52px; --tabbar:56px;
+  /* South Savory brand essentials v2.0: forest green leads, orange punctuates, rice cream is
+     the ground. Surfaces are skeuomorphic, built from the packaging (see the layer below). */
+  --ground:#F6EEDB; --surface:#F6EEDB; --raised:#EFE5CD; --active:#EAE0C6;
+  --border:rgba(20,56,37,.10); --rule:rgba(20,56,37,.08); --control:#CDBF9E;
+  --text:#143825; --muted:#4E5E4C;
+  --primary:#143825; --on-primary:#FFFCF5;
+  --hue:#A84C32; --ember:#EF6922; --sage:#A8B39B;
+  --positive:#2F6B45; --pill-positive-bg:#DCE3D1; --pill-positive-ink:#143825;
+  --pill-warning-bg:#F9DCC7; --pill-warning-ink:#7A2E14;
+  --pill-neutral-bg:#EAE0C6; --pill-neutral-ink:#143825;
+  --negative:#A2301C;
+  --radius-card:20px; --radius-control:14px;
+  --gap:16px; --pad:18px;
+  --font:"Work Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --serif:"Lora",Georgia,serif;
+  --fs-title:26px; --fs-section:18px; --fs-kpi:30px; --fs-body:15px; --fs-small:13px;
+  --bar:56px; --tabbar:64px;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --ground:#0b0b0b; --surface:#161616; --raised:#222222; --active:#262626;
-    --border:#262626; --rule:#1e1e1e; --control:#444444;
-    --text:#f5f5f5; --muted:#b4b4b4;
-    --primary:#f5f5f5; --on-primary:#0b0b0b;
-    --hue:#6ea1ff;
-    --positive:#3fc07a; --pill-positive-bg:#172a1d; --pill-positive-ink:#7fdca5;
-    --pill-warning-bg:#2d2210; --pill-warning-ink:#f2b866;
-    --pill-neutral-bg:#262626; --pill-neutral-ink:#d0d0d0;
-    --negative:#ff6b6b;
+    --ground:#11301F; --surface:#11301F; --raised:#0E2919; --active:#16392A;
+    --border:rgba(246,238,219,.10); --rule:rgba(246,238,219,.08); --control:#2E5440;
+    --text:#FFFCF5; --muted:#BFC8B4;
+    --primary:#F6EEDB; --on-primary:#143825;
+    --hue:#F58A4F;
+    --positive:#9BCB9F; --pill-positive-bg:#22472F; --pill-positive-ink:#CFE0C4;
+    --pill-warning-bg:#4A2A17; --pill-warning-ink:#F7B48C;
+    --pill-neutral-bg:#183D2A; --pill-neutral-ink:#E6E0CF;
+    --negative:#FF8A70;
     color-scheme:dark;
   }
 }
@@ -64,7 +65,6 @@ a{color:inherit;text-decoration:none}
 .bar .act{height:44px;padding:0 10px;font-size:15px;color:var(--text);display:flex;align-items:center}
 .wordmark{display:flex;align-items:center;gap:10px;padding:0 8px;flex:1}
 .wordmark h1{padding:0;font-size:17px}
-.mark{width:28px;height:28px;flex:none}
 
 .page{padding:4px var(--pad) 24px}
 .title{font-size:var(--fs-title);font-weight:500;letter-spacing:-0.01em;line-height:1.2}
@@ -257,6 +257,157 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 .filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:0 calc(-1 * var(--pad));padding:0 var(--pad)}
 .filters .chip[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .foot{margin-top:40px;color:var(--muted);font-size:12px;text-align:center}
+
+/* ---------- skeuomorphic surfaces, from the packaging ----------
+   Brand essentials p.7: "Bring the packaging detail forward." The app is built from the
+   pack's own materials: cream label panels framed in a fine terracotta rule (the Ragi Malt
+   label), matte forest-green pouch stock carrying the kolam lattice light at its edges,
+   the terracotta band with a cream kolam border at the foot of each pack, glossy green jar
+   lids for the main action, terracotta clay for what is owed, sage cloth for what is settled.
+   Quiet field, visible border. The logo stays flat: no shadow on the mark. */
+:root{
+  --label:#FFFCF5; --label-rule:rgba(168,76,50,.55); --label-edge:#E4D6B6; --sh:70,45,20;
+  --pouch-a:#1D4A32; --pouch-b:#143825; --pouch-ink:#F6EEDB;
+  --lid-a:#2C6646; --lid-b:#143825; --lid-edge:#0B2216;
+  --clay-a:#B85A3D; --clay-b:#A84C32; --clay-edge:#7E3622;
+  --cloth:#DCE3D1; --cloth-edge:#A8B39B;
+  --well:#EDE3CB; --field-edge:#CDBF9E;
+  /* kolam: pulli dots inside interlaced loops, and the pack's dotted diamond border */
+  --kolam:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.1'%3E%3Ccircle r='14'/%3E%3Ccircle cx='28' r='14'/%3E%3Ccircle cy='28' r='14'/%3E%3Ccircle cx='28' cy='28' r='14'/%3E%3C/g%3E%3Ccircle cx='14' cy='14' r='1.8'/%3E%3C/svg%3E");
+  --kolam-border:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10'%3E%3Cpath d='M0 5 4 1 8 5 4 9Z M8 5 12 1 16 5 12 9Z' fill='none' stroke='%23000' stroke-width='1'/%3E%3Ccircle cx='4' cy='5' r='1.3'/%3E%3Ccircle cx='12' cy='5' r='1.3'/%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --label:#1A4230; --label-rule:rgba(246,238,219,.28); --label-edge:#0A2215; --sh:0,0,0;
+    --pouch-a:#0F2C1D; --pouch-b:#0A2215;
+    --lid-a:#FFFCF5; --lid-b:#E6D9B8; --lid-edge:#B3A27A;
+    --cloth:#22472F; --cloth-edge:#3C6A4E;
+    --well:#0C2618; --field-edge:#2E5440;
+  }
+}
+body{background:var(--ground)}
+h1,h2,.title{font-family:var(--serif)}
+.bar{background:var(--ground);box-shadow:0 1px 0 var(--label-edge)}
+.bar h1{font-family:var(--serif);font-size:19px;font-weight:600}
+.title{font-weight:700;letter-spacing:-.015em}
+.section{margin-top:30px}
+.section > h2,.h2{font-size:var(--fs-section);font-weight:600;margin-bottom:12px}
+.h2 .aside,.section > h2 .aside{font-family:var(--font)}
+
+/* label panels: warm-white stock, an inset terracotta rule, printed and applied to the cream */
+.card,.list,.tile,.owedrow{background:var(--label);border:1px solid var(--label-edge);border-radius:12px;
+  box-shadow:inset 0 0 0 4px var(--label),inset 0 0 0 5px var(--label-rule),0 1px 1px rgba(var(--sh),.12),0 8px 18px -10px rgba(var(--sh),.35)}
+.card + .card{margin-top:18px}
+.row + .row,.order + .order,.pick + .pick{border-top:1px solid color-mix(in srgb,var(--sage) 50%,transparent)}
+.row,.order,.pick{margin:0 5px;width:calc(100% - 10px)}
+button.row:hover,a.row:hover{background:color-mix(in srgb,var(--well) 60%,transparent)}
+button.row:active,a.row:active{background:var(--well)}
+
+/* home tiles: label panels with the pack's terracotta foot band and its cream kolam border */
+.tiles{gap:16px;margin-top:18px}
+.tile{position:relative;overflow:hidden;padding:16px 16px 30px;transition:transform .15s ease,box-shadow .15s ease}
+.tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:14px;
+  background:linear-gradient(var(--clay-a),var(--clay-b))}
+.tile::before{content:"";position:absolute;left:0;right:0;bottom:2px;height:10px;z-index:1;background:#F6EEDB;opacity:.75;
+  -webkit-mask:var(--kolam-border) repeat-x center/16px 10px;mask:var(--kolam-border) repeat-x center/16px 10px}
+.tile:hover{border-color:var(--label-edge)}
+.tile:active{transform:translateY(1px);box-shadow:inset 0 0 0 4px var(--label),inset 0 0 0 5px var(--label-rule),0 1px 1px rgba(var(--sh),.2)}
+.tile .name{font-family:var(--serif);font-size:18px;font-weight:600}
+.tile .fig{font-size:24px;font-weight:600}
+.owedrow .big{font-weight:600}
+.empty{background:transparent;border:1px dashed var(--label-rule);border-radius:12px}
+
+/* the day's totals on pouch stock: matte forest with the kolam lattice light at the field */
+.strip{position:relative;overflow:hidden;border-radius:12px;border:0;color:var(--pouch-ink);
+  background:linear-gradient(160deg,var(--pouch-a),var(--pouch-b));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 1px 1px rgba(var(--sh),.2),0 10px 20px -10px rgba(var(--sh),.5)}
+.strip::before{content:"";position:absolute;inset:0;background:#F6EEDB;opacity:.07;pointer-events:none;
+  -webkit-mask:var(--kolam) repeat 0 0/28px 28px;mask:var(--kolam) repeat 0 0/28px 28px}
+.strip > div{position:relative}
+.strip .lab{color:color-mix(in srgb,var(--pouch-ink) 78%,transparent)}
+.strip .v{color:var(--pouch-ink)}
+.strip .v.money{font-weight:600}
+.strip > div + div{border-left-color:rgba(246,238,219,.16)}
+.strip.four > div:nth-child(n+3){border-top-color:rgba(246,238,219,.16)}
+.count .ci{border-top-color:color-mix(in srgb,var(--sage) 50%,transparent)}
+.count .cv{font-weight:600;font-size:19px}
+.row .amt,.sheet .sf .tot b{font-weight:600}
+
+/* the main action is the green jar lid: glossy, with the knurled edge underneath */
+.btn{border-radius:12px;transition:transform .08s ease,box-shadow .08s ease}
+.btn.primary{color:var(--on-primary);border:1px solid var(--lid-edge);
+  background:linear-gradient(rgba(255,255,255,.16),rgba(255,255,255,0) 45%),linear-gradient(var(--lid-a),var(--lid-b));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 0 var(--lid-edge),0 6px 10px -4px rgba(var(--sh),.4)}
+.btn.primary:active{transform:translateY(3px);box-shadow:inset 0 2px 4px rgba(0,0,0,.3),0 0 0 var(--lid-edge)}
+/* the rest are label stock, edged like the panels */
+.btn.secondary,.chip,.step{background:var(--label);border:1px solid var(--field-edge);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 0 var(--field-edge),0 3px 6px -3px rgba(var(--sh),.3)}
+.btn.secondary:active,.chip:active{transform:translateY(2px);box-shadow:inset 0 2px 3px rgba(var(--sh),.18),0 0 0 var(--field-edge)}
+.btn.primary[disabled]{background:var(--well);color:var(--muted);border-color:var(--label-edge);box-shadow:inset 0 2px 3px rgba(var(--sh),.15);opacity:1}
+.btn.text{text-decoration-color:var(--hue)}
+.chip{transition:transform .08s ease}
+.chip.on-del{background:var(--well);border-color:var(--field-edge);box-shadow:inset 0 2px 3px rgba(var(--sh),.18)}
+/* settled: sage cloth. Owed: terracotta clay, cream on terracotta is 4.85:1 */
+.chip.paid{background:var(--cloth);border-color:var(--cloth-edge);color:var(--pill-positive-ink);
+  box-shadow:inset 0 2px 3px rgba(var(--sh),.14)}
+.chip.unpaid,.chip.change{color:#FFFCF5;border-color:var(--clay-edge);
+  background:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,0) 50%),linear-gradient(var(--clay-a),var(--clay-b));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 0 var(--clay-edge),0 3px 6px -3px rgba(var(--sh),.35)}
+.filters{padding-top:8px;padding-bottom:10px}
+.filters .chip[aria-pressed="true"]{color:var(--on-primary);border-color:var(--lid-edge);background:linear-gradient(var(--lid-a),var(--lid-b));
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.3);transform:translateY(2px)}
+.pill{border-radius:4px}
+
+/* recessed: the day switch, fields, tick boxes */
+.seg{background:var(--well);border-radius:12px;padding:4px;gap:4px;box-shadow:inset 0 2px 4px rgba(var(--sh),.2)}
+.seg button{border-radius:9px;height:38px}
+.seg button[aria-pressed="true"]{background:var(--label);color:var(--text);
+  box-shadow:inset 0 0 0 3px var(--label),inset 0 0 0 4px var(--label-rule),0 2px 4px rgba(var(--sh),.25)}
+input[type=text],input[type=number],input[type=date],input[type=search],select,textarea{
+  background:var(--label);border:1px solid var(--field-edge);border-radius:8px;box-shadow:inset 0 2px 3px rgba(var(--sh),.14)}
+input:focus{outline:2px solid var(--text);outline-offset:1px}
+.money-in input{height:40px}
+.check input,input[type=checkbox]{-webkit-appearance:none;appearance:none;width:24px;height:24px;flex:none;border-radius:6px;
+  background:var(--label);border:1px solid var(--field-edge);box-shadow:inset 0 2px 3px rgba(var(--sh),.18);
+  display:inline-grid;place-content:center;cursor:pointer}
+input[type=checkbox]::after{content:"";width:11px;height:6px;border:solid var(--on-primary);border-width:0 0 2.4px 2.4px;transform:rotate(-45deg) translate(1px,-1px);opacity:0}
+input[type=checkbox]:checked{border-color:var(--lid-edge);background:linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,0) 50%),linear-gradient(var(--lid-a),var(--lid-b));
+  box-shadow:0 1px 2px rgba(var(--sh),.3)}
+input[type=checkbox]:checked::after{opacity:1}
+input[type=checkbox]:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.step{border-radius:999px}
+.step button[disabled]{color:var(--control)}
+.notice{border-radius:12px;box-shadow:inset 0 0 0 4px var(--pill-warning-bg),inset 0 0 0 5px var(--label-rule)}
+.notice.neutral{background:var(--label);box-shadow:inset 0 0 0 4px var(--label),inset 0 0 0 5px var(--label-rule)}
+
+/* the tab bar is the pouch: forest stock, a visible cream kolam border along its top edge */
+.dock{background:linear-gradient(to top,var(--ground) 80%,transparent);padding-top:14px}
+.tabbar{border-top:0;background:linear-gradient(var(--pouch-a),var(--pouch-b));box-shadow:0 -4px 12px rgba(var(--sh),.25)}
+.tabbar::before{content:"";position:absolute;left:0;right:0;top:4px;height:10px;background:#F6EEDB;opacity:.5;
+  -webkit-mask:var(--kolam-border) repeat-x center/16px 10px;mask:var(--kolam-border) repeat-x center/16px 10px}
+.tabbar .in{padding:16px 12px 4px;gap:10px}
+.tabbar a{color:rgba(246,238,219,.72);border-radius:12px;margin:2px 0}
+.tabbar a[aria-current="page"]{color:#FFFCF5;background:rgba(0,0,0,.22);box-shadow:inset 0 2px 4px rgba(0,0,0,.35)}
+.tabbar a[aria-current="page"]::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--ember);margin-top:1px}
+.tabbar .badge{background:var(--clay-b);color:#FFFCF5;font-weight:600}
+
+.sheet{background:var(--ground);border-radius:16px 16px 0 0;box-shadow:0 -1px 0 var(--label-edge),0 -12px 30px rgba(var(--sh),.3)}
+.sheet .grab{background:var(--label-rule)}
+.sheet .sf{border-top:1px solid var(--label-edge);background:var(--ground)}
+.toast{border-radius:12px;border:1px solid var(--lid-edge);background:linear-gradient(var(--lid-a),var(--lid-b))}
+.leftline b{font-weight:600}
+:focus-visible{outline:2px solid var(--text);outline-offset:3px;border-radius:8px}
+/* the brand signature on Home: the supplied wordmark, never retyped */
+.brandhead{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) var(--pad) 6px}
+.sswordmark{width:220px;height:auto;color:var(--text);display:block}
+.ssmark{width:40px;height:auto;color:var(--text);flex:none}
+.signoff{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:48px}
+.signoff .ssmark{width:48px}
+.dateline{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:var(--fs-small)}
+.dateline::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ember)}
+@media (prefers-contrast: more){
+  .card,.list,.tile,.chip,.btn.secondary,.step,.seg,input,select,textarea,.empty{outline:1px solid var(--text);outline-offset:-1px}
+}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -269,7 +420,7 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 <input type="file" id="fileIn" accept="application/json,.json" hidden>
 <script>
 "use strict";
-var BUILD="v2.3 — clear a lunch menu · 2026-10-28";
+var BUILD="v2.5 — packaging style · 2026-10-28";
 var KEY="southsavory.v2";
 /* Starting menu lists, pulled from the old app (south-savory-tally.html):
    lunch dishes from its SEED list; prices only where the old app had his own figure
@@ -600,8 +751,10 @@ var I={
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   calc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h3.5"/></svg>'
 };
-/* the mark: a lidded tiffin seen from the side, drawn from the kitchen's own object */
-var MARK='<svg class="mark" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="var(--primary)"/><path d="M9 9.5h10M10 12h8v3.2h-8zM10 16.6h8v3.6a1.4 1.4 0 0 1-1.4 1.4h-5.2A1.4 1.4 0 0 1 10 20.2z" fill="none" stroke="var(--on-primary)" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 9.5V7.6h4v1.9" fill="none" stroke="var(--on-primary)" stroke-width="1.5"/></svg>';
+/* brand artwork from SS1.ai, as supplied outlines: the SS mark (counters cut out so the ground
+   shows through) and the script wordmark. Colour comes from currentColor; the dots stay ember. */
+var SS_MARK='<svg class="ssmark" viewBox="404 252 167 116" aria-hidden="true"><defs><mask id="ssHoles" maskUnits="userSpaceOnUse" x="404" y="252" width="167" height="116"><rect x="404" y="252" width="167" height="116" fill="#fff"/><path d="M 462.21 350.29 C 455.37 353.08 446.88 353.17 441.01 348.82 C 437.71 346.36 436.80 342.46 438.64 338.77 C 439.82 336.41 441.54 334.48 443.50 332.62 C 447.02 329.46 450.80 326.77 455.03 324.61 L 462.37 320.86 C 467.53 325.40 472.02 333.29 470.83 340.04 C 470.02 344.61 466.41 348.57 462.21 350.29 " fill="#000"/><path d="M 532.99 351.23 C 527.94 352.75 522.87 352.61 518.13 350.55 C 513.17 348.40 510.48 344.07 512.83 339.05 C 514.00 336.53 515.90 334.64 517.92 332.72 C 520.63 330.26 523.57 328.22 526.73 326.35 L 535.73 321.71 C 539.64 325.5 543.24 330.52 544.19 335.92 C 545.46 343.72 540.35 349.03 532.99 351.23 " fill="#000"/><path d="M 442.63 288.32 C 438.76 284.73 436.24 279.15 438.85 274.50 C 440.41 271.73 442.68 269.78 445.44 268.21 C 450.05 265.58 456.79 263.55 461.91 264.58 C 462.89 264.77 463.80 265.40 464.14 266.08 C 464.55 266.93 464.59 268.13 464.12 269.01 C 460.39 276.16 450.21 284.23 442.63 288.32 " fill="#000"/><path d="M 533.53 273.82 C 528.37 279.49 522.16 284.69 515.30 288.29 C 511.87 284.91 509.57 280.16 511.17 275.60 C 512.31 272.34 515.48 269.68 518.51 267.98 C 521.30 266.42 524.29 265.51 527.40 264.79 C 530.61 264.04 536.26 263.71 537.15 266.39 C 537.50 267.46 537.19 268.83 536.53 269.74 Z M 533.53 273.82 " fill="#000"/></mask></defs><path d="M 532.99 351.23 C 540.35 349.03 545.46 343.72 544.19 335.92 C 543.24 330.52 539.64 325.5 535.73 321.71 L 526.73 326.35 C 523.57 328.22 520.63 330.26 517.92 332.72 C 515.90 334.64 514.00 336.53 512.83 339.05 C 510.48 344.07 513.17 348.40 518.13 350.55 C 522.87 352.61 527.94 352.75 532.99 351.23 M 462.21 350.29 C 466.41 348.57 470.02 344.61 470.83 340.04 C 472.02 333.30 467.53 325.40 462.37 320.86 L 455.03 324.61 C 450.80 326.77 447.02 329.46 443.50 332.62 C 441.54 334.48 439.82 336.41 438.64 338.77 C 436.80 342.46 437.71 346.36 441.01 348.82 C 446.88 353.17 455.37 353.08 462.21 350.29 M 533.53 273.82 L 536.53 269.74 C 537.19 268.83 537.50 267.46 537.15 266.39 C 536.26 263.71 530.61 264.04 527.40 264.79 C 524.29 265.51 521.30 266.42 518.51 267.98 C 515.48 269.68 512.31 272.34 511.17 275.60 C 509.57 280.16 511.87 284.91 515.30 288.29 C 522.16 284.69 528.37 279.49 533.53 273.82 M 442.63 288.32 C 450.21 284.23 460.39 276.16 464.12 269.01 C 464.59 268.13 464.55 266.93 464.14 266.08 C 463.80 265.40 462.89 264.77 461.91 264.58 C 456.79 263.55 450.05 265.58 445.44 268.21 C 442.68 269.78 440.41 271.73 438.85 274.50 C 436.24 279.15 438.76 284.73 442.63 288.32 M 531.31 364.28 C 522.78 364.90 514.23 363.46 507.52 358.06 C 501.63 353.31 498.64 346.05 501.28 338.74 C 502.45 335.50 504.49 332.71 506.88 330.24 C 512.79 324.14 518.64 320.89 525.81 316.91 L 528.46 315.44 L 522.06 310.60 L 514.5 304.66 L 509.63 300.57 L 501.00 304.82 L 476.23 315.66 L 481.18 321.73 C 483.80 325.43 485.81 329.36 486.79 333.81 C 489.32 345.01 482.48 354.94 472.70 359.97 C 467.58 362.60 462.14 364.01 456.39 364.33 L 450.88 364.34 C 445.12 364.00 439.61 362.50 434.71 359.45 C 427.23 354.79 422.94 346.48 426.50 338.11 L 428.51 334.32 C 434.30 325.73 445.54 319.16 455.05 314.69 L 451.46 312.06 C 446.42 308.35 441.56 304.65 436.76 300.41 L 424.73 307.84 C 421.55 309.81 418.80 312.10 415.88 314.37 C 413.97 315.80 411.52 315.91 409.76 314.51 C 407.94 313.07 407.41 310.48 408.60 308.29 C 410.53 304.75 417.86 301.26 421.98 299.05 L 430.42 294.54 C 424.71 288.76 421.97 282.5 424.60 274.63 C 426.43 269.81 430.09 265.83 434.37 262.89 C 441.75 257.82 450.66 255.21 459.66 255.39 C 465.02 255.49 471.41 257.19 473.78 262.09 C 476.37 267.5 472.44 274.15 468.45 278.06 L 463.90 282.51 C 459.16 286.67 454.14 290.36 448.86 293.81 L 451.90 296.07 C 457.73 300.42 463.57 304.64 469.35 309.41 C 480.77 304.73 492.00 299.87 503.14 294.41 C 501.33 292.48 499.93 290.66 498.75 288.55 C 496.13 283.64 495.95 278.05 498.36 273.01 C 499.89 269.86 502.00 267.26 504.73 264.97 C 511.13 259.63 519.09 256.58 527.38 255.61 C 532.64 255.00 539.41 255.43 543.63 258.42 C 547.04 260.83 548.33 264.89 547.06 268.83 C 544.10 277.94 529.88 288.34 521.59 293.84 L 525.33 296.72 L 528.00 298.66 L 542.36 309.99 L 560.03 300.57 C 561.98 299.53 564.14 299.61 565.89 300.71 C 567.17 301.65 567.74 303.05 567.70 304.56 C 567.66 306.04 566.92 307.55 565.46 308.27 L 561.15 310.41 L 548.90 316.08 L 551.92 319.49 L 554.93 323.36 C 557.19 326.28 558.66 329.54 559.80 333.07 C 561.80 339.22 560.84 345.64 557.21 351.01 C 551.48 359.48 541.39 363.55 531.31 364.28 " fill="currentColor" mask="url(#ssHoles)"/><path d="M 482.16 283.10 C 485.89 282.83 488.85 285.57 489.09 288.99 C 489.35 292.66 486.75 295.78 483.11 296.01 C 479.64 296.24 476.44 293.68 476.18 290.14 C 475.92 286.64 478.35 283.39 482.16 283.10 " fill="#EF6922"/><path d="M 504.42 316.51 C 505.84 319.73 504.77 323.19 502.00 324.88 C 499.06 326.66 495.39 325.92 493.36 323.16 C 491.39 320.5 491.83 316.70 494.43 314.42 C 495.97 313.08 498.02 312.56 500.19 313.08 C 501.82 313.48 503.58 314.61 504.42 316.51 " fill="#EF6922"/></svg>';
+var SS_WORD='<svg class="sswordmark" viewBox="250 381 488 113" role="img" aria-label="South Savory"><defs><g><g id="ssg0"><path d="M 40.78 -51.20 C 41.51 -48.15 44.04 -47.82 46.78 -47.82 C 48.25 -47.82 51.20 -47.93 52.89 -48.25 C 54.68 -49.51 61.10 -57.10 61.10 -61.73 C 61.10 -66.90 52.78 -74.70 41.29 -74.70 C 25.39 -74.70 12.01 -59.95 12.01 -47.51 C 12.01 -37.29 20.96 -35.18 29.07 -33.40 C 32.98 -32.45 40.03 -30.87 40.03 -22.75 C 40.03 -13.48 30.96 -6.21 20.65 -6.21 C 14.01 -6.21 11.59 -9.37 11.59 -12.21 C 11.59 -18.54 22.43 -20.65 30.54 -20.23 C 30.03 -25.39 26.23 -27.07 21.07 -27.07 C 9.59 -27.07 1.57 -19.17 1.57 -12.85 C 1.57 -6.32 10.10 1.89 24.65 1.89 C 40.87 1.89 53.51 -8.64 53.51 -21.92 C 53.51 -30.12 48.67 -36.03 41.82 -38.98 C 34.87 -41.82 26.54 -41.71 26.54 -49.31 C 26.54 -58.79 39.51 -66.26 44.89 -66.26 C 46.89 -66.26 48.25 -65.21 48.25 -63.75 C 48.25 -60.26 40.67 -54.35 40.78 -51.20 Z M 40.78 -51.20 "/></g><g id="ssg1"><path d="M 21.70 -36.45 C 25.07 -36.45 26.96 -34.14 26.96 -31.71 C 26.65 -31.81 26.03 -32.03 25.07 -32.03 C 21.70 -32.03 20.01 -27.81 20.01 -24.54 C 20.01 -21.28 21.5 -18.75 22.96 -16.85 C 21.92 -12.64 16.75 -7.48 13.06 -7.48 C 9.48 -7.48 8.84 -10.32 8.84 -14.75 C 8.84 -24.43 15.48 -36.45 21.70 -36.45 Z M 39.29 -15.06 C 36.87 -15.06 33.5 -15.70 32.23 -17.06 C 34.76 -21.07 35.60 -27.60 35.60 -32.14 C 35.60 -39.29 28.87 -44.98 21.70 -44.98 C 7.68 -44.98 -1.79 -26.54 -1.79 -14.64 C -1.79 -7.37 3.79 1.26 13.59 1.26 C 21.81 1.26 25.5 -4.42 29.29 -9.59 C 30.65 -8 34.23 -7.57 36.98 -7.57 C 37.60 -7.57 38.34 -7.79 38.76 -8.10 C 40.03 -8.84 41.29 -10.85 41.29 -13.17 C 41.29 -13.48 41.09 -15.28 40.45 -15.28 C 40.14 -15.17 39.82 -15.06 39.29 -15.06 Z M 39.29 -15.06 "/></g><g id="ssg2"><path d="M 24.96 0.53 C 33.07 0.53 40.78 -8.53 41.09 -8.95 C 41.51 -9.59 41.71 -10.21 41.71 -11.17 C 41.71 -12.43 41.09 -13.79 40.03 -14.01 C 38.67 -13.28 33.5 -9.48 30.34 -9.48 C 29.29 -9.48 28.23 -10.32 28.23 -11.37 C 28.23 -19.48 40.67 -39.29 40.67 -41.09 C 40.67 -43.20 38.25 -43.40 36.14 -43.40 C 33.07 -43.40 30.12 -43.09 29.07 -42.78 C 20.54 -20.75 14.96 -9.06 10.10 -9.06 C 8.84 -9.06 7.79 -10.01 7.79 -11.48 C 7.68 -16.96 20.65 -39.18 20.65 -40.56 C 20.65 -42.78 18.32 -42.87 16.12 -42.87 C 13.06 -42.87 10.21 -42.56 9.06 -42.25 C 4.21 -27.81 -2.53 -18.32 -2.53 -9.06 C -2.53 -3.68 2.21 0.84 5.26 0.84 C 10.43 0.84 15.37 -5.57 17.70 -9.37 C 18.01 -5.15 20.96 0.53 24.96 0.53 Z M 24.96 0.53 "/></g><g id="ssg3"><path d="M 8.75 -34.03 C 3.06 -22.12 -1.89 -10.95 -1.89 -7.48 C -1.89 -3.89 2 1.89 7.37 1.89 C 17.90 1.89 27.28 -7.57 28.23 -8.84 C 28.76 -9.48 28.96 -10.21 28.96 -11.17 C 28.96 -12.43 28.34 -13.79 27.28 -14.01 C 25.92 -13.28 18.54 -8.42 15.06 -8.42 C 11.17 -8.42 10.64 -9.68 10.64 -11.17 C 10.64 -15.70 14.96 -25.39 20.12 -35.29 C 24.23 -35.82 28.34 -36.45 30.34 -36.76 C 30.76 -37.51 31.39 -39.82 31.39 -41.09 C 31.39 -42.35 29.60 -43.09 26.34 -43.09 C 25.81 -43.09 25.07 -43.09 24.43 -43.09 C 30.76 -54.46 36.76 -64.57 36.76 -65.10 C 36.76 -66.90 35.40 -67.84 32.98 -67.84 C 30.54 -67.84 27.28 -67.21 25.28 -67.10 C 23.17 -62.48 18.12 -52.57 12.85 -42.25 C 10.01 -41.93 7.48 -41.82 5.90 -41.71 C 5.15 -40.25 4.42 -38.76 4.42 -36.56 C 4.42 -34.87 6.10 -33.92 6.95 -33.92 C 7.48 -33.92 8 -33.92 8.75 -34.03 Z M 8.75 -34.03 "/></g><g id="ssg4"><path d="M 27.18 0 C 34.65 0 42.45 -8.42 42.78 -8.95 C 43.20 -9.68 43.40 -10.85 43.40 -11.28 C 43.40 -12.32 42.78 -13.79 41.71 -14.01 C 40.35 -13.28 35.18 -9.68 31.60 -9.68 C 30.76 -9.68 29.71 -10.32 29.71 -11.90 C 29.71 -19.17 41.29 -34.14 41.29 -37.82 C 41.29 -41.93 36.14 -44.98 33.29 -44.98 C 28.12 -44.98 18.65 -38.03 16.85 -36.67 C 20.65 -46.35 33.92 -69.43 33.92 -71.95 C 33.92 -74.06 31.29 -74.17 29.18 -74.17 C 26.12 -74.17 23.07 -73.96 21.92 -73.54 C 18.32 -65.32 -3.57 -14.12 -3.57 -2.53 C -3.57 -1.46 -2.84 0.42 1.37 0.42 C 2.84 0.42 6.10 0.10 6.75 0 C 11.90 -23.59 19.81 -35.5 25.81 -35.5 C 26.85 -35.5 27.60 -34.98 27.60 -33.92 C 27.60 -31.5 18.43 -16.54 18.43 -9.37 C 18.43 -4.31 22.54 0 27.18 0 Z M 27.18 0 "/></g><g id="ssg5"></g><g id="ssg6"><path d="M 10.32 -11.59 C 10.32 -21.92 19.70 -35.92 24.76 -35.92 C 26.76 -35.92 27.5 -34.23 27.5 -32.87 C 27.5 -26.76 19.90 -7.37 12.64 -7.37 C 11.17 -7.37 10.32 -8.84 10.32 -11.59 Z M 29.92 1.04 C 36.67 1.04 44.98 -7.68 45.71 -8.95 C 46.14 -9.59 46.35 -10.43 46.35 -11.17 C 46.35 -12.43 45.71 -13.79 44.67 -14.01 C 43.29 -13.28 38.87 -9.59 34.76 -9.59 C 33.29 -9.59 32.03 -10.21 32.03 -12.01 C 32.03 -17.90 43.40 -39.71 43.40 -41.09 C 43.40 -42.25 42.78 -43.09 41.82 -43.09 C 33.5 -43.09 33.18 -42.98 32.56 -42.78 L 30.54 -37.40 C 29.5 -41.29 26.65 -44.14 22.75 -44.14 C 12.01 -44.14 -0.53 -27.70 -0.53 -12.75 C -0.53 -1.68 5.15 1.79 9.06 1.79 C 12.64 1.79 19.28 -5.90 20.65 -7.68 C 22.34 -2.53 26.12 1.04 29.92 1.04 Z M 29.92 1.04 "/></g><g id="ssg7"><path d="M 23.70 -16.64 C 25.39 -10.01 31.81 -7.57 35.40 -7.57 C 36.03 -7.57 36.67 -7.79 37.09 -8.10 C 38.34 -8.84 39.51 -11.48 39.51 -13.06 C 39.51 -14.01 39.40 -15.28 38.98 -15.28 C 38.76 -15.17 38.34 -15.06 37.92 -15.06 C 34.14 -15.06 29.39 -16.43 29.39 -20.75 C 29.39 -27.07 38.87 -33.5 38.87 -40.03 C 38.87 -42.14 37.29 -43.20 35.07 -43.20 C 27.39 -43.20 22.23 -33.60 21.59 -24.65 C 20.23 -22.75 14.32 -15.59 10.32 -11.17 C 10.21 -11.79 10.10 -12.21 10.10 -13.48 C 10.10 -18.43 17.90 -35.92 17.90 -39.82 C 17.90 -42.14 15.90 -42.98 14.32 -42.98 C 13.06 -42.98 7.68 -42.87 6.42 -42.78 C 5.15 -35.18 0.31 -13.37 -2.31 -2.95 C -2.31 0.42 4.21 1.04 10.10 1.04 C 11.17 0 19.39 -11.59 23.70 -16.64 Z M 23.70 -16.64 "/></g><g id="ssg8"><path d="M 56.46 0.62 C 64.57 0.62 74.39 -8.10 75.01 -8.95 C 75.54 -9.68 75.64 -10.53 75.64 -11.17 C 75.64 -12.43 75.12 -13.79 73.96 -14.01 C 72.59 -13.28 63.95 -9.59 61.73 -9.59 C 60.57 -9.59 60.26 -10.75 60.26 -12.10 C 60.26 -20.43 75.12 -36.67 75.12 -40.45 C 75.12 -42.78 72.79 -44.25 71.01 -44.25 L 68.06 -44.25 C 66.17 -40.87 64.48 -40.03 61.21 -40.03 C 58.79 -40.03 57 -41.51 57 -43.51 C 57 -45.29 57.95 -45.40 57.95 -47.31 C 57.95 -49.51 56.68 -50.67 54.15 -50.67 C 51 -50.67 44.25 -46.25 44.25 -38.45 C 44.25 -35.60 45.09 -34.23 45.40 -33.60 C 42.45 -24.76 38.25 -17.59 35.60 -17.59 C 34.45 -17.59 33.60 -17.70 32.87 -18.12 C 34.56 -21.81 35.60 -27.92 35.60 -32.14 C 35.60 -39.29 28.87 -44.98 21.70 -44.98 C 7.68 -44.98 -1.79 -26.54 -1.79 -14.64 C -1.79 -7.37 3.79 1.26 13.59 1.26 C 22.34 1.26 25.92 -4.95 29.92 -10.64 C 31.29 -10.21 32.23 -9.79 34.03 -9.79 C 42.14 -9.79 46.89 -19.59 51.20 -31.18 C 52.57 -31.18 57.73 -31.39 59.64 -31.81 C 54.15 -24.43 47.62 -12.43 47.62 -8.42 C 47.62 -4.84 51.31 0.62 56.46 0.62 Z M 21.70 -36.45 C 25.07 -36.45 26.96 -34.14 26.96 -31.71 C 26.65 -31.81 26.03 -32.03 25.07 -32.03 C 21.70 -32.03 20.01 -27.81 20.01 -24.54 C 20.01 -21.28 21.5 -18.75 22.96 -16.85 C 21.92 -12.64 16.75 -7.48 13.06 -7.48 C 9.48 -7.48 8.84 -10.32 8.84 -14.75 C 8.84 -24.43 15.48 -36.45 21.70 -36.45 Z M 21.70 -36.45 "/></g><g id="ssg9"><path d="M 16.64 30.23 C 18.23 22.54 20.43 17.17 23.92 8.75 C 30.45 1.37 41.29 -7.90 42.25 -8.95 C 42.67 -9.48 42.87 -10.21 42.87 -11.17 C 42.87 -12.43 42.25 -14.32 41.20 -14.54 C 39.82 -13.79 31.18 -5.90 28.23 -4.84 C 30.23 -10.95 41.20 -39.93 41.20 -41.60 C 41.20 -43.20 39.40 -44.04 38.03 -44.04 C 35.82 -44.04 31.5 -43.51 30.34 -43.09 C 22.23 -18.43 16.96 -10.75 11.48 -10.75 C 10.21 -10.75 9.68 -11.90 9.68 -13.06 C 9.68 -18.12 21.5 -39.29 21.5 -40.67 C 21.5 -42.14 20.54 -43.09 19.06 -43.09 C 17.48 -43.09 12.10 -42.56 10.43 -42.35 C 5.15 -29.5 -1.15 -17.06 -1.15 -9.06 C -1.15 -2.95 4.21 0.10 5.68 0.10 C 9.59 0.10 17.28 -7.68 20.01 -10.53 C 14.32 7.17 5.48 20.65 5.57 22.85 C 5.79 26.12 11.48 29.07 16.64 30.23 Z M 16.64 30.23 "/></g></g></defs><g fill="currentColor"><use href="#ssg0" x="252.48" y="460.07"/><use href="#ssg1" x="311.49" y="460.07"/><use href="#ssg2" x="350.26" y="460.07"/><use href="#ssg3" x="390.3" y="460.07"/><use href="#ssg4" x="417.69" y="460.07"/><use href="#ssg5" x="459.41" y="460.07"/><use href="#ssg0" x="475.85" y="460.07"/><use href="#ssg6" x="533.8" y="460.07"/><use href="#ssg7" x="578.58" y="460.07"/><use href="#ssg8" x="615.77" y="460.07"/><use href="#ssg9" x="689.74" y="460.07"/></g></svg>';
 
 /* ---------- router ---------- */
 /* The app keeps its own current screen, so it works however the file is opened:
@@ -694,8 +847,8 @@ function viewHome(){
       '<span class="fig num">'+(d.quiet?esc(d.quiet):d.fig)+'</span>'+(d.line?'<span class="line num">'+esc(d.line)+'</span>':'')+'</a>';
   }
   var og=owedGroups(), owed=og.reduce(function(a,g){return a+g.total;},0), ch=changeRows();
-  $app.innerHTML='<header class="bar"><div class="wordmark">'+MARK+'<h1>South Savory</h1></div></header>'+
-    '<main class="page">'+saveWarning()+((SYNC.state==="offline"&&Object.keys(SYNC.pending).length)||SYNC.state==="signedout"?'<p class="notice neutral" style="margin:0 0 12px" id="syncState">'+esc(syncText())+'</p>':'')+'<p class="sub" style="margin-top:0">'+fmtDate(t)+(isMonday(t)?" · Monday, kitchen off":"")+'</p>'+
+  $app.innerHTML='<header class="brandhead"><h1 style="margin:0">'+SS_WORD+'</h1></header>'+
+    '<main class="page">'+saveWarning()+((SYNC.state==="offline"&&Object.keys(SYNC.pending).length)||SYNC.state==="signedout"?'<p class="notice neutral" style="margin:0 0 12px" id="syncState">'+esc(syncText())+'</p>':'')+'<p class="dateline">'+fmtDate(t)+(isMonday(t)?" · Monday, kitchen off":"")+'</p>'+
     '<div class="tiles">'+tile("Daily lunch","#/lunch",lunchTile)+tile("Batter","#/batter",bt)+tile("Special drops","#/drops",dt)+tile("Custom orders","#/custom",ct)+'</div>'+
     (og.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Unpaid</span><span class="sub" style="display:block;margin:0">'+og.length+' '+(og.length===1?"person":"people")+' · oldest '+relLower(og[0].oldest)+'</span></span><span class="big num">'+rupee(owed)+'</span>'+I.chev+'</a>':'')+
     (ch.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Change to give</span><span class="sub" style="display:block;margin:0">'+ch.length+' '+(ch.length===1?"person":"people")+'</span></span><span class="big num" style="font-weight:500">'+rupee(ch.reduce(function(a,r){return a+Number(r.o.changeDue);},0))+'</span>'+I.chev+'</a>':'')+
@@ -1619,7 +1772,7 @@ function viewHistory(q){
     '<div class="section"><h2>Data</h2><div class="card pad"><p class="small" id="syncState">'+(SYNC.on?esc(syncText()):"Everything is saved on this phone. Export a backup now and then.")+'</p>'+
       (S.meta.imported?'<p class="small muted" style="margin-top:6px">'+esc(S.meta.imported)+'</p>':'')+
       '<div class="btnrow" style="margin-top:10px"><button class="btn secondary" onclick="pickFile(\'old\')">Bring in old app data</button><button class="btn secondary" onclick="exportBackup()">Export backup</button><button class="btn text" onclick="pickFile(\'restore\')">Restore a backup</button></div></div></div>'+
-    '<p class="foot">'+BUILD+'</p></main>';
+    '<div class="foot signoff">'+SS_MARK+'<span>South Savory · '+BUILD+'</span></div></main>';
   tabbar("history");
 }
 
