@@ -123,6 +123,8 @@ button.row:hover{background:color-mix(in srgb,var(--raised) 45%,transparent)}
 .order .what{font-size:var(--fs-small);color:var(--muted);margin-top:3px;width:100%;text-align:left;display:block}
 .order .ctl{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .order .ctl .chip{height:44px;padding:0 16px;font-size:14px}
+.order .ctl .state{display:inline-flex;align-items:center;gap:6px;height:44px;font-size:14px;color:var(--muted)}
+.order .ctl .state svg{width:16px;height:16px}
 .tag{font-size:12px;color:var(--muted);flex:none}
 
 .chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;
@@ -881,7 +883,7 @@ function fmtKg(kg){ kg=Math.round(kg*100)/100; return kg+" kg"; }
 /* ======================= LUNCH ======================= */
 function viewLunch(q){
   var t=todayKey(), tm=addDays(t,1);
-  var d=q.d||(lunchOn(t)||!lunchOn(tm)?t:tm);
+  var lt=lunchOn(t), d=q.d||(lt&&lt.status!=="done"||!lunchOn(tm)?t:tm);
   var ev=lunchOn(d);
   var seg='';
   if(d===t||d===tm) seg='<div class="seg full" role="group" aria-label="Day" style="margin-top:4px"><button aria-pressed="'+(d===t)+'" onclick="go(\'#/lunch?d='+t+'\')">Today · '+fmtDate(t)+'</button><button aria-pressed="'+(d===tm)+'" onclick="go(\'#/lunch?d='+tm+'\')">Tomorrow · '+fmtDate(tm)+'</button></div>';
@@ -896,10 +898,11 @@ function viewLunch(q){
     }
   } else {
     body=eventBody(ev);
-    dock('<button class="btn secondary" onclick="doneForDay(\''+ev.id+'\')">'+(ev.status==="done"?"Day summary":"Done for the day")+'</button><button class="btn primary" onclick="openOrder(\''+ev.id+'\')">Add order</button>');
+    dock(ev.status==="done"?'<button class="btn secondary" onclick="reopenDay(\''+ev.id+'\')">Reopen day</button>':
+      '<button class="btn secondary" onclick="doneForDay(\''+ev.id+'\')">Done for the day</button><button class="btn primary" onclick="openOrder(\''+ev.id+'\')">Add order</button>');
   }
   $app.innerHTML=bar("Daily lunch","#/",'<a class="act" href="#/menu/lunch">Menu list</a>')+'<main class="page">'+seg+
-    (ev?'<div style="display:flex;align-items:baseline;gap:8px;margin-top:18px"><h2 class="title">'+relDate(d)+'</h2>'+(ev.status==="done"?'<span class="pill">Done for the day</span>':'')+'<a class="btn text" style="margin-left:auto" href="#/lunch/setup?d='+d+'">Edit menu</a></div>':'')+
+    (ev?'<div style="display:flex;align-items:baseline;gap:8px;margin-top:18px"><h2 class="title">'+relDate(d)+'</h2>'+(ev.status==="done"?'<span class="pill">Done for the day</span>':'<a class="btn text" style="margin-left:auto" href="#/lunch/setup?d='+d+'">Edit menu</a>')+'</div>':'')+
     body+(d!==t&&d!==tm?'':'<p class="foot">Past days are in History.</p>')+'</main>';
   tabbar("home");
 }
@@ -963,14 +966,15 @@ function priceDesc(it){
   return rupee(it.rate)+" "+UNIT_LABEL[it.unit]+(it.pair?" · "+rupee(it.pair)+" for 2":"");
 }
 function orderRow(ev,o){
-  var t=orderTotal(ev,o);
-  var del=o.delivered?'<button class="chip on-del" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="true">'+I.check+'Handed over</button>':
+  var t=orderTotal(ev,o), ro=ev.kind==="lunch"&&ev.status==="done";
+  var del=ro?'<span class="state">'+(o.delivered?I.check+"Handed over":"Not handed over")+'</span>':o.delivered?'<button class="chip on-del" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="true">'+I.check+'Handed over</button>':
     '<button class="chip" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="false">'+I.circle+'Hand over</button>';
   var pay=o.untracked?'<span class="pill">Payment not tracked</span>':(o.paid?'<button class="chip paid" onclick="togglePaid(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="true">'+I.check+'Paid</button>':
     '<button class="chip unpaid" onclick="togglePaid(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="false">Unpaid</button>');
   var chg=(Number(o.changeDue)>0&&!o.changeGiven)?'<button class="chip change" onclick="giveChange(\''+ev.id+'\',\''+o.id+'\')">Change due '+rupee(o.changeDue)+'</button>':'';
-  return '<div class="order"><button class="top" onclick="openOrder(\''+ev.id+'\',\''+o.id+'\')"><span class="who">'+esc(o.name||"No name")+'</span><span class="tag">'+(o.ch==="dm"?"DM":"Group")+'</span><span class="amt num">'+rupee(t)+'</span></button>'+
-    '<button class="what" onclick="openOrder(\''+ev.id+'\',\''+o.id+'\')">'+esc(orderWhat(ev,o))+'</button>'+
+  var tag=ro?'div':'button', open=ro?'':' onclick="openOrder(\''+ev.id+'\',\''+o.id+'\')"';
+  return '<div class="order"><'+tag+' class="top"'+open+'><span class="who">'+esc(o.name||"No name")+'</span><span class="tag">'+(o.ch==="dm"?"DM":"Group")+'</span><span class="amt num">'+rupee(t)+'</span></'+tag+'>'+
+    '<'+tag+' class="what"'+open+'>'+esc(orderWhat(ev,o))+'</'+tag+'>'+
     '<div class="ctl">'+del+pay+chg+'</div></div>';
 }
 function findOrder(evId,oId){ var ev=S.events[evId]; if(!ev) return {}; return {ev:ev,o:ev.orders.filter(function(o){return o.id===oId;})[0]}; }
@@ -982,18 +986,20 @@ function giveChange(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; f.o.c
 
 function doneForDay(evId){
   var ev=S.events[evId]; if(!ev) return;
-  var wasDone=ev.status==="done";
-  if(!wasDone){ ev.status="done"; save(); render(); }
+  ev.status="done"; save(); render();
   var st=eventStats(ev), kc=kitchenCount(ev).filter(function(c){return c.q;});
   var undel=ev.orders.filter(function(o){return !o.delivered;}).length;
-  openSheet({title:"Day summary",short:true,body:
-    '<p class="sub" style="margin:0 0 12px">'+relDate(ev.date)+' · '+fmtDate(ev.date)+'. You can still add orders and edit the menu.</p>'+
+  openSheet({title:"Done for the day",short:true,cancel:false,onclose:function(){ afterDay(ev); },body:
+    '<p class="sub" style="margin:0 0 12px">'+relDate(ev.date)+' · '+fmtDate(ev.date)+'. Orders are closed. To add an order or change the menu, reopen the day.</p>'+
     '<div class="card strip num"><div><div class="lab">Orders</div><div class="v">'+st.n+'</div></div><div><div class="lab">Total</div><div class="v money">'+rupee(st.total)+'</div></div><div><div class="lab">Unpaid</div><div class="v">'+rupee(st.unpaid)+'</div></div></div>'+
     '<p class="sub" style="margin-top:10px">'+(undel?undel+" not handed over yet":"All handed over")+' · '+rupee(st.paid)+' paid</p>'+
     (kc.length?'<div class="section" style="margin-top:18px"><h2>Cooked</h2><div class="card pad count">'+kc.map(function(c){return '<div class="ci"><div class="cn">'+esc(c.it.name)+'</div><div class="cv">'+c.q+'</div></div>';}).join("")+'</div></div>':''),
-    foot:(wasDone?'<button class="btn secondary" onclick="undoDone(\''+ev.id+'\')">Not done yet</button>':'')+'<button class="btn primary" onclick="closeSheet()">Close</button>'});
+    foot:'<button class="btn secondary" onclick="reopenDay(\''+ev.id+'\')">Reopen day</button><button class="btn primary" onclick="closeSheet()">Close</button>'});
 }
-function undoDone(id){ var ev=S.events[id]; if(ev){ ev.status="open"; save(); } closeSheet(); render(); }
+/* after closing the summary: the next day's menu if it's set, otherwise this day to look at */
+function afterDay(ev){ var nx=addDays(ev.date,1); go("#/lunch?d="+(lunchOn(nx)?nx:ev.date)); }
+function reopenDay(id){ var ev=S.events[id]; if(!ev) return; ev.status="open"; save(); sheetOnClose=null; closeSheet(); render();
+  toast("Day reopened",function(){ ev.status="done"; save(); render(); }); }
 
 /* lunch setup: date first (today or tomorrow), grouped list, price for that day only, combos */
 var draft=null;
@@ -1937,11 +1943,12 @@ function importOld(old){
 }
 
 /* ======================= SHEET + TOAST ======================= */
-var sheetOpen=false;
+var sheetOpen=false, sheetOnClose=null;
 function openSheet(o){
+  sheetOnClose=o.onclose||null;
   var root=document.getElementById("sheetRoot");
   root.innerHTML='<div class="scrim" onclick="closeSheet()"></div><div class="sheet'+(o.short?' short':'')+'" role="dialog" aria-modal="true" aria-label="'+esc(o.title)+'">'+
-    '<div class="drag"><div class="grab" aria-hidden="true"></div><div class="sh"><button class="btn text" onclick="closeSheet()">Cancel</button><h2>'+esc(o.title)+'</h2><span style="min-width:72px"></span></div></div>'+
+    '<div class="drag"><div class="grab" aria-hidden="true"></div><div class="sh">'+(o.cancel===false?'<span style="min-width:72px"></span>':'<button class="btn text" onclick="closeSheet()">Cancel</button>')+'<h2>'+esc(o.title)+'</h2><span style="min-width:72px"></span></div></div>'+
     '<div class="sb">'+o.body+'</div>'+(o.foot?'<div class="sf">'+o.foot+'</div>':'')+'</div>';
   sheetOpen=true; document.body.style.overflow="hidden";
   /* swipe down on the grabber or title bar to dismiss, as on iOS */
@@ -1955,6 +1962,7 @@ function openSheet(o){
 function closeSheet(instant){
   var root=document.getElementById("sheetRoot"); if(!sheetOpen) return;
   sheetOpen=false; document.body.style.overflow="";
+  var after=sheetOnClose; sheetOnClose=null; if(after) setTimeout(after,0);
   if(SYNC.needRender) setTimeout(softRender,300);
   var s=root.querySelector(".sheet"), sc=root.querySelector(".scrim");
   if(instant||!s){ root.innerHTML=""; return; }

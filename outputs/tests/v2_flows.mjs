@@ -103,17 +103,44 @@ async function lunchFlow(browser) {
   const st2 = await ev(page, () => eventStats(Object.values(S.events)[0]));
   ok('paid 180 / unpaid 80', st2.paid === 180 && st2.unpaid === 80, JSON.stringify(st2));
 
-  // done for the day is soft: summary shows, orders can still be added
+  // done for the day: marks it, shows the summary with Reopen and Close, then the day is view only
   await page.click('.dock >> text=Done for the day');
+  ok('done marks the day done', await ev(page, () => Object.values(S.events)[0].status === 'done'));
+  ok('done shows the summary sheet', await page.locator('.sheet h2', { hasText: 'Done for the day' }).isVisible());
+  ok('summary has no Cancel', (await page.locator('.sheet .sh >> text=Cancel').count()) === 0);
+  ok('summary offers Reopen and Close', await page.locator('.sheet .sf >> text=Reopen day').isVisible() && await page.locator('.sheet .sf >> text=Close').isVisible());
   await shot(page, '06-done-for-the-day');
-  ok('done shows the summary sheet', await page.locator('.sheet h2', { hasText: 'Day summary' }).isVisible());
+  await page.click('.sheet .sf >> text=Reopen day');
+  await page.waitForTimeout(350);
+  ok('reopen from the sheet sets the day open', await ev(page, () => Object.values(S.events)[0].status !== 'done'));
+  ok('reopen shows a toast', await page.locator('#toast', { hasText: 'Day reopened' }).isVisible());
+  ok('reopen stays on the day', (await page.url()).includes('d=2026-10-24'));
+  await page.click('.dock >> text=Done for the day');
   await page.click('.sheet .sf >> text=Close');
-  ok('done does not jump to tomorrow', (await page.url()).includes('d=2026-10-24'));
+  await page.waitForTimeout(350);
+  ok('close with no tomorrow set stays on today', (await page.url()).includes('d=2026-10-24'));
+  ok('a done day has no Add order', (await page.locator('.dock >> text=Add order').count()) === 0);
+  ok('a done day has no Edit menu', (await page.locator('a', { hasText: 'Edit menu' }).count()) === 0);
+  ok('a done day offers Reopen day', await page.locator('.dock >> text=Reopen day').isVisible());
+  ok('orders on a done day open nothing', (await page.locator('.order button.top').count()) === 0);
+  await shot(page, '06b-day-done');
+  // close goes to tomorrow when tomorrow's menu is set
+  await ev(page, () => { const e = Object.values(S.events)[0]; const c = JSON.parse(JSON.stringify(e)); c.id = 'tmw'; c.date = addDays(e.date, 1); c.orders = []; c.status = 'open'; S.events.tmw = c; save(); });
+  await page.click('.dock >> text=Reopen day');
+  await page.click('.dock >> text=Done for the day');
+  await page.click('.sheet .sf >> text=Close');
+  await page.waitForTimeout(350);
+  ok('close with tomorrow set shows tomorrow', (await page.url()).includes('d=2026-10-25'));
+  await page.click('.seg >> text=Today');
+  await page.keyboard.press('Escape');
+  await ev(page, () => { delete S.events.tmw; save(); render(); });
+  await page.click('.dock >> text=Reopen day');
+  await page.waitForTimeout(350);
   await page.click('.dock >> text=Add order');
   await page.fill('#odName', 'ramesh ');
   await page.click(`button[onclick="odStep('${chap}',1)"]`);
   await page.click('#odSave');
-  ok('late chapathi order lands after done', await ev(page, () => Object.values(S.events)[0].orders.length === 3));
+  ok('late chapathi order lands after reopening', await ev(page, () => Object.values(S.events)[0].orders.length === 3));
   // a different spelling stays a different person
   await page.click('.dock >> text=Add order');
   await page.fill('#odName', 'Ramesh K');
