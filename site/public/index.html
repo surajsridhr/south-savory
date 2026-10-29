@@ -794,13 +794,13 @@ function route(){
 }
 function go(h){
   if(h!==current&&!leaveRecipeOk()) return;
-  var same=(h===current); current=h;
+  var same=(h===current); current=h; if(!same) held={o:{}};
   if(!same&&canPush){ try{ history.pushState(null,"",h); }catch(e){ canPush=false; } }
   closeSheet(true); render(); if(!same) window.scrollTo(0,0);
 }
 window.addEventListener("popstate",function(){
   if((location.hash||"#/")!==current&&!leaveRecipeOk()){ try{ history.pushState(null,"",current); }catch(e){} return; }
-  current=location.hash||"#/"; closeSheet(true); render(); window.scrollTo(0,0); });
+  current=location.hash||"#/"; held={o:{}}; closeSheet(true); render(); window.scrollTo(0,0); });
 document.addEventListener("click",function(e){
   var a=e.target.closest&&e.target.closest('a[href^="#"]');
   if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey) return;
@@ -950,18 +950,22 @@ function eventBody(ev){
       (kc.length?'<div class="card pad count">'+rows+'</div>':'<p class="empty">No items on this menu.</p>')+'</div>'+
     orderSections(ev,orders);
 }
-/* orders still to hand over first, then handed over but unpaid, then done */
+/* orders still to hand over first, then handed over but unpaid, then done.
+   An order tapped on this screen keeps its place until you leave it, so Paid can follow Hand over. */
+var held={o:{}};
+function hold(o){ if(!held.o[o.id]) held.o[o.id]={delivered:!!o.delivered,paid:!!o.paid}; }
 function orderSections(ev,orders){
   if(!orders.length) return '<div class="section"><h2>Orders</h2><p class="empty">No orders yet. Tap Add order when one comes in on WhatsApp.</p></div>';
-  var toGo=orders.filter(function(o){return !o.delivered;});
-  var owe=orders.filter(function(o){return o.delivered&&!o.paid&&!o.untracked;});
-  var done=orders.filter(function(o){return o.delivered&&(o.paid||o.untracked);});
-  toGo.sort(function(a,b){ return (a.paid?1:0)-(b.paid?1:0)||(a.t||0)-(b.t||0); });
+  function st(o){ return held.o[o.id]||o; }
+  var toGo=orders.filter(function(o){return !st(o).delivered;});
+  var owe=orders.filter(function(o){var x=st(o);return x.delivered&&!x.paid&&!o.untracked;});
+  var done=orders.filter(function(o){var x=st(o);return x.delivered&&(x.paid||o.untracked);});
+  toGo.sort(function(a,b){ return (st(a).paid?1:0)-(st(b).paid?1:0)||(a.t||0)-(b.t||0); });
   function sec(title,list,aside,lead){ return list.length?'<div class="section"><h2>'+title+'<span class="aside num">'+aside+'</span></h2>'+(lead||'')+'<div class="list">'+list.map(function(o){return orderRow(ev,o);}).join("")+'</div></div>':''; }
   function sum(list){ return rupee(list.reduce(function(a,o){return a+orderTotal(ev,o);},0)); }
   var lkc=kitchenCount(ev,function(o){return !o.delivered;}).filter(function(c){return c.q;});
   var lead=lkc.length?'<p class="sub leftline" style="margin:-4px 0 10px">'+lkc.map(function(c){ var kgU=ev.kind==="batter"||(ev.kind==="drop"&&c.it.unit==="kg"); return esc(c.it.name)+' <b class="num">'+(kgU?fmtKg(c.q):c.q)+'</b>'; }).join(" · ")+'</p>':'';
-  return sec("To hand over",toGo,plural(toGo.length,"order")+" · "+qtyText(ev,lkc),lead)+
+  return sec("To hand over",toGo,plural(toGo.filter(function(o){return !o.delivered;}).length,"order")+" · "+qtyText(ev,lkc),lead)+
     sec("Handed over, not paid",owe,sum(owe))+
     sec("Done",done,plural(done.length,"order")+" · "+sum(done));
 }
@@ -982,8 +986,8 @@ function orderRow(ev,o){
     '<div class="ctl">'+del+pay+chg+'</div></div>';
 }
 function findOrder(evId,oId){ var ev=S.events[evId]; if(!ev) return {}; return {ev:ev,o:ev.orders.filter(function(o){return o.id===oId;})[0]}; }
-function toggleDel(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; f.o.delivered=!f.o.delivered; save(); render(); }
-function togglePaid(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; f.o.paid=!f.o.paid; f.o.paidAt=f.o.paid?Date.now():null; save(); render();
+function toggleDel(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; hold(f.o); f.o.delivered=!f.o.delivered; save(); render(); }
+function togglePaid(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; hold(f.o); f.o.paid=!f.o.paid; f.o.paidAt=f.o.paid?Date.now():null; save(); render();
   toast(f.o.paid?(f.o.name||"Order")+" paid "+rupee(orderTotal(f.ev,f.o)):"Marked unpaid",f.o.paid?function(){f.o.paid=false;f.o.paidAt=null;save();render();}:null); }
 function giveChange(evId,oId){ var f=findOrder(evId,oId); if(!f.o) return; f.o.changeGiven=true; save(); render();
   toast("Change given to "+(f.o.name||"customer"),function(){f.o.changeGiven=false;save();render();}); }

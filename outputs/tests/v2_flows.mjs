@@ -92,13 +92,22 @@ async function lunchFlow(browser) {
   const what = await page.locator('.order .what').first().textContent();
   ok('delivery list never says "Combo"', !/combo/i.test(what), what);
   await page.locator('.order', { hasText: 'Priya' }).locator('text=Hand over').click();
-  ok('a handed-over order moves out of "To hand over"', (await page.locator('.section', { hasText: 'Handed over, not paid' }).locator('.order', { hasText: 'Priya' }).count()) === 1);
+  const inSec = async (title, name) => (await page.locator('.section:has(h2:text("' + title + '"))').locator('.order', { hasText: name }).count()) === 1;
+  ok('a handed-over order stays put so Paid can follow', await inSec('To hand over', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).locator('text=Handed over').isVisible());
+  await ev(page, () => { go('#/'); history.back(); });
+  await page.waitForTimeout(300);
+  ok('leaving and coming back moves it out of "To hand over"', await inSec('Handed over, not paid', 'Priya'));
   { const h = await page.textContent('.section:has(h2:text("To hand over")) h2'); ok('what is left sits with "To hand over": 1 order, 2 portions', h.includes('1 order') && h.includes('2 portions'), h); }
   { const order = await page.$$eval('main .section h2', hs => hs.map(h => h.firstChild.textContent.trim()));
     ok('hierarchy: To cook comes before the orders', order.indexOf('To cook') >= 0 && order.indexOf('To cook') < order.indexOf('To hand over'), order.join(' > ')); }
   ok('the status strip says how much to cook', (await page.textContent('.strip')).includes('To cook') && (await page.textContent('.strip')).includes('portions'));
   await page.locator('.order', { hasText: 'Priya' }).locator('text=Unpaid').click();
-  ok('handed over and paid goes to Done', (await page.locator('.section', { hasText: 'Done' }).locator('.order', { hasText: 'Priya' }).count()) === 1);
+  ok('paid stays in place too', await inSec('Handed over, not paid', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).locator('text=Paid').isVisible());
+  await ev(page, () => render());
+  ok('a sync re-render does not move it', await inSec('Handed over, not paid', 'Priya'));
+  await ev(page, () => { go('#/'); history.back(); });
+  await page.waitForTimeout(300);
+  ok('handed over and paid goes to Done', await inSec('Done', 'Priya'));
   await shot(page, '05-lunch-day-orders');
   const st2 = await ev(page, () => eventStats(Object.values(S.events)[0]));
   ok('paid 180 / unpaid 80', st2.paid === 180 && st2.unpaid === 80, JSON.stringify(st2));
