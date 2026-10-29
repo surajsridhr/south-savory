@@ -79,6 +79,10 @@ ok('calculator: pot total ₹119.6 shown as ₹120, ₹6 a portion', sum1.includ
 await shot(page, '32-tier-recipe');
 await page.click('.dock >> text=Save'); await page.waitForTimeout(300);
 ok('tier recipe saved', await ev(page, () => { const r = S.costs.recipes.filter(r => r.id === 'tier1')[0]; return r && r.makes === 20 && r.lines.length === 2; }));
+ok('saving a tier recipe returns to Costs', page.url().endsWith('#/costs'));
+await page.goto(URL + '#/costs/tier/1'); await page.reload();
+await page.click('.bar .back'); await page.waitForTimeout(200);
+ok('Back from a tier recipe goes to Costs', page.url().endsWith('#/costs'));
 
 // a dish takes its tier from its price, and can change it
 const rasam = await ev(page, () => S.menus.lunch.filter(i => i.name === 'Tomato Rasam')[0].id);
@@ -107,6 +111,29 @@ ok('margin: sells ₹50, ₹42.9 left, 86%', sum2.includes('₹42.9') && sum2.in
 await shot(page, '34-own-recipe');
 await page.click('.dock >> text=Save'); await page.waitForTimeout(300);
 ok('own recipe wins over the tier', await ev(page, id => Math.abs(unitCost('lunch', id) - 106.95 / 15) < 1e-9 && costInfo('lunch', id).src === 'own', pepper));
+ok('saving an own recipe returns to Costs', page.url().endsWith('#/costs'));
+ok('saving says Saved', await page.locator('#toast', { hasText: 'Saved' }).isVisible());
+ok('Costs no longer shows the recipe Save button', (await page.locator('.dock >> text=Save').count()) === 0);
+// reopen the saved recipe from Costs (the bug: Back pointed at the same screen)
+await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
+ok('a dish with its own recipe opens the recipe', (await page.locator('#rdLines .rline').count()) === 3);
+await page.click('.bar .back'); await page.waitForTimeout(200);
+ok('Back from a saved own recipe goes to Costs', page.url().endsWith('#/costs') && (await page.locator('.bar h1').textContent()) === 'Costs');
+// edit and save again: lands on Costs with the change kept
+await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
+await page.fill('#rdMakes', '14');
+await page.click('.dock >> text=Save'); await page.waitForTimeout(300);
+ok('editing a saved recipe keeps the change and returns to Costs', page.url().endsWith('#/costs') && await ev(page, id => S.costs.recipes.filter(r => r.menuId === id)[0].makes === 14, pepper));
+await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
+await page.fill('#rdMakes', '15');
+await page.click('.dock >> text=Save'); await page.waitForTimeout(300);
+
+// removing a lunch dish's own recipe drops it back to its tier, and Undo restores it
+await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
+await page.click('text=Remove own recipe, go back to its tier'); await page.waitForTimeout(200);
+ok('removing an own recipe shows the dish on its tier', (await page.locator('.dock').textContent()).includes('Give it its own recipe'));
+await page.click('#toastUndo'); await page.waitForTimeout(200);
+ok('undo brings the own recipe back', await ev(page, id => costInfo('lunch', id).src === 'own', pepper));
 
 // back out of an unsaved own recipe without looping
 const huli = await ev(page, () => S.menus.lunch.filter(i => i.name === 'Huruli Saaru')[0].id);

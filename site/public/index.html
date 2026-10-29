@@ -239,6 +239,7 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast button{color:var(--on-primary);font-weight:500;text-decoration:underline;padding:6px 8px}
 
+.ferr{color:var(--negative);font-size:14px;margin:8px 0 0}
 .notice{background:var(--pill-warning-bg);color:var(--pill-warning-ink);border-radius:var(--radius-card);padding:12px 14px;font-size:14px}
 .notice.neutral{background:var(--raised);color:var(--text)}
 .filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:0 calc(-1 * var(--pad));padding:0 var(--pad)}
@@ -792,11 +793,14 @@ function route(){
   return {path:parts[0]||"/",q:q};
 }
 function go(h){
+  if(h!==current&&!leaveRecipeOk()) return;
   var same=(h===current); current=h;
   if(!same&&canPush){ try{ history.pushState(null,"",h); }catch(e){ canPush=false; } }
   closeSheet(true); render(); if(!same) window.scrollTo(0,0);
 }
-window.addEventListener("popstate",function(){ current=location.hash||"#/"; closeSheet(true); render(); window.scrollTo(0,0); });
+window.addEventListener("popstate",function(){
+  if((location.hash||"#/")!==current&&!leaveRecipeOk()){ try{ history.pushState(null,"",current); }catch(e){} return; }
+  current=location.hash||"#/"; closeSheet(true); render(); window.scrollTo(0,0); });
 document.addEventListener("click",function(e){
   var a=e.target.closest&&e.target.closest('a[href^="#"]');
   if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey) return;
@@ -838,7 +842,7 @@ function render(){
   if(p==="/costs") return viewCosts();
   if(p==="/costs/month") return viewMonth(r.q);
   if(p==="/costs/ingredients") return viewIngredients();
-  if((m=p.match(/^\/costs\/tier\/([123])$/))) return viewTier(Number(m[1]));
+  if((m=p.match(/^\/costs\/tier\/([123])$/))) return viewTier(Number(m[1]),r.q);
   if((m=p.match(/^\/costs\/item\/(lunch|batter|drops)\/(.+)$/))) return viewCostItem(m[1],m[2],r.q);
   return viewHome();
 }
@@ -1493,14 +1497,15 @@ function guessTier(it){ if(!it||it.group!=="Curries") return null; return {50:1,
 function dishTier(it){ return it?(it.tier||guessTier(it)):null; }
 
 function recipeCost(r){
-  var sum=0, missing=[], n=0;
+  var sum=0, missing=[], noAmt=[], n=0;
   (r.lines||[]).forEach(function(l){
-    var g=ingById(l.ing), q=Number(l.qty)||0; if(!g||!q) return; n++;
+    var g=ingById(l.ing), q=Number(l.qty)||0; if(!g) return;
+    if(!(q>0)){ noAmt.push(g.name); return; } n++;
     if(g.price==null||g.price===""){ missing.push(g.name); return; }
     sum+=Number(g.price)*q/ING_UNITS[g.unit].div;
   });
   var oh=sum*overhead()/100, total=sum+oh, makes=Number(r.makes)||0;
-  return {ing:sum,oh:oh,total:total,missing:missing,lines:n,per:(makes>0&&n&&!missing.length)?total/makes:null};
+  return {ing:sum,oh:oh,total:total,missing:missing,noAmt:noAmt,lines:n,per:(makes>0&&n&&!missing.length&&!noAmt.length)?total/makes:null};
 }
 /* cost of one portion / kg / piece of a menu item, or null when it can't be known yet */
 function costInfo(kind,id){
@@ -1589,10 +1594,10 @@ function viewCosts(){
 }
 function editOverhead(){
   openSheet({title:"Overhead",short:true,
-    body:'<div class="field"><label class="f" for="ohIn">Overhead on top of ingredients</label><span style="display:flex;align-items:center;gap:8px"><input type="number" inputmode="decimal" id="ohIn" style="width:100px;text-align:right" value="'+overhead()+'"><span>%</span></span><p class="hint">Covers spices, gas and labour. Every cost uses it.</p></div>',
+    body:'<div class="field"><label class="f" for="ohIn">Overhead on top of ingredients</label><span style="display:flex;align-items:center;gap:8px"><input type="number" inputmode="decimal" id="ohIn" style="width:100px;text-align:right" value="'+overhead()+'"><span>%</span></span><p class="ferr" id="ohErr" hidden></p><p class="hint">Covers spices, gas and labour. Every cost uses it.</p></div>',
     foot:'<button class="btn primary" onclick="saveOverhead()">Save</button>'});
 }
-function saveOverhead(){ var v=num(document.getElementById("ohIn").value); if(v==null||v<0) return; costs().overhead=v; save(); closeSheet(); render(); toast("Overhead "+v+"%"); }
+function saveOverhead(){ var v=num(document.getElementById("ohIn").value); if(v==null||v<0){ var e=document.getElementById("ohErr"); e.textContent="Enter a percentage, 0 or more."; e.hidden=false; return; } costs().overhead=v; save(); closeSheet(); render(); toast("Overhead "+v+"%"); }
 
 var cpk=null;
 function pickCostItem(){
@@ -1627,7 +1632,7 @@ function viewCostItem(kind,id,q){
       return '<button aria-pressed="'+(t===tt[0])+'" onclick="setDishTier(\''+id+'\','+tt[0]+')">'+tt[1].replace("Up to 1 vegetable","Up to 1 veg").replace("2 vegetables","2 veg")+'</button>';
     }).join("")+'</div><p class="hint">'+(guessed?"First guess from its price. Change it if the ingredients say otherwise.":t?"":"Pick the tier closest to what goes in, or give it its own recipe.")+'</p></div>'+
     (t?'<div class="section">'+marginCard(per,price,"portions",tr?null:"The "+TIERS[t-1][1].toLowerCase()+" tier has no recipe yet.")+
-      '<div class="btnrow"><a class="btn text" href="#/costs/tier/'+t+'">'+(tr?"Edit":"Set up")+' the tier recipe</a></div></div>':'')+
+      '<div class="btnrow"><a class="btn text" href="#/costs/tier/'+t+'?from='+id+'">'+(tr?"Edit":"Set up")+' the tier recipe</a></div></div>':'')+
     '</main>';
   dock('<button class="btn primary" onclick="ownRecipe(\''+id+'\')">Give it its own recipe</button>');
   tabbar("costs");
@@ -1639,7 +1644,7 @@ function ownRecipe(id){
       lines:tr?tr.lines.map(function(l){return {ing:l.ing,qty:l.qty};}):[],isNew:true};
   render();
 }
-function viewTier(n){ return viewRecipe("tier"+n,null,null); }
+function viewTier(n,q){ return viewRecipe("tier"+n,null,null,q&&q.from&&menuItem2("lunch",q.from)?"#/costs/item/lunch/"+q.from:null); }
 
 function marginCard(per,price,unit,note){
   var w=MAKES_WORD[unit];
@@ -1651,21 +1656,24 @@ function marginCard(per,price,unit,note){
 
 /* ---------- the recipe calculator ---------- */
 var rd=null;
-function viewRecipe(rid,kind,it){
+function viewRecipe(rid,kind,it,from){
   var isTier=rid.indexOf("tier")===0, n=isTier?Number(rid.slice(4)):0;
   if(!rd||rd.id!==rid){
     var r=recipeById(rid);
     rd=r?JSON.parse(JSON.stringify(r)):(isTier?{id:rid,kind:"tier",tier:n,unit:"portions",makes:null,lines:[],isNew:true}
         :{id:rid,kind:"item",menuKind:kind,menuId:it.id,unit:makesUnit(kind,it),makes:null,lines:[],isNew:true});
   }
+  if(rd.base===undefined) rd.base=rdShape(rd);
   var title=isTier?"Tier: "+TIERS[n-1][1]:it.name;
   var sub=isTier?"One typical pot. Every curry on this tier without its own recipe uses its cost.":
     ({lunch:"Lunch dish",batter:"Batter",drops:"Drop item"}[kind])+" · sells at "+(sellPrice(kind,it)==null?"no price yet":rupee(sellPrice(kind,it))+" per "+MAKES_WORD[rd.unit]);
-  var back=isTier||kind!=="lunch"?"#/costs":"#/costs/item/lunch/"+it.id;
-  if(!isTier&&kind==="lunch"&&rd.isNew) back="#/costs/item/lunch/"+it.id+"?tier=1";
+  /* a saved recipe sits on the dish's own route, so back can't point there: it goes to Costs.
+     A new own recipe for a lunch dish backs out to the dish's tier */
+  var back=from||(!isTier&&kind==="lunch"&&rd.isNew?"#/costs/item/lunch/"+it.id+"?tier=1":"#/costs");
+  rd.back=from||"#/costs";
   $app.innerHTML=bar(title,back)+'<main class="page"><p class="sub">'+esc(sub)+'</p>'+
     '<div class="section"><h2>Ingredients</h2><div class="card pad" id="rdLines">'+rdLinesHtml()+'</div>'+
-      '<div class="btnrow"><button class="btn secondary" onclick="addRecipeLine()">Add ingredient</button></div></div>'+
+      '<p class="ferr" id="rdErr" hidden></p><div class="btnrow"><button class="btn secondary" onclick="addRecipeLine()">Add ingredient</button></div></div>'+
     '<div class="section"><h2>Makes</h2><div style="display:flex;align-items:center;gap:10px"><input type="number" inputmode="decimal" id="rdMakes" style="width:110px;text-align:right" value="'+(rd.makes==null?"":rd.makes)+'" oninput="rd.makes=num(this.value);rdSum()" aria-label="How much it makes"><span>'+rd.unit+'</span></div>'+
       '<p class="hint">How much this '+(rd.unit==="portions"?"pot":"batch")+' gives you. Cost per '+MAKES_WORD[rd.unit]+' is the total divided by this.</p></div>'+
     '<div class="section"><h2>Cost</h2><div id="rdSum">'+rdSumHtml(kind,it)+'</div></div>'+
@@ -1675,6 +1683,10 @@ function viewRecipe(rid,kind,it){
   dock('<button class="btn primary" onclick="saveRecipe()">Save</button>');
   tabbar("costs");
 }
+function rdShape(r){ return JSON.stringify({m:num(r.makes),l:r.lines.map(function(l){return [l.ing,num(l.qty)];})}); }
+function rdDirty(){ return !!(rd&&rd.base!==undefined&&rdShape(rd)!==rd.base); }
+/* leaving a recipe with unsaved edits asks first */
+function leaveRecipeOk(){ if(!rdDirty()) return true; if(!confirm("Discard your changes to this recipe?")) return false; rd=null; return true; }
 function rdLinesHtml(){
   if(!rd.lines.length) return '<p class="muted small">No ingredients yet.</p>';
   return rd.lines.map(function(l,ix){
@@ -1691,7 +1703,7 @@ function rdSumHtml(kind,it){
   var rows='<div class="ci"><div class="cn">Ingredients</div><div class="cv" style="color:var(--text)">'+money1(rc.ing)+'</div></div>'+
     '<div class="ci"><div class="cn">Overhead '+overhead()+'%<div class="t2">spices, gas, labour</div></div><div class="cv" style="color:var(--text)">'+money1(rc.oh)+'</div></div>'+
     '<div class="ci"><div class="cn"><b style="font-weight:500">Total for the '+(rd.unit==="portions"?"pot":"batch")+'</b></div><div class="cv" style="color:var(--text)">'+money1(rc.total)+'</div></div>';
-  var note=rc.missing.length?"No price yet for "+rc.missing.join(", ")+". Add it under Ingredients.":(!rc.lines?"Add ingredients to see the cost.":(!(Number(rd.makes)>0)?"Fill in how much it makes.":null));
+  var note=rc.missing.length?"No price yet for "+rc.missing.join(", ")+". Add it under Ingredients.":rc.noAmt.length?"Fill in the amount of "+rc.noAmt.join(", ")+".":(!rc.lines?"Add ingredients to see the cost.":(!(Number(rd.makes)>0)?"Fill in how much it makes.":null));
   var price=it?sellPrice(kind,it):null;
   return '<div class="card pad count">'+rows+'</div><div style="margin-top:10px">'+(it?marginCard(rc.per,price,rd.unit,note):'<div class="card pad count"><div class="ci"><div class="cn">Cost per portion</div><div class="cv">'+money1(rc.per)+'</div></div></div>'+(note?'<p class="hint">'+esc(note)+'</p>':''))+'</div>';
 }
@@ -1700,15 +1712,17 @@ function rdSum(){
   rd.lines.forEach(function(l,ix){ var g=ingById(l.ing), c=document.getElementById("rdc"+ix); if(g&&c) c.textContent=money1(g.price==null||g.price===""?null:Number(g.price)*(Number(l.qty)||0)/ING_UNITS[g.unit].div); });
 }
 function saveRecipe(){
+  if(!rd.lines.some(function(l){return ingById(l.ing);})){ var e=document.getElementById("rdErr"); if(e){ e.textContent="Add at least one ingredient to save this recipe."; e.hidden=false; } return; }
   var r={id:rd.id,kind:rd.kind,unit:rd.unit,makes:rd.makes,lines:rd.lines.filter(function(l){return ingById(l.ing);}).map(function(l){return {ing:l.ing,qty:l.qty};})};
   if(rd.kind==="tier") r.tier=rd.tier; else { r.menuKind=rd.menuKind; r.menuId=rd.menuId; }
   var arr=costs().recipes, ix=-1; arr.forEach(function(x,k){ if(x.id===r.id) ix=k; });
   if(ix>=0) arr[ix]=r; else arr.push(r);
-  save(); rd=null; render(); toast("Saved");
+  var back=rd.back||"#/costs"; save(); rd=null; go(back); toast("Saved");
 }
 function removeRecipe(){
   var arr=costs().recipes, ix=-1; arr.forEach(function(x,k){ if(x.id===rd.id) ix=k; }); if(ix<0) return;
-  var r=arr.splice(ix,1)[0]; rd=null; save(); render();
+  var r=arr.splice(ix,1)[0], toTier=r.kind==="item"&&r.menuKind==="lunch"; rd=null; save();
+  if(toTier) render(); else go("#/costs");
   toast("Recipe removed",function(){ arr.splice(ix,0,r); save(); render(); });
 }
 var ipk=null;
@@ -1742,10 +1756,11 @@ var ie=null;
 function ingSheet(id,forRecipe){
   var g=id?ingById(id):null;
   ie={id:id,name:g?g.name:"",price:g?g.price:null,unit:g?g.unit:"kg",forRecipe:!!forRecipe};
+  var inUse=g?costs().recipes.filter(function(r){return r.lines.some(function(l){return l.ing===g.id;});}).length:0;
   var b='<div class="field"><label class="f" for="ieName">Name</label><input type="text" id="ieName" autocapitalize="words" value="'+esc(ie.name)+'" oninput="ie.name=this.value;ieState()"></div>'+
     '<div class="field"><label class="f" for="iePrice">What you pay</label><span style="display:flex;gap:8px;align-items:center"><span class="money-in"><input type="number" inputmode="decimal" id="iePrice" style="width:120px" value="'+(ie.price==null?"":ie.price)+'" oninput="ie.price=num(this.value)"></span>'+
-      '<select id="ieUnit" style="width:auto;flex:1" onchange="ie.unit=this.value" aria-label="Per">'+Object.keys(ING_UNITS).map(function(u){return '<option value="'+u+'" '+(u===ie.unit?'selected':'')+'>'+ING_UNITS[u].per+'</option>';}).join("")+'</select></span>'+
-      '<p class="hint">Leave it blank if you don\'t know yet. Recipes using it will say so.</p></div>'+
+      '<select id="ieUnit" style="width:auto;flex:1" onchange="ie.unit=this.value" aria-label="Per"'+(inUse?' disabled':'')+'>'+Object.keys(ING_UNITS).map(function(u){return '<option value="'+u+'" '+(u===ie.unit?'selected':'')+'>'+ING_UNITS[u].per+'</option>';}).join("")+'</select></span>'+
+      '<p class="ferr" id="ieErr" hidden></p><p class="hint">Leave it blank if you don\'t know yet. Recipes using it will say so.'+(inUse?' It\'s in '+plural(inUse,"recipe")+', so its unit stays '+ING_UNITS[ie.unit].per+'.':'')+'</p></div>'+
     (g?'<div class="section"><button class="btn danger" onclick="removeIng()">Remove ingredient</button><p class="hint">It comes out of every recipe that uses it.</p></div>':'');
   if(sheetOpen) closeSheet(true);
   openSheet({title:g?"Edit ingredient":"New ingredient",short:true,body:b,foot:'<button class="btn primary" id="ieSave" '+(ie.name.trim()?'':'disabled')+' onclick="saveIng()">'+(g?"Save":"Add")+'</button>'});
@@ -1754,6 +1769,7 @@ function ingSheet(id,forRecipe){
 function ieState(){ var b=document.getElementById("ieSave"); if(b) b.disabled=!ie.name.trim(); }
 function saveIng(){
   var nm=ie.name.trim(); if(!nm) return;
+  if(ie.price!=null&&ie.price<0){ var e=document.getElementById("ieErr"); e.textContent="A price can't be below zero."; e.hidden=false; return; }
   var dup=ingByName(nm); if(dup&&dup.id!==ie.id){ toast(dup.name+" is already in the list"); return; }
   var g;
   if(ie.id){ g=ingById(ie.id); g.name=nm; g.price=ie.price; g.unit=ie.unit; }
