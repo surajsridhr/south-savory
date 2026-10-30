@@ -689,6 +689,8 @@ function autoPrice(ev,ln){
   }
   return q*(Number(it.price)||0);   /* lunch, custom */
 }
+/* a line price you typed scales with the quantity, so tapping + or − never wipes it */
+function scalePrice(price,oldQ,newQ){ return (price===null||price===undefined||!(oldQ>0)||!(newQ>0))?null:Math.round(Number(price)*newQ/oldQ); }
 function linePrice(ev,ln){ return (ln.price!==null&&ln.price!==undefined)?Number(ln.price):autoPrice(ev,ln); }
 function orderTotal(ev,o){ return (o.lines||[]).reduce(function(a,ln){return a+linePrice(ev,ln);},0); }
 function lineMissingPrice(ev,ln){
@@ -1302,7 +1304,9 @@ function viewCustomSetup(q){
   csTotal(); tabbar("home");
 }
 function stepper(fnPrefix,q){ return '<span class="step"><button aria-label="Less" '+(q?'':'disabled')+' onclick="'+fnPrefix+'-1)">−</button><span class="q">'+q+'</span><button aria-label="More" onclick="'+fnPrefix+'1)">+</button></span>'; }
-function csStep(ref,d){ var q=(draft.lines[ref]||0)+d; if(q<=0) delete draft.lines[ref]; else draft.lines[ref]=q; delete draft.price[ref]; render(); }
+function csStep(ref,d){ var o=draft.lines[ref]||0, q=o+d, p=scalePrice(draft.price[ref],o,q);
+  if(q<=0) delete draft.lines[ref]; else draft.lines[ref]=q;
+  if(p===null) delete draft.price[ref]; else draft.price[ref]=p; render(); }
 function csTotal(){
   var fake={kind:"custom",items:S.menus.lunch.map(function(i){return {id:i.id,name:i.name,price:i.price};}),combos:[]};
   var t=0; Object.keys(draft.lines).forEach(function(ref){ t+=linePrice(fake,{ref:ref,qty:draft.lines[ref],price:draft.price[ref]}); });
@@ -1397,17 +1401,17 @@ function weightLine(ev,it,l,ix){
     (it.topping!=null?'<label class="check" style="min-height:38px;padding:0;gap:8px"><input type="checkbox" '+(l.top?'checked':'')+' onchange="od.lines['+ix+'].top=this.checked;od.lines['+ix+'].price=null;drawOrder()"><span class="small">With topping</span></label>':'')+
     '<span style="margin-left:auto">'+priceInput(ev,l,ix)+'</span><button class="x" style="margin-left:0" aria-label="Remove line" onclick="od.lines.splice('+ix+',1);drawOrder()">'+I.x+'</button></div>';
 }
-function odStep(ref,d){ var ix=lineIx(ref); if(ix<0){ if(d>0) od.lines.push({ref:ref,qty:1,price:null}); } else { var l=od.lines[ix]; l.qty+=d; l.price=null; if(l.qty<=0) od.lines.splice(ix,1); } drawOrder(); }
+function odStep(ref,d){ var ix=lineIx(ref); if(ix<0){ if(d>0) od.lines.push({ref:ref,qty:1,price:null}); } else { var l=od.lines[ix]; l.price=scalePrice(l.price,l.qty,l.qty+d); l.qty+=d; if(l.qty<=0) od.lines.splice(ix,1); } drawOrder(); }
 function addW(ref,kg){
   if(kg===null){ var v=prompt("Weight in kg (for example 1.5 or 0.3)"); kg=num(v); if(!kg||kg<=0) return; }
   od.lines.push({ref:ref,qty:kg,top:false,price:null}); drawOrder();
 }
-function setLineKg(ix,v){ var kg=num(v); if(!kg||kg<=0){ od.lines.splice(ix,1); } else { od.lines[ix].qty=kg; od.lines[ix].price=null; } drawOrder(); }
+function setLineKg(ix,v){ var kg=num(v); if(!kg||kg<=0){ od.lines.splice(ix,1); } else { od.lines[ix].price=scalePrice(od.lines[ix].price,od.lines[ix].qty,kg); od.lines[ix].qty=kg; } drawOrder(); }
 function setKg(ref,v){
   var kg=num(v), ix=lineIx(ref), ev=S.events[od.evId];
   if(!kg||kg<=0){ if(ix>=0) od.lines.splice(ix,1); }
   else if(ix<0) od.lines.push({ref:ref,qty:kg,price:null});
-  else { od.lines[ix].qty=kg; od.lines[ix].price=null; }
+  else { od.lines[ix].price=scalePrice(od.lines[ix].price,od.lines[ix].qty,kg); od.lines[ix].qty=kg; }
   ix=lineIx(ref); var slot=document.getElementById("lp_"+ref);
   if(slot) slot.innerHTML=ix>=0?priceInput(ev,od.lines[ix],ix):"";
   odTotals();

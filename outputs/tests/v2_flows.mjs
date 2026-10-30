@@ -343,6 +343,16 @@ async function customFlow(browser) {
   for (let i = 0; i < 4; i++) await page.click(`button[onclick="csStep('${ras}',1)"]`);
   await page.waitForTimeout(100);
   ok('custom total 320 (4×30 + 4×50)', (await page.textContent('#csTot')).includes('320'));
+  { const bp = await menuId(page, 'lunch', 'Beetroot Palya');
+    await ev(page, (id) => { S.menus.lunch.filter(i => i.id === id)[0].price = null; render(); }, bp);
+    await page.click(`button[onclick="csStep('${bp}',1)"]`);
+    await page.locator('.pick', { hasText: 'Beetroot Palya' }).locator('input[aria-label="Line price"]').fill('50');
+    ok('a typed line price adds to the total', (await page.textContent('#csTot')).includes('370'), await page.textContent('#csTot'));
+    await page.click(`button[onclick="csStep('${bp}',1)"]`);
+    const v = await page.locator('.pick', { hasText: 'Beetroot Palya' }).locator('input[aria-label="Line price"]').inputValue();
+    ok('tapping + keeps a typed price and scales it (2 × ₹50)', v === '100' && (await page.textContent('#csTot')).includes('420'), v + ' ' + await page.textContent('#csTot'));
+    await page.click(`button[onclick="csStep('${bp}',-1)"]`); await page.click(`button[onclick="csStep('${bp}',-1)"]`);
+    ok('taking it off brings the total back', (await page.textContent('#csTot')).includes('320')); }
   await shot(page, '18-custom-setup');
   await page.click('#csSave');
   ok('custom order saved on a Monday, lunch untouched', await ev(page, () => events('custom').length === 1 && events('lunch').length === 0 && !S.holidays['2026-10-26']));
