@@ -36,6 +36,7 @@ function loginPage(wrong) {
   return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
 <title>South Savory</title>
+<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="South Savory"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--ground:#F6EEDB;--label:#FFFCF5;--edge:#E4D6B6;--rule:rgba(168,76,50,.55);--field:#CDBF9E;--text:#143825;--muted:#4E5E4C;--lid-a:#2C6646;--lid-b:#143825;--lid-edge:#0B2216;--on:#FFFCF5;--warn-bg:#F9DCC7;--warn:#7A2E14;--ember:#EF6922}
@@ -69,6 +70,9 @@ export async function withPassword(request, env, next) {
     await new Promise(r => setTimeout(r, 800));   // slow down guessing
     return loginPage(true);
   }
+
+  // the app icon and manifest hold nothing private, and phones fetch them without the cookie when installing
+  if (request.method === "GET" && (url.pathname === "/manifest.webmanifest" || url.pathname.startsWith("/icons/"))) return env.ASSETS.fetch(request);
 
   if (same(cookieValue(request, COOKIE), token)) {
     const res = await next();
