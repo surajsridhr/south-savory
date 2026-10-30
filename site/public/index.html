@@ -732,6 +732,7 @@ function evRoute(ev){ return {lunch:"#/lunch?d="+ev.date,batter:"#/batter/"+ev.i
 function isPast(ev){
   var t=todayKey();
   if(ev.kind==="batter"||ev.kind==="drop") return ev.status==="closed";
+  if(ev.kind==="lunch"&&ev.status==="done") return true; /* done for the day moves it into History */
   return ev.date<t;
 }
 /* last time an item went out on a posted menu (custom orders don't count) */
@@ -945,8 +946,9 @@ function eventBody(ev){
   var miss=ev.orders.some(function(o){return o.lines.some(function(l){return lineMissingPrice(ev,l);});});
   var orders=ev.orders.slice().sort(function(a,b){return (a.t||0)-(b.t||0);});
   var makeWord={lunch:"To cook",custom:"To cook",batter:"To make",drop:"To pack"}[ev.kind];
-  return '<div class="section"><div class="card strip four num"><div><div class="lab">Orders</div><div class="v">'+st.n+'</div></div>'+
-      '<div><div class="lab">'+makeWord+'</div><div class="v">'+esc(qtyText(ev,kc))+'</div></div>'+
+  var byPortion=ev.kind==="lunch"||ev.kind==="custom"; /* a portion total adds rice to ragi balls, so lunch shows the dishes instead */
+  return '<div class="section"><div class="card strip'+(byPortion?'':' four')+' num"><div><div class="lab">Orders</div><div class="v">'+st.n+'</div></div>'+
+      (byPortion?'':'<div><div class="lab">'+makeWord+'</div><div class="v">'+esc(qtyText(ev,kc))+'</div></div>')+
       '<div><div class="lab">Total</div><div class="v money">'+rupee(st.total)+'</div></div>'+
       '<div><div class="lab">Unpaid</div><div class="v">'+rupee(st.unpaid)+'</div></div></div>'+
       (miss?'<p class="notice" style="margin-top:10px">Some items have no price yet, so the total is short. Set prices in the menu list or on the order.</p>':'')+'</div>'+
@@ -969,7 +971,7 @@ function orderSections(ev,orders){
   function sum(list){ return rupee(list.reduce(function(a,o){return a+orderTotal(ev,o);},0)); }
   var lkc=kitchenCount(ev,function(o){return !o.delivered;}).filter(function(c){return c.q;});
   var lead=lkc.length?'<p class="sub leftline" style="margin:-4px 0 10px">'+lkc.map(function(c){ var kgU=ev.kind==="batter"||(ev.kind==="drop"&&c.it.unit==="kg"); return esc(c.it.name)+' <b class="num">'+(kgU?fmtKg(c.q):c.q)+'</b>'; }).join(" · ")+'</p>':'';
-  return sec("To hand over",toGo,plural(toGo.filter(function(o){return !o.delivered;}).length,"order")+" · "+qtyText(ev,lkc),lead)+
+  return sec("To hand over",toGo,plural(toGo.filter(function(o){return !o.delivered;}).length,"order")+(ev.kind==="lunch"||ev.kind==="custom"?"":" · "+qtyText(ev,lkc)),lead)+
     sec("Handed over, not paid",owe,sum(owe))+
     sec("Done",done,plural(done.length,"order")+" · "+sum(done));
 }
@@ -1815,13 +1817,14 @@ function viewMonth(q){
 }
 
 /* ======================= HISTORY ======================= */
-/* revenue by category for a month ("2026-10") or for everything ("all"); unpaid orders count, they get followed up */
+/* revenue by category for a month ("2026-10") or for everything ("all"); the days listed under Past, so the counts match; unpaid orders count, they get followed up */
 function revenueBy(per){
-  var r={total:0,paid:0,unpaid:0,n:0,cats:{lunch:{rev:0,n:0},batter:{rev:0,n:0},drop:{rev:0,n:0},custom:{rev:0,n:0}}};
+  var r={total:0,n:0,cats:{lunch:{rev:0,n:0},batter:{rev:0,n:0},drop:{rev:0,n:0},custom:{rev:0,n:0}}};
   events().forEach(function(ev){
+    if(!isPast(ev)) return;
     if(per!=="all"&&(ev.date||"").slice(0,7)!==per) return;
-    var st=eventStats(ev), c=r.cats[ev.kind]; if(!c) return;
-    c.rev+=st.total; c.n+=st.n; r.total+=st.total; r.n+=st.n; r.paid+=st.paid; r.unpaid+=st.unpaid;
+    var c=r.cats[ev.kind]; if(!c) return;
+    var st=eventStats(ev); c.rev+=st.total; c.n+=st.n; r.total+=st.total; r.n+=st.n;
   });
   return r;
 }
@@ -1866,9 +1869,6 @@ function viewHistory(q){
     '<div class="section"><h2>Past</h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="histSet(\'f\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
       (past.length?'<div class="list" style="margin-top:10px">'+past.map(function(ev){ var st=eventStats(ev);
         return '<a class="row" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+st.n+' '+(st.n===1?"order":"orders")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="amt num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</div>':'<p class="empty" style="margin-top:10px">Nothing here yet.</p>')+'</div>'+
-    '<div class="section"><h2>Data</h2><div class="card pad"><p class="small" id="syncState">'+(SYNC.on?esc(syncText()):"Everything is saved on this phone. Export a backup now and then.")+'</p>'+
-      (S.meta.imported?'<p class="small muted" style="margin-top:6px">'+esc(S.meta.imported)+'</p>':'')+
-      '<div class="btnrow"><button class="btn secondary" onclick="pickFile(\'old\')">Bring in old app data</button><button class="btn secondary" onclick="exportBackup()">Export backup</button><button class="btn text" onclick="pickFile(\'restore\')">Restore a backup</button></div></div></div>'+
     '<div class="foot signoff">'+SS_MARK+'<span>South Savory · '+BUILD+'</span></div></main>';
   tabbar("history");
 }

@@ -98,10 +98,10 @@ async function lunchFlow(browser) {
   await ev(page, () => { go('#/'); history.back(); });
   await page.waitForTimeout(300);
   ok('leaving and coming back moves it out of "To hand over"', await inSec('Handed over, not paid', 'Priya'));
-  { const h = await page.textContent('.section:has(h2:text("To hand over")) h2'); ok('what is left sits with "To hand over": 1 order, 2 portions', h.includes('1 order') && h.includes('2 portions'), h); }
+  { const h = await page.textContent('.section:has(h2:text("To hand over")) h2'); ok('"To hand over" counts orders, not a portion total', h.includes('1 order') && !h.includes('portion'), h); }
   { const order = await page.$$eval('main .section h2', hs => hs.map(h => h.firstChild.textContent.trim()));
     ok('hierarchy: To cook comes before the orders', order.indexOf('To cook') >= 0 && order.indexOf('To cook') < order.indexOf('To hand over'), order.join(' > ')); }
-  ok('the status strip says how much to cook', (await page.textContent('.strip')).includes('To cook') && (await page.textContent('.strip')).includes('portions'));
+  ok('the lunch strip has no portion total', !(await page.textContent('.strip')).includes('portion'), await page.textContent('.strip'));
   await page.locator('.order', { hasText: 'Priya' }).locator('text=Unpaid').click();
   ok('paid stays in place too', await inSec('Handed over, not paid', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).locator('text=Paid').isVisible());
   await ev(page, () => render());
@@ -188,10 +188,20 @@ async function lunchFlow(browser) {
   await page.goto(URL + '#/history');
   await shot(page, '08-history');
   ok('history lists Unpaid and Change to give', (await page.textContent('main')).includes('Change to give'));
-  { const want = await ev(page, () => Object.values(S.events).reduce((a, e) => a + eventStats(e).total, 0));
+  const want = await ev(page, () => Object.values(S.events).filter(isPast).reduce((a, e) => a + eventStats(e).total, 0));
+  const wantN = await ev(page, () => Object.values(S.events).filter(isPast).reduce((a, e) => a + e.orders.length, 0));
+  { const pastN = await page.$$eval('.section:has(h2:text("Past")) .list .row', r => r.length);
+    ok('revenue counts the same days Past lists', pastN === await ev(page, () => Object.values(S.events).filter(isPast).length)); }
+  {
     const strip = await page.textContent('.strip');
-    ok('revenue shows all categories combined, unpaid included', want > 0 && strip.includes('South Savory revenue') && strip.includes(rupeeTxt(want)), strip + ' want ' + want);
+    ok('revenue shows all categories combined, unpaid included', strip.includes('South Savory revenue') && strip.includes(rupeeTxt(want)), strip + ' want ' + want);
     ok('revenue has no paid/unpaid split', !/Paid|Unpaid/.test(strip), strip); }
+  { const r = await ev(page, () => {
+      const mk = (id, kind, status, date, price) => ({ id, kind, title: 'T', date, status, items: [], createdAt: 1,
+        orders: [{ id: 'a' + id, name: 'A', lines: [{ ref: 'x', q: 1, price }], delivered: false, paid: false }] });
+      const t = todayKey(), all = [mk('d1', 'drop', 'open', t, 500), mk('d2', 'drop', 'closed', t, 700), mk('l1', 'lunch', 'open', t, 90), mk('l2', 'lunch', 'done', t, 40)];
+      all.forEach(e => S.events[e.id] = e); const out = revenueBy('all'); all.forEach(e => delete S.events[e.id]); return out; });
+    ok('revenue skips an open drop and an open today, counts a closed drop and a day marked done', r.cats.drop.rev === 700 && r.cats.lunch.rev === want + 40 && r.cats.lunch.n === wantN + 1, JSON.stringify(r.cats)); }
   { const rows = await page.$$eval('.section:has(h2:text("Revenue")) .list .row .t1', r => r.map(x => x.textContent));
     ok('revenue splits into lunch, batter, drops and custom', rows.join('|') === 'Daily lunch|Batter|Special drops|Custom orders', rows.join('|')); }
   await page.click('.seg >> text=All time');
