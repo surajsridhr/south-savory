@@ -103,6 +103,25 @@ ok('a sync never wipes what you are typing', (await A.page.inputValue('#odName')
 await B.page.reload(); await B.page.waitForFunction(() => SYNC.on && SYNC.state === 'ok', null, { timeout: 10000 });
 ok('after reload phone B still has everything', await state(B.page, () => events('batter')[0].orders.length === 3));
 
+// a phone that lost an order but thinks it's up to date gets it back on reload (Suraj's phone, 30 Oct)
+await B.page.evaluate(() => { const e = events('batter')[0]; e.orders.push({ id: uid(), name: 'Lost one', ch: 'dm', lines: [{ ref: e.items[0].id, qty: 1, price: null }], delivered: false, paid: false, t: Date.now() }); save(); });
+await wait(700); await sync(B.page); await sync(A.page);
+await A.page.evaluate(() => { const s = JSON.parse(localStorage.getItem(KEY)); const e = Object.values(s.events).filter(x => x.kind === 'batter')[0]; e.orders = e.orders.filter(o => o.name !== 'Lost one'); localStorage.setItem(KEY, JSON.stringify(s)); });
+await A.page.reload(); await A.page.waitForFunction(() => SYNC.on && SYNC.state === 'ok', null, { timeout: 10000 }); await wait(500);
+ok('a reload brings back an order the phone had lost', await state(A.page, () => events('batter')[0].orders.some(o => o.name === 'Lost one')));
+ok('and it was never deleted from the shared list', await state(B.page, async () => { await syncNow(); return events('batter')[0].orders.some(o => o.name === 'Lost one'); }));
+
+// a second tab open on the same phone never saves an older copy over new orders
+const A2 = await A.ctx.newPage(); A2.on('pageerror', e => A.errors.push('tab2: ' + e.message));
+await A2.goto(URL); await A2.waitForFunction(() => SYNC.on && SYNC.state === 'ok', null, { timeout: 10000 });
+await B.page.evaluate(() => { const e = events('batter')[0]; e.orders.push({ id: uid(), name: 'Sister new', ch: 'dm', lines: [{ ref: e.items[0].id, qty: 1, price: null }], delivered: false, paid: false, t: Date.now() }); save(); });
+await wait(700); await sync(B.page); await sync(A.page); await wait(300);
+await A2.evaluate(() => { const e = events('batter')[0]; e.orders[0].paid = true; save(); });
+await wait(700); await sync(A2); await sync(A.page); await sync(B.page);
+ok('the other tab took the new order before saving', await state(A2, () => events('batter')[0].orders.some(o => o.name === 'Sister new')));
+ok('the new order survives an edit in the older tab', await state(B.page, () => events('batter')[0].orders.some(o => o.name === 'Sister new')) && await state(A.page, () => events('batter')[0].orders.some(o => o.name === 'Sister new')));
+await A2.close();
+
 // costing made on one phone shows on the other
 await A.page.evaluate(() => { S.costs.ings.push({ id: uid(), name: 'Toor dal', price: 110, unit: 'kg' }); S.costs.overhead = 18; save(); });
 await wait(700); await sync(A.page); await sync(B.page);

@@ -499,7 +499,7 @@ function fresh(){
 if(!S||S.version!==2) S=fresh();
 if(!S.costs) S.costs={overhead:15,ings:[],recipes:[]};
 var saveOK=true;
-function save(){ if(!canSave) return; saveOK=store.save(S); if(!saveOK) toast("Couldn't save on this phone. Export a backup from History."); syncQueue(); }
+function save(){ if(!canSave) return; saveOK=store.save(S); if(!saveOK) toast("Couldn't save on this phone."); syncQueue(); }
 
 /* ---------- shared data: on the hosted site, both phones see the same orders ----------
    The data is split into rows (a menu item, a lunch day, an order, a holiday). Each phone
@@ -587,6 +587,24 @@ async function syncNow(){
   }catch(e){ if(SYNC.state!=="signedout") SYNC.state="offline"; }
   finally{ SYNC.busy=false; syncPersist(); syncBadge(); }
 }
+/* Take the whole shared list as it is, keeping only my changes still waiting to go up.
+   A second tab, or a tab woken up after a while, can hold an older copy of the data;
+   without this it could save that copy over newer orders and then think it was up to date. */
+async function syncReconcile(){
+  if(!SYNC.on||SYNC.busy||SYNC.state==="signedout") return;
+  SYNC.busy=true;
+  try{
+    var got=await pullAll(0), merged={};
+    got.records.forEach(function(r){ if(!r.deleted) merged[r.id]=r.data; });
+    Object.keys(SYNC.pending).forEach(function(id){ var p=SYNC.pending[id]; if(p.deleted) delete merged[id]; else merged[id]=p.data; });
+    var before=JSON.stringify(flatten(S));
+    S=unflatten(merged,S.meta); store.save(S);
+    SYNC.last=flatten(S); SYNC.cursor=got.cursor; SYNC.state="ok"; SYNC.at=Date.now();
+    if(JSON.stringify(SYNC.last)!==before) softRender();
+  }catch(e){ if(SYNC.state!=="signedout") SYNC.state="offline"; }
+  finally{ SYNC.busy=false; syncPersist(); syncBadge(); }
+  syncNow();
+}
 function softRender(){
   var a=document.activeElement, typing=a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName);
   if(sheetOpen||typing){ SYNC.needRender=true; return; }
@@ -612,6 +630,7 @@ async function syncStart(){
   var saved=null; try{ saved=JSON.parse(localStorage.getItem(SK)); }catch(e){}
   if(saved&&saved.cursor){
     SYNC.cursor=saved.cursor; SYNC.last=saved.last||{}; SYNC.pending=saved.pending||{}; SYNC.at=saved.at||null;
+    await syncReconcile();
   } else {
     /* first time on this phone: take what's already shared; only bring local work along */
     var got; try{ got=await pullAll(0); }catch(e){ SYNC.state="offline"; syncBadge(); return; }
@@ -638,7 +657,14 @@ async function syncStart(){
   }
   syncNow();
   setInterval(function(){ if(!document.hidden) syncNow(); if(SYNC.needRender) softRender(); },15000);
-  document.addEventListener("visibilitychange",function(){ if(!document.hidden) syncNow(); });
+  document.addEventListener("visibilitychange",function(){ if(!document.hidden) syncReconcile(); });
+  /* another tab of the app saved: take its copy so this tab never writes an older one back */
+  window.addEventListener("storage",function(e){
+    try{
+      if(e.key===KEY&&e.newValue){ S=JSON.parse(e.newValue); SYNC.needRender=true; softRender(); }
+      if(e.key===SK&&e.newValue){ var v=JSON.parse(e.newValue); SYNC.cursor=v.cursor; SYNC.last=v.last||{}; SYNC.pending=v.pending||{}; SYNC.at=v.at||null; }
+    }catch(x){}
+  });
   window.addEventListener("online",syncNow);
 }
 function saveWarning(){ return canSave?'':'<p class="notice" style="margin:0 0 12px">This preview can\'t save. Open the file in Chrome or Safari to keep your orders.</p>'; }
