@@ -448,7 +448,6 @@ input[type=text],input[type=number],input[type=date],input[type=search],select,.
 <input type="file" id="fileIn" accept="application/json,.json" hidden>
 <script>
 "use strict";
-var BUILD="v2.5 — packaging style · 2026-10-28";
 var KEY="southsavory.v2";
 /* Starting menu lists, pulled from the old app (south-savory-tally.html):
    lunch dishes from its SEED list; prices only where the old app had his own figure
@@ -1907,7 +1906,7 @@ function viewHistory(q){
     '<div class="section"><h2>Past</h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="histSet(\'f\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
       (past.length?'<div class="list" style="margin-top:10px">'+past.map(function(ev){ var st=eventStats(ev);
         return '<a class="row" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+st.n+' '+(st.n===1?"order":"orders")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="amt num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</div>':'<p class="empty" style="margin-top:10px">Nothing here yet.</p>')+'</div>'+
-    '<div class="foot signoff">'+SS_MARK+'<span>South Savory · '+BUILD+'</span></div></main>';
+    '<div class="foot signoff">'+SS_MARK+'<span>South Savory · 2026</span></div></main>';
   tabbar("history");
 }
 
