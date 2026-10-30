@@ -18,6 +18,7 @@ function ok(name, cond, detail) {
 }
 const shot = async (page, name) => { await page.waitForTimeout(350); await page.screenshot({ path: path.join(SHOTS, name + '.png') }); };
 const ev = (page, fn, arg) => page.evaluate(fn, arg);
+const rupeeTxt = (n) => '₹' + n.toLocaleString('en-IN');
 
 async function fresh(browser, opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, colorScheme: opts.dark ? 'dark' : 'light' });
@@ -187,6 +188,29 @@ async function lunchFlow(browser) {
   await page.goto(URL + '#/history');
   await shot(page, '08-history');
   ok('history lists Unpaid and Change to give', (await page.textContent('main')).includes('Change to give'));
+  { const want = await ev(page, () => Object.values(S.events).reduce((a, e) => a + eventStats(e).total, 0));
+    const strip = await page.textContent('.strip');
+    ok('revenue shows all categories combined, unpaid included', want > 0 && strip.includes('South Savory revenue') && strip.includes(rupeeTxt(want)), strip + ' want ' + want);
+    ok('revenue has no paid/unpaid split', !/Paid|Unpaid/.test(strip), strip); }
+  { const rows = await page.$$eval('.section:has(h2:text("Revenue")) .list .row .t1', r => r.map(x => x.textContent));
+    ok('revenue splits into lunch, batter, drops and custom', rows.join('|') === 'Daily lunch|Batter|Special drops|Custom orders', rows.join('|')); }
+  await page.click('.seg >> text=All time');
+  ok('All time switches the revenue period', (await page.url()).includes('p=all') && await page.locator('.seg button[aria-pressed="true"]', { hasText: 'All time' }).count() === 1);
+  ok('Unpaid starts folded', !(await ev(page, () => document.getElementById('owedAcc').open)) && !(await page.locator('#owedAcc >> text=Mark paid').first().isVisible()));
+  await page.click('#owedAcc summary');
+  ok('tapping Unpaid opens the list', await page.locator('#owedAcc >> text=Mark paid').first().isVisible());
+  await page.locator('#owedAcc >> text=Mark paid').first().click();
+  ok('marking paid keeps the list open', await ev(page, () => document.getElementById('owedAcc').open));
+  await page.click('#owedAcc summary');
+  { await ev(page, () => window.scrollTo(0, document.body.scrollHeight));
+    const y0 = await ev(page, () => window.scrollY);
+    await page.click('.filters >> text=Lunch');
+    const y1 = await ev(page, () => window.scrollY);
+    ok('a Past filter keeps the scroll position', y0 > 100 && Math.abs(y1 - y0) < 40 && (await page.url()).includes('f=lunch'), y0 + ' -> ' + y1);
+    ok('the filter applies', await page.locator('.filters button[aria-pressed="true"]', { hasText: 'Lunch' }).count() === 1); }
+  await page.goto(URL + '#/history');
+  await page.waitForTimeout(3500);
+  await shot(page, '08-history');
   ok('no page errors (lunch)', errors.length === 0, errors.join(' | '));
   await ctx.close();
 }

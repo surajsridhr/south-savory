@@ -240,6 +240,10 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 .toast button{color:var(--on-primary);font-weight:500;text-decoration:underline;padding:6px 8px}
 
 .ferr{color:var(--negative);font-size:14px;margin:8px 0 0}
+.acc>summary{list-style:none;cursor:pointer}
+.acc>summary::-webkit-details-marker{display:none}
+.acc>summary .chev{transition:transform .2s}
+.acc[open]>summary .chev{transform:rotate(90deg)}
 .notice{background:var(--pill-warning-bg);color:var(--pill-warning-ink);border-radius:var(--radius-card);padding:12px 14px;font-size:14px}
 .notice.neutral{background:var(--raised);color:var(--text)}
 .filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:0 calc(-1 * var(--pad));padding:0 var(--pad)}
@@ -1811,8 +1815,27 @@ function viewMonth(q){
 }
 
 /* ======================= HISTORY ======================= */
+/* revenue by category for a month ("2026-10") or for everything ("all"); unpaid orders count, they get followed up */
+function revenueBy(per){
+  var r={total:0,paid:0,unpaid:0,n:0,cats:{lunch:{rev:0,n:0},batter:{rev:0,n:0},drop:{rev:0,n:0},custom:{rev:0,n:0}}};
+  events().forEach(function(ev){
+    if(per!=="all"&&(ev.date||"").slice(0,7)!==per) return;
+    var st=eventStats(ev), c=r.cats[ev.kind]; if(!c) return;
+    c.rev+=st.total; c.n+=st.n; r.total+=st.total; r.n+=st.n; r.paid+=st.paid; r.unpaid+=st.unpaid;
+  });
+  return r;
+}
+/* the History filters change the page in place, without jumping back to the top */
+function histSet(k,v){
+  var m=/[?&]f=([^&]*)/.exec(current), p=/[?&]p=([^&]*)/.exec(current);
+  var o={f:m?m[1]:"all",p:p?p[1]:"month"}; o[k]=v;
+  var h="#/history?f="+o.f+"&p="+o.p, y=window.scrollY;
+  current=h; try{ history.replaceState(null,"",h); }catch(e){}
+  render(); window.scrollTo(0,y);
+}
+var histOwedOpen=false;
 function viewHistory(q){
-  var f=q.f||"all";
+  var f=q.f||"all", per=q.p==="all"?"all":"month";
   var og=owedGroups(), ch=changeRows();
   var past=events().filter(isPast).filter(function(e){return f==="all"||e.kind===f;}).sort(function(a,b){return byDate(b,a);});
   var owedHtml=og.length?og.map(function(g){
@@ -1826,10 +1849,21 @@ function viewHistory(q){
     return '<div class="row"><span class="grow"><span class="t1" style="display:block">'+esc(r.o.name||"No name")+'</span><span class="t2" style="display:block">'+esc(evLabel(r.ev))+'</span></span><span class="val num" style="font-weight:500">'+rupee(r.o.changeDue)+'</span><button class="chip" onclick="giveChange(\''+r.ev.id+'\',\''+r.o.id+'\')">Given</button></div>';
   }).join("")+'</div>':'<p class="empty">No change owed to anyone.</p>';
   var fl=[["all","All"],["lunch","Lunch"],["batter","Batter"],["drop","Drops"],["custom","Custom"]];
+  var ym=todayKey().slice(0,7), rv=revenueBy(per==="all"?"all":ym);
+  var revRows=[["lunch","Daily lunch"],["batter","Batter"],["drop","Special drops"],["custom","Custom orders"]].map(function(k){
+    var c=rv.cats[k[0]];
+    return '<div class="row"><span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">'+(c.n?plural(c.n,"order")+' · '+Math.round(c.rev*100/(rv.total||1))+'%':'No orders')+'</span></span><span class="amt num">'+rupee(c.rev)+'</span></div>';
+  }).join("");
+  var owedSum=og.reduce(function(a,g){return a+g.total;},0);
   $app.innerHTML='<header class="bar"><h1 style="padding-left:8px">History</h1></header><main class="page">'+
-    '<div class="section" style="margin-top:4px"><h2>Unpaid<span class="aside num">'+(og.length?rupee(og.reduce(function(a,g){return a+g.total;},0))+" · oldest first":"")+'</span></h2>'+owedHtml+'</div>'+
+    '<div class="section" style="margin-top:4px"><h2>Revenue</h2><div class="seg full" role="group" aria-label="Period">'+
+      [["month",monthName(ym)],["all","All time"]].map(function(x){return '<button aria-pressed="'+(per===x[0])+'" onclick="histSet(\'p\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
+      '<div class="card strip num" style="margin-top:10px;grid-template-columns:1fr"><div><div class="lab">South Savory revenue</div><div class="v money">'+rupee(rv.total)+'</div></div></div>'+
+      '<div class="list" style="margin-top:10px">'+revRows+'</div>'+
+      '</div>'+
+    '<div class="section"><details class="acc" id="owedAcc"'+(histOwedOpen?' open':'')+' ontoggle="histOwedOpen=this.open"><summary class="card owedrow" style="margin-top:0"><span class="grow"><span style="font-weight:500;display:block">Unpaid</span><span class="sub" style="display:block;margin:0">'+(og.length?plural(og.length,"person","people")+' · oldest first':'Nobody owes anything')+'</span></span><span class="amt num">'+(og.length?rupee(owedSum):'')+'</span>'+I.chev+'</summary>'+(og.length?owedHtml:'')+'</details></div>'+
     '<div class="section"><h2>Change to give</h2>'+chHtml+'</div>'+
-    '<div class="section"><h2>Past</h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="go(\'#/history?f='+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
+    '<div class="section"><h2>Past</h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="histSet(\'f\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
       (past.length?'<div class="list" style="margin-top:10px">'+past.map(function(ev){ var st=eventStats(ev);
         return '<a class="row" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+st.n+' '+(st.n===1?"order":"orders")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="amt num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</div>':'<p class="empty" style="margin-top:10px">Nothing here yet.</p>')+'</div>'+
     '<div class="section"><h2>Data</h2><div class="card pad"><p class="small" id="syncState">'+(SYNC.on?esc(syncText()):"Everything is saved on this phone. Export a backup now and then.")+'</p>'+
