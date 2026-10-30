@@ -197,6 +197,40 @@ ok('old app: his ingredient prices brought in, units kept', imp.added === 2 && i
 ok('old app: an ingredient already in the list is not overwritten', imp.toor === 110);
 ok('old app: import message counts them', imp.res.includes('2 ingredient prices'), imp.res);
 
+// a wrong ingredient added from inside a recipe can be fixed or removed right there
+const p2 = await fresh(browser);
+await p2.page.goto(URL + '#/costs/ingredients'); await p2.page.reload();
+await addIng(p2.page, 'Papad', 60, 'piece');
+await addIng(p2.page, 'Wrong thing', 5, 'kg');
+await p2.page.goto(URL + '#/costs/tier/1');
+await p2.page.click('text=Add ingredient'); await p2.page.waitForTimeout(350);
+await p2.page.click('#ipList button[aria-label="Edit Wrong thing"]'); await p2.page.waitForTimeout(350);
+await p2.page.click('.sheet >> text=Remove ingredient'); await p2.page.waitForTimeout(400);
+ok('picker: Edit opens the ingredient and Remove takes it out', await ev(p2.page, () => !ingByName('Wrong thing')));
+ok('picker: after removing, the ingredient list is back without it', (await p2.page.textContent('#ipList')).includes('Papad') && !(await p2.page.textContent('#ipList')).includes('Wrong thing'));
+
+// papad is bought by the pack and used by the piece
+await p2.page.click('#ipList button:has-text("Papad")'); await p2.page.waitForTimeout(350);
+await p2.page.locator('#rdLines input').last().fill('2');
+await p2.page.fill('#rdMakes', '20');
+await p2.page.click('.dock >> text=Save'); await p2.page.waitForTimeout(300);
+await p2.page.goto(URL + '#/costs/ingredients');
+await p2.page.click('button:has-text("Papad")'); await p2.page.waitForTimeout(350);
+const units = await p2.page.locator('#ieUnit option').evaluateAll(os => os.map(o => o.value).join(','));
+ok('pack: in a recipe, a piece ingredient can switch only to per pack', units === 'piece,pack', units);
+await p2.page.selectOption('#ieUnit', 'pack');
+await p2.page.click('#ieSave'); await p2.page.waitForTimeout(200);
+ok('pack: asks how many pieces before saving', await p2.page.isVisible('#iePackErr'));
+await p2.page.fill('#iePack', '20');
+await p2.page.click('#ieSave'); await p2.page.waitForTimeout(350);
+ok('pack: list shows the pack size', (await text(p2.page)).includes('per pack of 20'));
+// ₹60 for 20 = ₹3 a piece; 2 pieces = ₹6; + 15% = ₹6.90; 20 portions = ₹0.345 each
+const pc = await ev(p2.page, () => { const r = recipeCost(recipeById('tier1')); return [r.ing, Math.round(r.per * 1000)]; });
+ok('pack: recipe costs 2 pieces at ₹3 each', pc[0] === 6 && pc[1] === 345, JSON.stringify(pc));
+await p2.page.goto(URL + '#/costs/tier/1');
+ok('pack: recipe line says per pack of 20 and ₹6', (await p2.page.textContent('#rdLines')).includes('₹60 per pack of 20') && (await p2.page.textContent('#rdLines')).includes('₹6'));
+ok('pack: no page errors', p2.errors.length === 0, p2.errors.join(' | '));
+
 // dark mode renders
 const d = await fresh(browser, { dark: true });
 await d.page.goto(URL + '#/costs'); await d.page.reload();

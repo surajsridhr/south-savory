@@ -183,7 +183,7 @@ await page.fill('#ieName', 'raw rice '); await page.click('#ieSave'); await wait
 ok('same name in other case refused', await ev(page, () => S.costs.ings.filter(g => normName(g.name) === 'raw rice').length === 1));
 await page.click('.sheet .sh >> text=Cancel'); await wait(page);
 await page.click('button.row:has-text("Raw Rice")'); await wait(page);
-ok('an ingredient in recipes has its unit fixed, and says why', await page.locator('#ieUnit').isDisabled() && (await page.textContent('.sheet')).includes('so its unit stays per kg'));
+ok('an ingredient in recipes keeps to units counted the same way, and says why', (await page.locator('#ieUnit option').evaluateAll(os => os.map(o => o.value).join(','))) === 'kg' && (await page.textContent('.sheet')).includes('so amounts there stay in g'));
 const before = await ev(page, id => unitCost('lunch', id), rice);
 await page.fill('#iePrice', '100'); await page.click('#ieSave'); await wait(page);
 const after = await ev(page, id => unitCost('lunch', id), rice);
