@@ -157,6 +157,7 @@ async function lunchFlow(browser) {
   await page.click(`button[onclick="odStep('${chap}',1)"]`);
   await page.click('#odSave');
   const og = await ev(page, () => owedGroups().map(g => g.name + ':' + g.total));
+  ok('who owes most comes first', og[0] === 'Ramesh:110', JSON.stringify(og));
   ok('owed groups ignore case/spaces only', og.length === 2 && og.includes('Ramesh:110') && og.includes('Ramesh K:30'), JSON.stringify(og));
 
   // change to give: Priya paid 200 for 180
@@ -206,6 +207,7 @@ async function lunchFlow(browser) {
     ok('revenue splits into lunch, batter, drops and custom', rows.join('|') === 'Daily lunch|Batter|Special drops|Custom orders', rows.join('|')); }
   await page.click('.seg >> text=All time');
   ok('All time switches the revenue period', (await page.url()).includes('p=all') && await page.locator('.seg button[aria-pressed="true"]', { hasText: 'All time' }).count() === 1);
+  ok('Unpaid has no extra label', !(await page.textContent('#owedAcc summary')).includes('oldest'));
   ok('Unpaid starts folded', !(await ev(page, () => document.getElementById('owedAcc').open)) && !(await page.locator('#owedAcc >> text=Mark paid').first().isVisible()));
   await page.click('#owedAcc summary');
   ok('tapping Unpaid opens the list', await page.locator('#owedAcc >> text=Mark paid').first().isVisible());
@@ -219,8 +221,10 @@ async function lunchFlow(browser) {
     ok('a Past filter keeps the scroll position', y0 > 100 && Math.abs(y1 - y0) < 40 && (await page.url()).includes('f=lunch'), y0 + ' -> ' + y1);
     ok('the filter applies', await page.locator('.filters button[aria-pressed="true"]', { hasText: 'Lunch' }).count() === 1); }
   await page.goto(URL + '#/history');
-  await page.waitForTimeout(3500);
+  await ev(page, () => { const x = document.getElementById('toast'); if (x) x.style.display = 'none'; window.scrollTo(0, 260); });
   await shot(page, '08-history');
+  await page.click('#owedAcc summary');
+  await shot(page, '08b-history-unpaid-open');
   ok('no page errors (lunch)', errors.length === 0, errors.join(' | '));
   await ctx.close();
 }

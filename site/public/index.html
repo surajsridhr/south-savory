@@ -240,7 +240,7 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 .toast button{color:var(--on-primary);font-weight:500;text-decoration:underline;padding:6px 8px}
 
 .ferr{color:var(--negative);font-size:14px;margin:8px 0 0}
-.acc>summary{list-style:none;cursor:pointer}
+.acc>summary{list-style:none;cursor:pointer;display:block}
 .acc>summary::-webkit-details-marker{display:none}
 .acc>summary .chev{transition:transform .2s}
 .acc[open]>summary .chev{transform:rotate(90deg)}
@@ -761,7 +761,7 @@ function owedGroups(){
     });
   });
   return Object.keys(g).map(function(k){ var x=g[k]; x.rows.sort(function(a,b){return byDate(a.ev,b.ev);}); return x; })
-    .sort(function(a,b){ return a.oldest<b.oldest?-1:a.oldest>b.oldest?1:(a.oldestT-b.oldestT)||(a.name<b.name?-1:1); });
+    .sort(function(a,b){ return (b.total-a.total)||(a.oldest<b.oldest?-1:a.oldest>b.oldest?1:(a.oldestT-b.oldestT))||(a.name<b.name?-1:1); }); /* who owes most first */
 }
 function changeRows(){
   var out=[];
@@ -882,7 +882,7 @@ function viewHome(){
   $app.innerHTML='<header class="brandhead"><h1 style="margin:0">'+SS_WORD+'</h1></header>'+
     '<main class="page">'+saveWarning()+((SYNC.state==="offline"&&Object.keys(SYNC.pending).length)||SYNC.state==="signedout"?'<p class="notice neutral" style="margin:0 0 12px" id="syncState">'+esc(syncText())+'</p>':'')+'<p class="dateline">'+fmtDate(t)+(isMonday(t)?" · Monday, kitchen off":"")+'</p>'+
     '<div class="tiles">'+tile("Daily lunch","#/lunch",lunchTile)+tile("Batter","#/batter",bt)+tile("Special drops","#/drops",dt)+tile("Custom orders","#/custom",ct)+'</div>'+
-    (og.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Unpaid</span><span class="sub" style="display:block;margin:0">'+og.length+' '+(og.length===1?"person":"people")+' · oldest '+relLower(og[0].oldest)+'</span></span><span class="big num">'+rupee(owed)+'</span>'+I.chev+'</a>':'')+
+    (og.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Unpaid</span><span class="sub" style="display:block;margin:0">'+og.length+' '+(og.length===1?"person":"people")+' · oldest '+relLower(og.reduce(function(m,g){return g.oldest<m?g.oldest:m;},og[0].oldest))+'</span></span><span class="big num">'+rupee(owed)+'</span>'+I.chev+'</a>':'')+
     (ch.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Change to give</span><span class="sub" style="display:block;margin:0">'+ch.length+' '+(ch.length===1?"person":"people")+'</span></span><span class="big num" style="font-weight:500">'+rupee(ch.reduce(function(a,r){return a+Number(r.o.changeDue);},0))+'</span>'+I.chev+'</a>':'')+
     '</main>';
   tabbar("home");
@@ -1864,7 +1864,7 @@ function viewHistory(q){
       '<div class="card strip num" style="margin-top:10px;grid-template-columns:1fr"><div><div class="lab">South Savory revenue</div><div class="v money">'+rupee(rv.total)+'</div></div></div>'+
       '<div class="list" style="margin-top:10px">'+revRows+'</div>'+
       '</div>'+
-    '<div class="section"><details class="acc" id="owedAcc"'+(histOwedOpen?' open':'')+' ontoggle="histOwedOpen=this.open"><summary class="card owedrow" style="margin-top:0"><span class="grow"><span style="font-weight:500;display:block">Unpaid</span><span class="sub" style="display:block;margin:0">'+(og.length?plural(og.length,"person","people")+' · oldest first':'Nobody owes anything')+'</span></span><span class="amt num">'+(og.length?rupee(owedSum):'')+'</span>'+I.chev+'</summary>'+(og.length?owedHtml:'')+'</details></div>'+
+    '<div class="section"><details class="acc" id="owedAcc"'+(histOwedOpen?' open':'')+' ontoggle="histOwedOpen=this.open"><summary class="list"><span class="row"><span class="grow"><span class="t1" style="display:block">Unpaid</span>'+(og.length?'':'<span class="t2" style="display:block">Nobody owes anything</span>')+'</span><span class="amt num">'+(og.length?rupee(owedSum):'')+'</span>'+I.chev+'</span></summary>'+(og.length?owedHtml:'')+'</details></div>'+
     '<div class="section"><h2>Change to give</h2>'+chHtml+'</div>'+
     '<div class="section"><h2>Past</h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="histSet(\'f\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
       (past.length?'<div class="list" style="margin-top:10px">'+past.map(function(ev){ var st=eventStats(ev);
