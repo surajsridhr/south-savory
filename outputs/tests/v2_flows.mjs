@@ -221,6 +221,12 @@ async function lunchFlow(browser) {
     await page.click('.seg >> text=Monthly');
     ok('Monthly opens on the month you are in', (await page.textContent('#revMonth')) === await ev(page, () => monthName(todayKey().slice(0, 7))));
     ok('the arrow stops at the latest month', await page.locator('button[aria-label="Next month"]').isDisabled());
+    const groups = await page.$$eval('.pastmonth', g => g.map(x => [x.querySelector('.grouphead').textContent, x.querySelectorAll('.row').length]));
+    const iMar = groups.findIndex(g => g[0].startsWith('March 2026')), iJan = groups.findIndex(g => g[0].startsWith('January 2026'));
+    ok('Past groups orders by month, newest first, with the month total', iMar >= 0 && iJan === iMar + 1 && groups[iMar][1] === 2 && groups[iMar][0].includes('₹1,000') && groups[iJan][1] === 1, JSON.stringify(groups));
+    await page.click('.filters >> text=Lunch');
+    ok('a Past filter leaves out months with nothing to show', !(await page.$$eval('.pastmonth .grouphead', g => g.map(x => x.textContent))).some(x => x.startsWith('March 2026')));
+    await page.click('.filters >> text=All');
     await ev(page, () => { delete S.events.mA; delete S.events.mB; delete S.events.mC; render(); }); }
   ok('Unpaid has no extra label', !(await page.textContent('#owedAcc summary')).includes('oldest'));
   ok('Unpaid starts folded', !(await ev(page, () => document.getElementById('owedAcc').open)) && !(await page.locator('#owedAcc >> text=Mark paid').first().isVisible()));
@@ -416,6 +422,7 @@ async function fromDiskFlow(browser) {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 } });
   const page = await ctx.newPage(); const errors = [];
   page.on('pageerror', e => errors.push(e.message));
+  await page.clock.setFixedTime(new Date('2026-10-27T09:00:00'));   // a Tuesday: Mondays have no menu to set
   await page.goto('file://' + path.join(ROOT, 'site/public/index.html'));
   await page.evaluate(() => localStorage.clear()); await page.reload();
   await page.click('a.tile[href="#/lunch"]');
