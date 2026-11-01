@@ -95,7 +95,7 @@ async function lunchFlow(browser) {
   await page.locator('.order', { hasText: 'Priya' }).locator('text=Hand over').click();
   const inSec = async (title, name) => (await page.locator('.section:has(h2:text("' + title + '"))').locator('.order', { hasText: name }).count()) === 1;
   ok('a handed-over order stays put so Paid can follow', await inSec('To hand over', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).locator('text=Handed over').isVisible());
-  await ev(page, () => { go('#/'); history.back(); });
+  await ev(page, () => { const h = current; go('#/'); go(h); });
   await page.waitForTimeout(300);
   ok('leaving and coming back moves it out of "To hand over"', await inSec('Handed over, not paid', 'Priya'));
   { const h = await page.textContent('.section:has(h2:text("To hand over")) h2'); ok('"To hand over" counts orders, not a portion total', h.includes('1 order') && !h.includes('portion'), h); }
@@ -106,7 +106,7 @@ async function lunchFlow(browser) {
   ok('paid stays in place too', await inSec('Handed over, not paid', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).locator('text=Paid').isVisible());
   await ev(page, () => render());
   ok('a sync re-render does not move it', await inSec('Handed over, not paid', 'Priya'));
-  await ev(page, () => { go('#/'); history.back(); });
+  await ev(page, () => { const h = current; go('#/'); go(h); });
   await page.waitForTimeout(300);
   ok('handed over and paid goes to Done', await inSec('Done', 'Priya'));
   await shot(page, '05-lunch-day-orders');
@@ -207,6 +207,21 @@ async function lunchFlow(browser) {
     ok('revenue splits into lunch, batter, drops and custom', rows.join('|') === 'Daily lunch|Batter|Special drops|Custom orders', rows.join('|')); }
   await page.click('.seg >> text=All time');
   ok('All time switches the revenue period', (await page.url()).includes('p=all') && await page.locator('.seg button[aria-pressed="true"]', { hasText: 'All time' }).count() === 1);
+  // past months: seeded so the sums can be worked by hand
+  { await ev(page, () => { const mk = (id, date, price) => ({ id, kind: 'drop', title: 'T', date, status: 'closed', items: [], createdAt: 1, orders: [{ id: 'a' + id, name: 'A', lines: [{ ref: 'x', q: 1, price }], delivered: true, paid: true }] });
+      S.events.mA = mk('mA', '2026-03-10', 700); S.events.mB = mk('mB', '2026-03-20', 300); S.events.mC = mk('mC', '2026-01-05', 450); render(); });
+    const rows = await page.$$eval('#revByMonth .row', r => r.map(x => x.textContent));
+    ok('All time lists each past month with its revenue', rows.some(x => x.includes('March 2026') && x.includes('2 orders') && x.includes('₹1,000')) && rows.some(x => x.includes('January 2026') && x.includes('₹450')), rows.join(' | '));
+    ok('a month with no orders is not listed', !rows.some(x => x.includes('February 2026')));
+    await page.click('#revByMonth >> text=March 2026');
+    ok('tapping a month opens that month', (await page.textContent('#revMonth')) === 'March 2026' && (await page.url()).includes('p=2026-03') && (await page.textContent('.section:has(h2:text("Revenue")) .strip')).includes('₹1,000'));
+    await page.click('button[aria-label="Previous month"]');
+    ok('the arrow steps to the month before with orders', (await page.textContent('#revMonth')) === 'January 2026');
+    ok('the arrow stops at the first month', await page.locator('button[aria-label="Previous month"]').isDisabled());
+    await page.click('.seg >> text=Monthly');
+    ok('Monthly opens on the month you are in', (await page.textContent('#revMonth')) === await ev(page, () => monthName(todayKey().slice(0, 7))));
+    ok('the arrow stops at the latest month', await page.locator('button[aria-label="Next month"]').isDisabled());
+    await ev(page, () => { delete S.events.mA; delete S.events.mB; delete S.events.mC; render(); }); }
   ok('Unpaid has no extra label', !(await page.textContent('#owedAcc summary')).includes('oldest'));
   ok('Unpaid starts folded', !(await ev(page, () => document.getElementById('owedAcc').open)) && !(await page.locator('#owedAcc >> text=Mark paid').first().isVisible()));
   await page.click('#owedAcc summary');
@@ -418,8 +433,38 @@ async function fromDiskFlow(browser) {
   ok('from disk: order still there after reload', await page.evaluate(() => events('lunch')[0].orders.length === 1));
   await page.click('.bar .act');            // Menu list
   await page.goBack(); await page.waitForTimeout(200);
-  ok('from disk: phone back button returns to the last screen', (await page.textContent('.bar h1')) === 'Daily lunch', await page.textContent('.bar h1'));
+  ok('from disk: phone back button returns Home', (await page.locator('.tile').count()) === 4);
   ok('no page errors (disk)', errors.length === 0, errors.join(' | '));
+  await ctx.close();
+}
+
+// back goes to Home, and back again leaves the app, however many screens were visited
+async function backFlow(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 375, height: 812 } });
+  const page = await ctx.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
+  await page.goto('about:blank');
+  await page.goto(URL + '#/'); await page.evaluate(() => localStorage.clear()); await page.reload();
+  const home = async () => (await page.locator('.tile').count()) === 4;
+  await page.click('.tabbar >> text=History'); await page.click('.tabbar >> text=Costs'); await page.click('text=Ingredients');
+  await page.click('.bar .back'); await page.click('.tabbar >> text=Home');
+  await page.click('a.tile[href="#/batter"]'); await page.click('.tabbar >> text=History'); await page.click('.tabbar >> text=Costs');
+  await page.waitForTimeout(100);
+  await page.goBack(); await page.waitForTimeout(200);
+  ok('back: first back from a deep visit goes Home', await home());
+  await page.goBack(); await page.waitForTimeout(200);
+  ok('back: second back leaves the app', page.url() === 'about:blank', page.url());
+  await page.goto(URL + '#/costs/ingredients'); await page.waitForTimeout(200);
+  await page.reload(); await page.reload(); await page.waitForTimeout(200);
+  await page.goBack(); await page.waitForTimeout(200);
+  ok('back: a reload on a deep screen still goes Home', await home());
+  await page.click('.tabbar >> text=Costs'); await page.click('text=Ingredients');
+  await page.click('.dock >> text=New ingredient'); await page.waitForTimeout(350);
+  await page.fill('#ieName', 'Half typed');
+  await page.goBack(); await page.waitForTimeout(400);
+  ok('back: with a sheet open it only closes the sheet', (await page.locator('.sheet').count()) === 0 && (await page.textContent('.bar h1')) === 'Ingredients');
+  await page.goBack(); await page.waitForTimeout(200);
+  ok('back: then back goes Home', await home());
+  ok('no page errors (back)', errors.length === 0, errors.join(' | '));
   await ctx.close();
 }
 
@@ -511,7 +556,7 @@ async function listPriceFlow(browser) {
 }
 
 const browser = await chromium.launch();
-for (const f of [fromDiskFlow, lunchFlow, clearMenuFlow, deleteEventFlow, listPriceFlow, mondayFlow, batterFlow, dropFlow, customFlow, importFlow, darkShots]) {
+for (const f of [fromDiskFlow, lunchFlow, clearMenuFlow, deleteEventFlow, listPriceFlow, mondayFlow, batterFlow, dropFlow, customFlow, importFlow, backFlow, darkShots]) {
   try { await f(browser); } catch (e) { ok(f.name + ' ran to the end', false, e.message.split('\n')[0]); }
 }
 await browser.close();

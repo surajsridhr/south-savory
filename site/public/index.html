@@ -825,14 +825,33 @@ function route(){
   var parts=h.slice(1).split("?"); (parts[1]||"").split("&").forEach(function(p){ if(!p) return; var kv=p.split("="); q[kv[0]]=decodeURIComponent(kv[1]||""); });
   return {path:parts[0]||"/",q:q};
 }
+/* the phone's back history is only ever two steps, Home and the screen on top of it,
+   so back goes to Home and back again closes the app */
+function isHomeHash(h){ return !h||h==="#"||h==="#/"; }
+var stepping=false;   /* history.back() is on its way; a screen opened meanwhile is added once it lands */
+function onTop(){ return !!(history.state&&history.state.top); }
+if(canPush){ try{
+  if(!history.state){
+    if(isHomeHash(current)) history.replaceState({top:false},"",location.href);
+    else { history.replaceState({top:false},"","#/"); history.pushState({top:true},"",current); }
+  }
+}catch(e){ canPush=false; } }
 function go(h){
   if(h!==current&&!leaveRecipeOk()) return;
   var same=(h===current); current=h; if(!same) held={o:{}};
-  if(!same&&canPush){ try{ history.pushState(null,"",h); }catch(e){ canPush=false; } }
+  if(!same&&canPush){ try{
+    if(stepping){}
+    else if(isHomeHash(h)){ if(onTop()){ stepping=true; history.back(); } else history.replaceState({top:false},"",h); }
+    else if(onTop()) history.replaceState({top:true},"",h);
+    else history.pushState({top:true},"",h);
+  }catch(e){ canPush=false; } }
   closeSheet(true); render(); if(!same) window.scrollTo(0,0);
 }
 window.addEventListener("popstate",function(){
-  if((location.hash||"#/")!==current&&!leaveRecipeOk()){ try{ history.pushState(null,"",current); }catch(e){} return; }
+  if(stepping){ stepping=false; if(!isHomeHash(current)){ try{ history.pushState({top:true},"",current); }catch(e){} } return; }   /* our own step back to Home */
+  /* back with a sheet open only closes the sheet, so a half-typed order isn't lost to a stray press */
+  if(sheetOpen){ try{ history.pushState({top:true},"",current); }catch(e){} closeSheet(); return; }
+  if(!leaveRecipeOk()){ try{ history.pushState({top:true},"",current); }catch(e){} return; }
   current=location.hash||"#/"; held={o:{}}; closeSheet(true); render(); window.scrollTo(0,0); });
 document.addEventListener("click",function(e){
   var a=e.target.closest&&e.target.closest('a[href^="#"]');
@@ -1871,12 +1890,19 @@ function histSet(k,v){
   var m=/[?&]f=([^&]*)/.exec(current), p=/[?&]p=([^&]*)/.exec(current);
   var o={f:m?m[1]:"all",p:p?p[1]:"month"}; o[k]=v;
   var h="#/history?f="+o.f+"&p="+o.p, y=window.scrollY;
-  current=h; try{ history.replaceState(null,"",h); }catch(e){}
+  current=h; try{ history.replaceState(history.state,"",h); }catch(e){}
   render(); window.scrollTo(0,y);
+}
+/* every month with past orders, newest first, always including this one */
+function revenueMonths(){
+  var seen={}; seen[todayKey().slice(0,7)]=1;
+  events().forEach(function(ev){ if(isPast(ev)&&ev.date) seen[ev.date.slice(0,7)]=1; });
+  return Object.keys(seen).sort().reverse();
 }
 var histOwedOpen=false;
 function viewHistory(q){
-  var f=q.f||"all", per=q.p==="all"?"all":"month";
+  var f=q.f||"all", per=q.p==="all"?"all":"month", months=revenueMonths();
+  var ym=months.indexOf(q.p)>=0?q.p:todayKey().slice(0,7), mi=months.indexOf(ym);
   var og=owedGroups(), ch=changeRows();
   var past=events().filter(isPast).filter(function(e){return f==="all"||e.kind===f;}).sort(function(a,b){return byDate(b,a);});
   var owedHtml=og.length?og.map(function(g){
@@ -1890,7 +1916,7 @@ function viewHistory(q){
     return '<div class="row"><span class="grow"><span class="t1" style="display:block">'+esc(r.o.name||"No name")+'</span><span class="t2" style="display:block">'+esc(evLabel(r.ev))+'</span></span><span class="val num" style="font-weight:500">'+rupee(r.o.changeDue)+'</span><button class="chip" onclick="giveChange(\''+r.ev.id+'\',\''+r.o.id+'\')">Given</button></div>';
   }).join("")+'</div>':'<p class="empty">No change owed to anyone.</p>';
   var fl=[["all","All"],["lunch","Lunch"],["batter","Batter"],["drop","Drops"],["custom","Custom"]];
-  var ym=todayKey().slice(0,7), rv=revenueBy(per==="all"?"all":ym);
+  var rv=revenueBy(per==="all"?"all":ym);
   var revRows=[["lunch","Daily lunch"],["batter","Batter"],["drop","Special drops"],["custom","Custom orders"]].map(function(k){
     var c=rv.cats[k[0]];
     return '<div class="row"><span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">'+(c.n?plural(c.n,"order")+' · '+Math.round(c.rev*100/(rv.total||1))+'%':'No orders')+'</span></span><span class="amt num">'+rupee(c.rev)+'</span></div>';
@@ -1898,9 +1924,14 @@ function viewHistory(q){
   var owedSum=og.reduce(function(a,g){return a+g.total;},0);
   $app.innerHTML='<header class="bar"><h1 style="padding-left:8px">History</h1></header><main class="page">'+
     '<div class="section" style="margin-top:4px"><h2>Revenue</h2><div class="seg full" role="group" aria-label="Period">'+
-      [["month",monthName(ym)],["all","All time"]].map(function(x){return '<button aria-pressed="'+(per===x[0])+'" onclick="histSet(\'p\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
+      [["month","Monthly"],["all","All time"]].map(function(x){return '<button aria-pressed="'+(per===x[0])+'" onclick="histSet(\'p\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
+      (per==="month"?'<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><button class="btn secondary icon" aria-label="Previous month" '+(mi>=months.length-1?'disabled':'onclick="histSet(\'p\',\''+months[mi+1]+'\')"')+'>'+I.back+'</button>'+
+        '<h3 id="revMonth" style="flex:1;text-align:center;font-size:17px;font-weight:500;margin:0">'+monthName(ym)+'</h3>'+
+        '<button class="btn secondary icon" aria-label="Next month" '+(mi<=0?'disabled':'onclick="histSet(\'p\',\''+months[mi-1]+'\')"')+'><span style="display:flex;transform:scaleX(-1)">'+I.back+'</span></button></div>':'')+
       '<div class="card strip num" style="margin-top:10px;grid-template-columns:1fr"><div><div class="lab">South Savory revenue</div><div class="v money">'+rupee(rv.total)+'</div></div></div>'+
       '<div class="list" style="margin-top:10px">'+revRows+'</div>'+
+      (per==="all"?'<h3 style="font-size:15px;font-weight:500;margin:16px 0 0">By month</h3><div class="list" id="revByMonth" style="margin-top:8px">'+months.map(function(m){ var mr=revenueBy(m);
+        return '<button class="row" onclick="histSet(\'p\',\''+m+'\')"><span class="grow"><span class="t1" style="display:block">'+monthName(m)+'</span><span class="t2 num" style="display:block">'+(mr.n?plural(mr.n,"order"):'No orders')+'</span></span><span class="amt num">'+rupee(mr.total)+'</span>'+I.chev+'</button>'; }).join("")+'</div>':'')+
       '</div>'+
     '<div class="section"><details class="acc" id="owedAcc"'+(histOwedOpen?' open':'')+' ontoggle="histOwedOpen=this.open"><summary class="list"><span class="row"><span class="grow"><span class="t1" style="display:block">Unpaid</span>'+(og.length?'':'<span class="t2" style="display:block">Nobody owes anything</span>')+'</span><span class="amt num">'+(og.length?rupee(owedSum):'')+'</span>'+I.chev+'</span></summary>'+(og.length?owedHtml:'')+'</details></div>'+
     '<div class="section"><h2>Change to give</h2>'+chHtml+'</div>'+

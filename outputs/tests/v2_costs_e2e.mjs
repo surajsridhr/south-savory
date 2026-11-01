@@ -100,7 +100,8 @@ await page.click('.bar .back'); await wait(page);
 ok('Back with no edits does not ask', asked === '' && await title(page) === 'Costs');
 await page.click(`a.row[href="#/costs/item/lunch/${rice}"] >> nth=0`); await wait(page);
 await page.goBack(); await wait(page);
-ok('phone back from the recipe goes to Costs', await title(page) === 'Costs' && asked === '');
+ok('phone back from the recipe goes to Home', (await page.textContent('#app')).includes('Daily lunch') && asked === '');
+await page.click('.tabbar >> text=Costs'); await wait(page);
 answer = 'accept';
 
 // a tier recipe from Costs › Curry tiers
