@@ -192,7 +192,7 @@ async function lunchFlow(browser) {
   const want = await ev(page, () => Object.values(S.events).filter(isPast).reduce((a, e) => a + eventStats(e).total, 0));
   const wantN = await ev(page, () => Object.values(S.events).filter(isPast).reduce((a, e) => a + e.orders.length, 0));
   { const pastN = await page.$$eval('.section:has(h2:text("Past")) .list .row', r => r.length);
-    ok('revenue counts the same days Past lists', pastN === await ev(page, () => Object.values(S.events).filter(isPast).length)); }
+    ok('revenue counts the same days Past lists', pastN === await ev(page, () => { const ym = todayKey().slice(0, 7); return Object.values(S.events).filter(e => isPast(e) && e.date.slice(0, 7) === ym).length; })); }
   {
     const strip = await page.textContent('.strip');
     ok('revenue shows all categories combined, unpaid included', strip.includes('South Savory revenue') && strip.includes(rupeeTxt(want)), strip + ' want ' + want);
@@ -221,12 +221,30 @@ async function lunchFlow(browser) {
     await page.click('.seg >> text=Monthly');
     ok('Monthly opens on the month you are in', (await page.textContent('#revMonth')) === await ev(page, () => monthName(todayKey().slice(0, 7))));
     ok('the arrow stops at the latest month', await page.locator('button[aria-label="Next month"]').isDisabled());
-    const groups = await page.$$eval('.pastmonth', g => g.map(x => [x.querySelector('.grouphead').textContent, x.querySelectorAll('.row').length]));
-    const iMar = groups.findIndex(g => g[0].startsWith('March 2026')), iJan = groups.findIndex(g => g[0].startsWith('January 2026'));
-    ok('Past groups orders by month, newest first, with the month total', iMar >= 0 && iJan === iMar + 1 && groups[iMar][1] === 2 && groups[iMar][0].includes('₹1,000') && groups[iJan][1] === 1, JSON.stringify(groups));
+    ok('Monthly: Past shows only the month you are on', !(await page.textContent('main')).includes('Mon 5 Jan') && (await page.locator('.section:has(h2:text("Past"))').textContent()).includes(await ev(page, () => monthName(todayKey().slice(0, 7)))));
+    await page.click('.seg >> text=All time');
+    ok('All time: Past gives way to the By month list', await page.locator('.section:has(h2:text("Past"))').count() === 0 && await page.locator('.filters').count() === 0);
+    await page.click('#revByMonth >> text=March 2026');
+    { const past = await page.locator('.section:has(h2:text("Past"))').textContent();
+      ok('opening March lists its 2 drops and only those', await page.locator('.section:has(h2:text("Past")) .list .row').count() === 2 && past.includes('March 2026'), past); }
+    ok('opening a month starts at the top', await ev(page, () => window.scrollY) === 0);
     await page.click('.filters >> text=Lunch');
-    ok('a Past filter leaves out months with nothing to show', !(await page.$$eval('.pastmonth .grouphead', g => g.map(x => x.textContent))).some(x => x.startsWith('March 2026')));
+    ok('a filter works within the month', (await page.locator('.section:has(h2:text("Past"))').textContent()).includes('Nothing in March 2026'));
     await page.click('.filters >> text=All');
+    ok('Unpaid is not tied to the month on screen', await ev(page, () => { S.events.mU = { id: 'mU', kind: 'drop', title: 'Old', date: '2026-01-05', status: 'closed', items: [], createdAt: 1, orders: [{ id: 'aU', name: 'Old debt', lines: [{ ref: 'x', q: 1, price: 900 }], delivered: true, paid: false }] }; render(); const had = document.getElementById('owedAcc').textContent.includes('Old debt'); delete S.events.mU; render(); return had; }));
+    // an earlier year folds into one row: 200 + 300 = ₹500
+    await ev(page, () => { const mk = (id, date, price) => ({ id, kind: 'drop', title: 'T', date, status: 'closed', items: [], createdAt: 1, orders: [{ id: 'a' + id, name: 'A', lines: [{ ref: 'x', q: 1, price }], delivered: true, paid: true }] });
+      S.events.mY = mk('mY', '2025-11-10', 200); S.events.mZ = mk('mZ', '2025-04-10', 300); histSet('p', 'all'); });
+    { const yr = page.locator('.yearacc', { hasText: '2025' });
+      ok('an earlier year is one folded row with its total', await yr.count() === 1 && (await yr.locator('summary').textContent()).includes('₹500') && (await yr.locator('summary').textContent()).includes('2 months') && !(await yr.locator('text=November 2025').isVisible()));
+      ok('this year stays out of the fold', (await page.textContent('#revByMonth')).includes('March 2026') && !(await page.textContent('#revByMonth')).includes('2025'));
+      await yr.locator('summary').click();
+      ok('tapping the year opens its months', await yr.locator('text=November 2025').isVisible());
+      await yr.locator('text=November 2025').click();
+      ok('a month from an earlier year opens', (await page.textContent('#revMonth')) === 'November 2025');
+      await page.click('.seg >> text=All time');
+      ok('the year stays open when you come back', await page.locator('.yearacc', { hasText: '2025' }).locator('text=November 2025').isVisible()); }
+    await ev(page, () => { delete S.events.mY; delete S.events.mZ; histSet('p', 'month'); });
     await ev(page, () => { delete S.events.mA; delete S.events.mB; delete S.events.mC; render(); }); }
   ok('Unpaid has no extra label', !(await page.textContent('#owedAcc summary')).includes('oldest'));
   ok('Unpaid starts folded', !(await ev(page, () => document.getElementById('owedAcc').open)) && !(await page.locator('#owedAcc >> text=Mark paid').first().isVisible()));

@@ -1899,12 +1899,27 @@ function revenueMonths(){
   events().forEach(function(ev){ if(isPast(ev)&&ev.date) seen[ev.date.slice(0,7)]=1; });
   return Object.keys(seen).sort().reverse();
 }
-var histOwedOpen=false;
+/* opening a month from the All time list starts at the top of that month */
+function histMonth(m){ histSet("p",m); window.scrollTo(0,0); }
+function monthRow(m){ var mr=revenueBy(m);
+  return '<button class="row" onclick="histMonth(\''+m+'\')"><span class="grow"><span class="t1" style="display:block">'+monthName(m)+'</span><span class="t2 num" style="display:block">'+(mr.n?plural(mr.n,"order"):'No orders')+'</span></span><span class="amt num">'+rupee(mr.total)+'</span>'+I.chev+'</button>'; }
+/* this year's months in a list; each earlier year folds into one row */
+function byMonthHtml(months){
+  var thisY=todayKey().slice(0,4), years=[];
+  months.forEach(function(m){ var y=m.slice(0,4); if(y<thisY&&years.indexOf(y)<0) years.push(y); });
+  var recent=months.filter(function(m){return m.slice(0,4)>=thisY;});
+  return '<div class="list" id="revByMonth">'+recent.map(monthRow).join("")+'</div>'+years.map(function(y){
+    var ms=months.filter(function(m){return m.slice(0,4)===y;}), sum=ms.reduce(function(a,m){return a+revenueBy(m).total;},0);
+    return '<details class="acc yearacc" style="margin-top:10px"'+(histYearOpen[y]?' open':'')+' ontoggle="histYearOpen[\''+y+'\']=this.open"><summary class="list"><span class="row"><span class="grow"><span class="t1" style="display:block">'+y+'</span><span class="t2" style="display:block">'+plural(ms.length,"month")+'</span></span><span class="amt num">'+rupee(sum)+'</span>'+I.chev+'</span></summary><div class="list" style="margin-top:8px">'+ms.map(monthRow).join("")+'</div></details>';
+  }).join("");
+}
+var histOwedOpen=false, histYearOpen={};
 function viewHistory(q){
   var f=q.f||"all", per=q.p==="all"?"all":"month", months=revenueMonths();
   var ym=months.indexOf(q.p)>=0?q.p:todayKey().slice(0,7), mi=months.indexOf(ym);
+  /* an order with no date has no month to sit in, so it shows under this one rather than vanishing */
+  var past=events().filter(isPast).filter(function(e){return (f==="all"||e.kind===f)&&(e.date?e.date.slice(0,7)===ym:ym===todayKey().slice(0,7));}).sort(function(a,b){return byDate(b,a);});
   var og=owedGroups(), ch=changeRows();
-  var past=events().filter(isPast).filter(function(e){return f==="all"||e.kind===f;}).sort(function(a,b){return byDate(b,a);});
   var owedHtml=og.length?og.map(function(g){
     return '<div class="card" style="margin-top:8px"><div class="pad" style="display:flex;align-items:baseline;gap:10px;padding-bottom:4px"><span style="font-weight:500;flex:1">'+esc(g.name)+'</span><span class="amt num" style="font-weight:700">'+rupee(g.total)+'</span></div>'+
       g.rows.map(function(r){
@@ -1922,7 +1937,6 @@ function viewHistory(q){
     return '<div class="row"><span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">'+(c.n?plural(c.n,"order")+' · '+Math.round(c.rev*100/(rv.total||1))+'%':'No orders')+'</span></span><span class="amt num">'+rupee(c.rev)+'</span></div>';
   }).join("");
   var owedSum=og.reduce(function(a,g){return a+g.total;},0);
-  var pastMonths=past.map(function(ev){return (ev.date||"").slice(0,7);}).filter(function(m,i,all){return all.indexOf(m)===i;});
   $app.innerHTML='<header class="bar"><h1 style="padding-left:8px">History</h1></header><main class="page">'+
     '<div class="section" style="margin-top:4px"><h2>Revenue</h2><div class="seg full" role="group" aria-label="Period">'+
       [["month","Monthly"],["all","All time"]].map(function(x){return '<button aria-pressed="'+(per===x[0])+'" onclick="histSet(\'p\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
@@ -1931,15 +1945,13 @@ function viewHistory(q){
         '<button class="btn secondary icon" aria-label="Next month" '+(mi<=0?'disabled':'onclick="histSet(\'p\',\''+months[mi-1]+'\')"')+'><span style="display:flex;transform:scaleX(-1)">'+I.back+'</span></button></div>':'')+
       '<div class="card strip num" style="margin-top:10px;grid-template-columns:1fr"><div><div class="lab">South Savory revenue</div><div class="v money">'+rupee(rv.total)+'</div></div></div>'+
       '<div class="list" style="margin-top:10px">'+revRows+'</div>'+
-      (per==="all"?'<h3 style="font-size:15px;font-weight:500;margin:16px 0 0">By month</h3><div class="list" id="revByMonth" style="margin-top:8px">'+months.map(function(m){ var mr=revenueBy(m);
-        return '<button class="row" onclick="histSet(\'p\',\''+m+'\')"><span class="grow"><span class="t1" style="display:block">'+monthName(m)+'</span><span class="t2 num" style="display:block">'+(mr.n?plural(mr.n,"order"):'No orders')+'</span></span><span class="amt num">'+rupee(mr.total)+'</span>'+I.chev+'</button>'; }).join("")+'</div>':'')+
       '</div>'+
     '<div class="section"><details class="acc" id="owedAcc"'+(histOwedOpen?' open':'')+' ontoggle="histOwedOpen=this.open"><summary class="list"><span class="row"><span class="grow"><span class="t1" style="display:block">Unpaid</span>'+(og.length?'':'<span class="t2" style="display:block">Nobody owes anything</span>')+'</span><span class="amt num">'+(og.length?rupee(owedSum):'')+'</span>'+I.chev+'</span></summary>'+(og.length?owedHtml:'')+'</details></div>'+
     '<div class="section"><h2>Change to give</h2>'+chHtml+'</div>'+
-    '<div class="section"><h2>Past</h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="histSet(\'f\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
-      (past.length?pastMonths.map(function(m){ var evs=past.filter(function(ev){return (ev.date||"").slice(0,7)===m;}), sum=evs.reduce(function(a,ev){return a+eventStats(ev).total;},0);
-        return '<div class="pastmonth"><div class="grouphead" style="display:flex;justify-content:space-between;gap:12px"><span>'+(m?monthName(m):"No date")+'</span><span class="num">'+rupee(sum)+'</span></div><div class="list">'+evs.map(function(ev){ var st=eventStats(ev);
-          return '<a class="row" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+st.n+' '+(st.n===1?"order":"orders")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="amt num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</div></div>'; }).join(""):'<p class="empty" style="margin-top:10px">Nothing here yet.</p>')+'</div>'+
+    (per==="all"?'<div class="section"><h2>By month</h2>'+byMonthHtml(months)+'</div>':
+    '<div class="section"><h2>Past<span class="aside">'+monthName(ym)+'</span></h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="histSet(\'f\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
+      (past.length?'<div class="list" style="margin-top:10px">'+past.map(function(ev){ var st=eventStats(ev);
+        return '<a class="row" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+st.n+' '+(st.n===1?"order":"orders")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="amt num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</div>':'<p class="empty" style="margin-top:10px">Nothing in '+monthName(ym)+'.</p>')+'</div>')+
     '<div class="foot signoff">'+SS_MARK+'<span>South Savory · 2026</span></div></main>';
   tabbar("history");
 }
