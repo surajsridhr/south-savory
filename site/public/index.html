@@ -245,6 +245,9 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 .acc>summary::-webkit-details-marker{display:none}
 .acc>summary .chev{transition:transform .2s}
 .acc[open]>summary .chev{transform:rotate(90deg)}
+.catlist>.cat+.cat{border-top:1px solid color-mix(in srgb,var(--sage) 50%,transparent)}
+.catlist .day{padding-left:28px;min-height:48px}
+.catlist .day .t1{font-weight:400}
 .notice{background:var(--pill-warning-bg);color:var(--pill-warning-ink);border-radius:var(--radius-card);padding:12px 14px;font-size:14px}
 .notice.neutral{background:var(--raised);color:var(--text)}
 .filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:0 calc(-1 * var(--pad));padding:0 var(--pad)}
@@ -1887,9 +1890,8 @@ function revenueBy(per){
 }
 /* the History filters change the page in place, without jumping back to the top */
 function histSet(k,v){
-  var m=/[?&]f=([^&]*)/.exec(current), p=/[?&]p=([^&]*)/.exec(current);
-  var o={f:m?m[1]:"all",p:p?p[1]:"month"}; o[k]=v;
-  var h="#/history?f="+o.f+"&p="+o.p, y=window.scrollY;
+  var p=/[?&]p=([^&]*)/.exec(current), o={p:p?p[1]:"month"}; o[k]=v;
+  var h="#/history?p="+o.p, y=window.scrollY;
   current=h; try{ history.replaceState(history.state,"",h); }catch(e){}
   render(); window.scrollTo(0,y);
 }
@@ -1913,12 +1915,12 @@ function byMonthHtml(months){
     return '<details class="acc yearacc" style="margin-top:10px"'+(histYearOpen[y]?' open':'')+' ontoggle="histYearOpen[\''+y+'\']=this.open"><summary class="list"><span class="row"><span class="grow"><span class="t1" style="display:block">'+y+'</span><span class="t2" style="display:block">'+plural(ms.length,"month")+'</span></span><span class="amt num">'+rupee(sum)+'</span>'+I.chev+'</span></summary><div class="list" style="margin-top:8px">'+ms.map(monthRow).join("")+'</div></details>';
   }).join("");
 }
-var histOwedOpen=false, histYearOpen={};
+var histOwedOpen=false, histYearOpen={}, histCatOpen={};
 function viewHistory(q){
-  var f=q.f||"all", per=q.p==="all"?"all":"month", months=revenueMonths();
+  var per=q.p==="all"?"all":"month", months=revenueMonths();
   var ym=months.indexOf(q.p)>=0?q.p:todayKey().slice(0,7), mi=months.indexOf(ym);
   /* an order with no date has no month to sit in, so it shows under this one rather than vanishing */
-  var past=events().filter(isPast).filter(function(e){return (f==="all"||e.kind===f)&&(e.date?e.date.slice(0,7)===ym:ym===todayKey().slice(0,7));}).sort(function(a,b){return byDate(b,a);});
+  var past=events().filter(isPast).filter(function(e){return e.date?e.date.slice(0,7)===ym:ym===todayKey().slice(0,7);}).sort(function(a,b){return byDate(b,a);});
   var og=owedGroups(), ch=changeRows();
   var owedHtml=og.length?og.map(function(g){
     return '<div class="card" style="margin-top:8px"><div class="pad" style="display:flex;align-items:baseline;gap:10px;padding-bottom:4px"><span style="font-weight:500;flex:1">'+esc(g.name)+'</span><span class="amt num" style="font-weight:700">'+rupee(g.total)+'</span></div>'+
@@ -1930,11 +1932,15 @@ function viewHistory(q){
   var chHtml=ch.length?'<div class="list">'+ch.map(function(r){
     return '<div class="row"><span class="grow"><span class="t1" style="display:block">'+esc(r.o.name||"No name")+'</span><span class="t2" style="display:block">'+esc(evLabel(r.ev))+'</span></span><span class="val num" style="font-weight:500">'+rupee(r.o.changeDue)+'</span><button class="chip" onclick="giveChange(\''+r.ev.id+'\',\''+r.o.id+'\')">Given</button></div>';
   }).join("")+'</div>':'<p class="empty">No change owed to anyone.</p>';
-  var fl=[["all","All"],["lunch","Lunch"],["batter","Batter"],["drop","Drops"],["custom","Custom"]];
   var rv=revenueBy(per==="all"?"all":ym);
+  /* each category opens to that month's days; a day opens its orders */
   var revRows=[["lunch","Daily lunch"],["batter","Batter"],["drop","Special drops"],["custom","Custom orders"]].map(function(k){
-    var c=rv.cats[k[0]];
-    return '<div class="row"><span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">'+(c.n?plural(c.n,"order")+' · '+Math.round(c.rev*100/(rv.total||1))+'%':'No orders')+'</span></span><span class="amt num">'+rupee(c.rev)+'</span></div>';
+    var c=rv.cats[k[0]], days=per==="month"?past.filter(function(ev){return ev.kind===k[0];}):[];
+    var head='<span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">'+(c.n?plural(c.n,"order")+' · '+Math.round(c.rev*100/(rv.total||1))+'%':'No orders')+'</span></span><span class="amt num">'+rupee(c.rev)+'</span>';
+    if(!days.length) return '<div class="cat"><div class="row catrow">'+head+(per==="month"?'<span style="width:20px"></span>':'')+'</div></div>';
+    return '<details class="acc cat" data-kind="'+k[0]+'"'+(histCatOpen[k[0]]?' open':'')+' ontoggle="histCatOpen[\''+k[0]+'\']=this.open"><summary><span class="row catrow">'+head+I.chev+'</span></summary>'+
+      days.map(function(ev){ var st=eventStats(ev);
+        return '<a class="row day" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+plural(st.n,"order")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="val num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</details>';
   }).join("");
   var owedSum=og.reduce(function(a,g){return a+g.total;},0);
   $app.innerHTML='<header class="bar"><h1 style="padding-left:8px">History</h1></header><main class="page">'+
@@ -1944,14 +1950,11 @@ function viewHistory(q){
         '<h3 id="revMonth" style="flex:1;text-align:center;font-size:17px;font-weight:500;margin:0">'+monthName(ym)+'</h3>'+
         '<button class="btn secondary icon" aria-label="Next month" '+(mi<=0?'disabled':'onclick="histSet(\'p\',\''+months[mi-1]+'\')"')+'><span style="display:flex;transform:scaleX(-1)">'+I.back+'</span></button></div>':'')+
       '<div class="card strip num" style="margin-top:10px;grid-template-columns:1fr"><div><div class="lab">South Savory revenue</div><div class="v money">'+rupee(rv.total)+'</div></div></div>'+
-      '<div class="list" style="margin-top:10px">'+revRows+'</div>'+
+      '<div class="list catlist" style="margin-top:10px">'+revRows+'</div>'+
+      (per==="all"?'<h3 style="font-size:15px;font-weight:500;margin:20px 0 8px">By month</h3>'+byMonthHtml(months):'')+
       '</div>'+
     '<div class="section"><details class="acc" id="owedAcc"'+(histOwedOpen?' open':'')+' ontoggle="histOwedOpen=this.open"><summary class="list"><span class="row"><span class="grow"><span class="t1" style="display:block">Unpaid</span>'+(og.length?'':'<span class="t2" style="display:block">Nobody owes anything</span>')+'</span><span class="amt num">'+(og.length?rupee(owedSum):'')+'</span>'+I.chev+'</span></summary>'+(og.length?owedHtml:'')+'</details></div>'+
     '<div class="section"><h2>Change to give</h2>'+chHtml+'</div>'+
-    (per==="all"?'<div class="section"><h2>By month</h2>'+byMonthHtml(months)+'</div>':
-    '<div class="section"><h2>Past<span class="aside">'+monthName(ym)+'</span></h2><div class="filters" role="group" aria-label="Filter">'+fl.map(function(x){return '<button class="chip" aria-pressed="'+(f===x[0])+'" onclick="histSet(\'f\',\''+x[0]+'\')">'+x[1]+'</button>';}).join("")+'</div>'+
-      (past.length?'<div class="list" style="margin-top:10px">'+past.map(function(ev){ var st=eventStats(ev);
-        return '<a class="row" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+st.n+' '+(st.n===1?"order":"orders")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="amt num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</div>':'<p class="empty" style="margin-top:10px">Nothing in '+monthName(ym)+'.</p>')+'</div>')+
     '<div class="foot signoff">'+SS_MARK+'<span>South Savory · 2026</span></div></main>';
   tabbar("history");
 }

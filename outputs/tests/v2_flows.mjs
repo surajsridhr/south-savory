@@ -191,8 +191,8 @@ async function lunchFlow(browser) {
   ok('history lists Unpaid and Change to give', (await page.textContent('main')).includes('Change to give'));
   const want = await ev(page, () => Object.values(S.events).filter(isPast).reduce((a, e) => a + eventStats(e).total, 0));
   const wantN = await ev(page, () => Object.values(S.events).filter(isPast).reduce((a, e) => a + e.orders.length, 0));
-  { const pastN = await page.$$eval('.section:has(h2:text("Past")) .list .row', r => r.length);
-    ok('revenue counts the same days Past lists', pastN === await ev(page, () => { const ym = todayKey().slice(0, 7); return Object.values(S.events).filter(e => isPast(e) && e.date.slice(0, 7) === ym).length; })); }
+  { const pastN = await page.$$eval('.catlist .day', r => r.length);
+    ok('revenue counts the same days the categories list', pastN === await ev(page, () => { const ym = todayKey().slice(0, 7); return Object.values(S.events).filter(e => isPast(e) && e.date.slice(0, 7) === ym).length; })); }
   {
     const strip = await page.textContent('.strip');
     ok('revenue shows all categories combined, unpaid included', strip.includes('South Savory revenue') && strip.includes(rupeeTxt(want)), strip + ' want ' + want);
@@ -203,7 +203,7 @@ async function lunchFlow(browser) {
       const t = todayKey(), all = [mk('d1', 'drop', 'open', t, 500), mk('d2', 'drop', 'closed', t, 700), mk('l1', 'lunch', 'open', t, 90), mk('l2', 'lunch', 'done', t, 40)];
       all.forEach(e => S.events[e.id] = e); const out = revenueBy('all'); all.forEach(e => delete S.events[e.id]); return out; });
     ok('revenue skips an open drop and an open today, counts a closed drop and a day marked done', r.cats.drop.rev === 700 && r.cats.lunch.rev === want + 40 && r.cats.lunch.n === wantN + 1, JSON.stringify(r.cats)); }
-  { const rows = await page.$$eval('.section:has(h2:text("Revenue")) .list .row .t1', r => r.map(x => x.textContent));
+  { const rows = await page.$$eval('.catrow .t1', r => r.map(x => x.textContent));
     ok('revenue splits into lunch, batter, drops and custom', rows.join('|') === 'Daily lunch|Batter|Special drops|Custom orders', rows.join('|')); }
   await page.click('.seg >> text=All time');
   ok('All time switches the revenue period', (await page.url()).includes('p=all') && await page.locator('.seg button[aria-pressed="true"]', { hasText: 'All time' }).count() === 1);
@@ -221,16 +221,23 @@ async function lunchFlow(browser) {
     await page.click('.seg >> text=Monthly');
     ok('Monthly opens on the month you are in', (await page.textContent('#revMonth')) === await ev(page, () => monthName(todayKey().slice(0, 7))));
     ok('the arrow stops at the latest month', await page.locator('button[aria-label="Next month"]').isDisabled());
-    ok('Monthly: Past shows only the month you are on', !(await page.textContent('main')).includes('Mon 5 Jan') && (await page.locator('.section:has(h2:text("Past"))').textContent()).includes(await ev(page, () => monthName(todayKey().slice(0, 7)))));
+    ok('Monthly: the categories hold only the month you are on', !(await page.textContent('main')).includes('Mon 5 Jan'));
+    ok('no separate Past list or filters', await page.locator('.section:has(h2:text("Past"))').count() === 0 && await page.locator('main .filters').count() === 0);
     await page.click('.seg >> text=All time');
-    ok('All time: Past gives way to the By month list', await page.locator('.section:has(h2:text("Past"))').count() === 0 && await page.locator('.filters').count() === 0);
+    ok('All time: the By month list sits under the categories, which do not open', await page.locator('.section:has(h2:text("Revenue")) #revByMonth').count() === 1 && await page.locator('.catlist details').count() === 0);
     await page.click('#revByMonth >> text=March 2026');
-    { const past = await page.locator('.section:has(h2:text("Past"))').textContent();
-      ok('opening March lists its 2 drops and only those', await page.locator('.section:has(h2:text("Past")) .list .row').count() === 2 && past.includes('March 2026'), past); }
     ok('opening a month starts at the top', await ev(page, () => window.scrollY) === 0);
-    await page.click('.filters >> text=Lunch');
-    ok('a filter works within the month', (await page.locator('.section:has(h2:text("Past"))').textContent()).includes('Nothing in March 2026'));
-    await page.click('.filters >> text=All');
+    { const drops = page.locator('.catlist details[data-kind="drop"]');
+      ok('a month: categories with orders can open, empty ones cannot', await drops.count() === 1 && await page.locator('.catlist details').count() === 1);
+      ok('categories start folded', !(await drops.locator('.day').first().isVisible()));
+      await drops.locator('summary').click();
+      ok('tapping Special drops shows its 2 days in March, with totals', await drops.locator('.day').count() === 2 && (await drops.textContent()).includes('₹700') && (await drops.textContent()).includes('₹300'));
+      await page.click('button[aria-label="Previous month"]');
+      ok('the category stays open on the next month', await page.locator('.catlist details[data-kind="drop"] .day').first().isVisible() && await page.locator('.catlist details[data-kind="drop"] .day').count() === 1);
+      await page.locator('.catlist details[data-kind="drop"] .day').first().click();
+      ok('tapping a day opens its orders', (await page.url()).includes('#/drops/mC'), page.url());
+      await page.click('.tabbar >> text=History');
+      await ev(page, () => { histCatOpen = {}; render(); }); }
     ok('Unpaid is not tied to the month on screen', await ev(page, () => { S.events.mU = { id: 'mU', kind: 'drop', title: 'Old', date: '2026-01-05', status: 'closed', items: [], createdAt: 1, orders: [{ id: 'aU', name: 'Old debt', lines: [{ ref: 'x', q: 1, price: 900 }], delivered: true, paid: false }] }; render(); const had = document.getElementById('owedAcc').textContent.includes('Old debt'); delete S.events.mU; render(); return had; }));
     // an earlier year folds into one row: 200 + 300 = ₹500
     await ev(page, () => { const mk = (id, date, price) => ({ id, kind: 'drop', title: 'T', date, status: 'closed', items: [], createdAt: 1, orders: [{ id: 'a' + id, name: 'A', lines: [{ ref: 'x', q: 1, price }], delivered: true, paid: true }] });
@@ -253,12 +260,12 @@ async function lunchFlow(browser) {
   await page.locator('#owedAcc >> text=Mark paid').first().click();
   ok('marking paid keeps the list open', await ev(page, () => document.getElementById('owedAcc').open));
   await page.click('#owedAcc summary');
-  { await ev(page, () => window.scrollTo(0, document.body.scrollHeight));
+  { await ev(page, () => { S.events.mS = { id: 'mS', kind: 'drop', title: 'T', date: '2026-01-05', status: 'closed', items: [], createdAt: 1, orders: [{ id: 'aS', name: 'A', lines: [{ ref: 'x', q: 1, price: 100 }], delivered: true, paid: true }] }; render(); window.scrollTo(0, 80); });
     const y0 = await ev(page, () => window.scrollY);
-    await page.click('.filters >> text=Lunch');
+    await page.click('button[aria-label="Previous month"]');
     const y1 = await ev(page, () => window.scrollY);
-    ok('a Past filter keeps the scroll position', y0 > 100 && Math.abs(y1 - y0) < 40 && (await page.url()).includes('f=lunch'), y0 + ' -> ' + y1);
-    ok('the filter applies', await page.locator('.filters button[aria-pressed="true"]', { hasText: 'Lunch' }).count() === 1); }
+    ok('the month arrows keep the scroll position', y0 > 50 && Math.abs(y1 - y0) < 40, y0 + ' -> ' + y1);
+    await ev(page, () => { delete S.events.mS; histSet('p', 'month'); }); }
   await page.goto(URL + '#/history');
   await ev(page, () => { const x = document.getElementById('toast'); if (x) x.style.display = 'none'; window.scrollTo(0, 260); });
   await shot(page, '08-history');
