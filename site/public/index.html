@@ -73,6 +73,10 @@ a{color:inherit;text-decoration:none}
 .tile:active{transform:scale(.98)}
 .tile:hover{border-color:var(--control)}
 .tile .name{font-size:16px;font-weight:500}
+/* the category photos: same pictures on Home and in History */
+.catimg{display:block;flex:none;object-fit:cover;border-radius:10px;background:var(--raised);box-shadow:0 0 0 1px rgba(var(--sh),.12)}
+.tile .catimg{width:100%;height:86px;margin-bottom:12px;border-radius:8px}
+.catrow .catimg{width:44px;height:44px}
 .tile .when{font-size:var(--fs-small);color:var(--muted)}
 .tile .fig{margin-top:auto;font-size:22px;font-weight:500;letter-spacing:-0.01em}
 .tile .fig small{font-size:var(--fs-small);font-weight:400;color:var(--muted);margin-left:2px}
@@ -246,7 +250,7 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 .acc>summary .chev{transition:transform .2s}
 .acc[open]>summary .chev{transform:rotate(90deg)}
 .catlist>.cat+.cat{border-top:1px solid color-mix(in srgb,var(--sage) 50%,transparent)}
-.catlist .day{padding-left:28px;min-height:48px}
+.catlist .day{padding-left:72px;min-height:48px}
 .catlist .day .t1{font-weight:400}
 .notice{background:var(--pill-warning-bg);color:var(--pill-warning-ink);border-radius:var(--radius-card);padding:12px 14px;font-size:14px}
 .notice.neutral{background:var(--raised);color:var(--text)}
@@ -869,10 +873,9 @@ function bar(title,backHash,action){
 }
 function dock(html){ $dock.innerHTML=html?'<div class="dock"><div class="in">'+html+'</div></div>':''; }
 function tabbar(active){
-  var owed=owedGroups().length;
   document.getElementById("tabbar").innerHTML='<div class="in">'+
     '<a href="#/" '+(active==="home"?'aria-current="page"':'')+'><span class="ic">'+I.home+'</span>Home</a>'+
-    '<a href="#/history" '+(active==="history"?'aria-current="page"':'')+'><span class="ic">'+I.hist+(owed?'<span class="badge num" aria-label="'+owed+' people owe">'+owed+'</span>':'')+'</span>History</a>'+
+    '<a href="#/history" '+(active==="history"?'aria-current="page"':'')+'><span class="ic">'+I.hist+'</span>History</a>'+
     '<a href="#/costs" '+(active==="costs"?'aria-current="page"':'')+'><span class="ic">'+I.calc+'</span>Costs</a></div>';
 }
 
@@ -903,6 +906,7 @@ function render(){
 }
 
 /* ======================= HOME ======================= */
+function catImg(kind){ return '<img class="catimg" src="img/'+({drop:"drops"}[kind]||kind)+'.webp" alt="" width="52" height="52" decoding="async">'; }
 function viewHome(){
   var t=todayKey(), tm=addDays(t,1);
   var lt=lunchOn(t), ltm=lunchOn(tm), lunchTile;
@@ -924,14 +928,14 @@ function viewHome(){
   if(cs.length){ var c0=cs[0]; ct={when:relDate(c0.date),fig:esc(c0.orders[0]?c0.orders[0].name:"Order"),line:rupee(orderTotal(c0,c0.orders[0]||{lines:[]}))+(cs.length>1?" · "+(cs.length-1)+" more":"")}; }
   else ct={when:"None coming up",quiet:"New custom order",line:""};
 
-  function tile(name,href,d){
-    return '<a class="tile'+(d.quiet?' quiet':'')+'" href="'+href+'"><span class="name">'+name+'</span><span class="when">'+esc(d.when)+'</span>'+
+  function tile(name,href,d,img){
+    return '<a class="tile'+(d.quiet?' quiet':'')+'" href="'+href+'">'+catImg(img)+'<span class="name">'+name+'</span><span class="when">'+esc(d.when)+'</span>'+
       '<span class="fig num">'+(d.quiet?esc(d.quiet):d.fig)+'</span>'+(d.line?'<span class="line num">'+esc(d.line)+'</span>':'')+'</a>';
   }
   var og=owedGroups(), owed=og.reduce(function(a,g){return a+g.total;},0), ch=changeRows();
   $app.innerHTML='<header class="brandhead"><h1 style="margin:0">'+SS_WORD+'</h1></header>'+
     '<main class="page">'+saveWarning()+((SYNC.state==="offline"&&Object.keys(SYNC.pending).length)||SYNC.state==="signedout"?'<p class="notice neutral" style="margin:0 0 12px" id="syncState">'+esc(syncText())+'</p>':'')+'<p class="dateline">'+fmtDate(t)+(isMonday(t)?" · Monday, kitchen off":"")+'</p>'+
-    '<div class="tiles">'+tile("Daily lunch","#/lunch",lunchTile)+tile("Batter","#/batter",bt)+tile("Special drops","#/drops",dt)+tile("Custom orders","#/custom",ct)+'</div>'+
+    '<div class="tiles">'+tile("Daily lunch","#/lunch",lunchTile,"lunch")+tile("Batter","#/batter",bt,"batter")+tile("Special drops","#/drops",dt,"drop")+tile("Custom orders","#/custom",ct,"custom")+'</div>'+
     (og.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Unpaid</span><span class="sub" style="display:block;margin:0">'+og.length+' '+(og.length===1?"person":"people")+' · oldest '+relLower(og.reduce(function(m,g){return g.oldest<m?g.oldest:m;},og[0].oldest))+'</span></span><span class="big num">'+rupee(owed)+'</span>'+I.chev+'</a>':'')+
     (ch.length?'<a class="card owedrow" href="#/history"><span><span style="font-weight:500">Change to give</span><span class="sub" style="display:block;margin:0">'+ch.length+' '+(ch.length===1?"person":"people")+'</span></span><span class="big num" style="font-weight:500">'+rupee(ch.reduce(function(a,r){return a+Number(r.o.changeDue);},0))+'</span>'+I.chev+'</a>':'')+
     '</main>';
@@ -1936,7 +1940,7 @@ function viewHistory(q){
   /* each category opens to that month's days; a day opens its orders */
   var revRows=[["lunch","Daily lunch"],["batter","Batter"],["drop","Special drops"],["custom","Custom orders"]].map(function(k){
     var c=rv.cats[k[0]], days=per==="month"?past.filter(function(ev){return ev.kind===k[0];}):[];
-    var head='<span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">'+(c.n?plural(c.n,"order")+' · '+Math.round(c.rev*100/(rv.total||1))+'%':'No orders')+'</span></span><span class="amt num">'+rupee(c.rev)+'</span>';
+    var head=catImg(k[0])+'<span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">'+(c.n?plural(c.n,"order")+' · '+Math.round(c.rev*100/(rv.total||1))+'%':'No orders')+'</span></span><span class="amt num">'+rupee(c.rev)+'</span>';
     if(!days.length) return '<div class="cat"><div class="row catrow">'+head+(per==="month"?'<span style="width:20px"></span>':'')+'</div></div>';
     return '<details class="acc cat" data-kind="'+k[0]+'"'+(histCatOpen[k[0]]?' open':'')+' ontoggle="histCatOpen[\''+k[0]+'\']=this.open"><summary><span class="row catrow">'+head+I.chev+'</span></summary>'+
       days.map(function(ev){ var st=eventStats(ev);
