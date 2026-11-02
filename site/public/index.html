@@ -762,8 +762,8 @@ function lunchOn(date){ return events("lunch").filter(function(e){return e.date=
 function liveBatches(){ return events("batter").filter(function(e){return e.status!=="closed";}).sort(byDate); }
 function liveDrops(){ return events("drop").filter(function(e){return e.status!=="closed";}).sort(byDate); }
 function upcomingCustom(){ return events("custom").filter(function(e){return !isPast(e);}).sort(byDate); }
-/* a custom order is done once it's handed over and paid, whatever its date */
-function customClosed(ev){ return ev.orders.length>0&&ev.orders.every(function(o){return o.delivered&&o.paid;}); }
+/* a custom order is done once it's handed over, whatever its date; payment can follow under Unpaid */
+function customClosed(ev){ return ev.orders.length>0&&ev.orders.every(function(o){return o.delivered;}); }
 function byDate(a,b){ return a.date<b.date?-1:a.date>b.date?1:(a.createdAt||0)-(b.createdAt||0); }
 function evLabel(ev){
   if(ev.kind==="lunch") return "Lunch · "+fmtDate(ev.date);
@@ -1369,7 +1369,7 @@ function viewCustom(id){
       var ln=o.lines.filter(function(l){return l.ref===c.it.id;})[0];
       return '<div class="ci"><div class="cn">'+esc(c.it.name)+'<div class="t2 num">'+rupee(linePrice(ev,ln))+'</div></div><div class="cv">'+c.q+'</div></div>';
     }).join("")+'</div></div>'+
-    '<div class="section"><div class="list">'+orderRow(ev,o)+'</div>'+(customClosed(ev)?'<p class="hint">Handed over and paid, so it\'s closed: it\'s off Home and counted in History.</p>':'')+'</div>'+
+    '<div class="section"><div class="list">'+orderRow(ev,o)+'</div>'+(customClosed(ev)?'<p class="hint">Handed over, so it\'s closed: it\'s off Home and counted in History.'+(o.paid?'':' Until it\'s paid, it stays under Unpaid.')+' Untick Handed over to reopen it.</p>':'')+'</div>'+
     '<div class="section"><button class="btn danger" onclick="deleteCustom(\''+ev.id+'\')">Delete custom order</button></div></main>';
   tabbar(isPast(ev)?"history":"home");
 }

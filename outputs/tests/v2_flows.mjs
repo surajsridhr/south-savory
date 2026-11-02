@@ -408,14 +408,17 @@ async function customFlow(browser) {
     const inRevenue = () => ev(page, (id) => { const e = S.events[id]; return revenueBy(e.date.slice(0, 7)).cats.custom.n; }, cid);
     ok('a custom order not yet handed over is pending, not in revenue', await ev(page, (id) => !isPast(S.events[id]) && upcomingCustom().length === 1, cid) && await inRevenue() === 0);
     await page.locator('.order').locator('text=Hand over').click();
-    ok('handed over but unpaid: still pending on Home', await ev(page, (id) => !isPast(S.events[id]) && upcomingCustom().length === 1, cid));
-    await page.locator('.order').getByRole('button', { name: /paid/i }).first().click();
-    ok('handed over and paid: closed, with a note saying so', await ev(page, (id) => isPast(S.events[id]) && upcomingCustom().length === 0, cid) && (await page.textContent('main')).includes('closed'));
+    ok('handed over: closed even before it is paid, with a note saying so', await ev(page, (id) => isPast(S.events[id]) && upcomingCustom().length === 0, cid) && (await page.textContent('main')).includes('stays under Unpaid'));
+    ok('handed over but unpaid: listed under Unpaid', await ev(page, () => owedGroups().length === 1));
     ok('a closed custom order counts in revenue', await inRevenue() === 1);
     await page.goto(URL + '#/'); await page.waitForTimeout(200);
     ok('Home no longer shows it', (await page.locator('a.tile[href="#/custom"]').textContent()).includes('None coming up'));
     await page.goto(URL + '#/custom'); await page.waitForTimeout(200);
-    ok('the Coming up list no longer shows it', (await page.textContent('main')).includes('No custom orders coming up')); }
+    ok('the Coming up list no longer shows it', (await page.textContent('main')).includes('No custom orders coming up'));
+    await ev(page, (id) => { S.events[id].orders[0].paid = true; save(); }, cid);
+    ok('paid later: off Unpaid, still closed and counted once', await ev(page, (id) => owedGroups().length === 0 && isPast(S.events[id]), cid) && await inRevenue() === 1);
+    await ev(page, (id) => { S.events[id].orders[0].delivered = false; save(); }, cid);
+    ok('unticking Handed over reopens it', await ev(page, () => upcomingCustom().length === 1)); }
   ok('no page errors (custom)', errors.length === 0, errors.join(' | '));
   await ctx.close();
 }
