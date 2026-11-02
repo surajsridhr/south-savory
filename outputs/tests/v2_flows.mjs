@@ -403,6 +403,19 @@ async function customFlow(browser) {
   await page.click('#csSave');
   ok('custom order saved on a Monday, lunch untouched', await ev(page, () => events('custom').length === 1 && events('lunch').length === 0 && !S.holidays['2026-10-26']));
   await shot(page, '19-custom-view');
+  // handed over and paid closes it: off Home, into History and revenue
+  { const cid = await ev(page, () => events('custom')[0].id);
+    const inRevenue = () => ev(page, (id) => { const e = S.events[id]; return revenueBy(e.date.slice(0, 7)).cats.custom.n; }, cid);
+    ok('a custom order not yet handed over is pending, not in revenue', await ev(page, (id) => !isPast(S.events[id]) && upcomingCustom().length === 1, cid) && await inRevenue() === 0);
+    await page.locator('.order').locator('text=Hand over').click();
+    ok('handed over but unpaid: still pending on Home', await ev(page, (id) => !isPast(S.events[id]) && upcomingCustom().length === 1, cid));
+    await page.locator('.order').getByRole('button', { name: /paid/i }).first().click();
+    ok('handed over and paid: closed, with a note saying so', await ev(page, (id) => isPast(S.events[id]) && upcomingCustom().length === 0, cid) && (await page.textContent('main')).includes('closed'));
+    ok('a closed custom order counts in revenue', await inRevenue() === 1);
+    await page.goto(URL + '#/'); await page.waitForTimeout(200);
+    ok('Home no longer shows it', (await page.locator('a.tile[href="#/custom"]').textContent()).includes('None coming up'));
+    await page.goto(URL + '#/custom'); await page.waitForTimeout(200);
+    ok('the Coming up list no longer shows it', (await page.textContent('main')).includes('No custom orders coming up')); }
   ok('no page errors (custom)', errors.length === 0, errors.join(' | '));
   await ctx.close();
 }
