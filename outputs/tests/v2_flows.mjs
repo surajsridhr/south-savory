@@ -92,20 +92,20 @@ async function lunchFlow(browser) {
   ok('day total 260 (180 + 80)', st.total === 260, JSON.stringify(st));
   const what = await page.locator('.order .what').first().textContent();
   ok('delivery list never says "Combo"', !/combo/i.test(what), what);
-  await page.locator('.order', { hasText: 'Priya' }).locator('text=Hand over').click();
+  await page.locator('.order', { hasText: 'Priya' }).getByRole('button', { name: 'Deliver', exact: true }).click();
   const inSec = async (title, name) => (await page.locator('.section:has(h2:text("' + title + '"))').locator('.order', { hasText: name }).count()) === 1;
-  ok('a handed-over order stays put so Paid can follow', await inSec('To hand over', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).locator('text=Handed over').isVisible());
+  ok('a handed-over order stays put so Paid can follow', await inSec('To deliver', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).getByRole('button', { name: 'Delivered', exact: true }).isVisible());
   await ev(page, () => { const h = current; go('#/'); go(h); });
   await page.waitForTimeout(300);
-  ok('leaving and coming back moves it out of "To hand over"', await inSec('Handed over, not paid', 'Priya'));
-  { const h = await page.textContent('.section:has(h2:text("To hand over")) h2'); ok('"To hand over" counts orders, not a portion total', h.includes('1 order') && !h.includes('portion'), h); }
+  ok('leaving and coming back moves it out of "To hand over"', await inSec('Delivered, not paid', 'Priya'));
+  { const h = await page.textContent('.section:has(h2:text("To deliver")) h2'); ok('"To hand over" counts orders, not a portion total', h.includes('1 order') && !h.includes('portion'), h); }
   { const order = await page.$$eval('main .section h2', hs => hs.map(h => h.firstChild.textContent.trim()));
-    ok('hierarchy: To cook comes before the orders', order.indexOf('To cook') >= 0 && order.indexOf('To cook') < order.indexOf('To hand over'), order.join(' > ')); }
+    ok('hierarchy: To cook comes before the orders', order.indexOf('To cook') >= 0 && order.indexOf('To cook') < order.indexOf('To deliver'), order.join(' > ')); }
   ok('the lunch strip has no portion total', !(await page.textContent('.strip')).includes('portion'), await page.textContent('.strip'));
   await page.locator('.order', { hasText: 'Priya' }).locator('text=Unpaid').click();
-  ok('paid stays in place too', await inSec('Handed over, not paid', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).locator('text=Paid').isVisible());
+  ok('paid stays in place too', await inSec('Delivered, not paid', 'Priya') && await page.locator('.order', { hasText: 'Priya' }).locator('text=Paid').isVisible());
   await ev(page, () => render());
-  ok('a sync re-render does not move it', await inSec('Handed over, not paid', 'Priya'));
+  ok('a sync re-render does not move it', await inSec('Delivered, not paid', 'Priya'));
   await ev(page, () => { const h = current; go('#/'); go(h); });
   await page.waitForTimeout(300);
   ok('handed over and paid goes to Done', await inSec('Done', 'Priya'));
@@ -407,7 +407,7 @@ async function customFlow(browser) {
   { const cid = await ev(page, () => events('custom')[0].id);
     const inRevenue = () => ev(page, (id) => { const e = S.events[id]; return revenueBy(e.date.slice(0, 7)).cats.custom.n; }, cid);
     ok('a custom order not yet handed over is pending, not in revenue', await ev(page, (id) => !isPast(S.events[id]) && upcomingCustom().length === 1, cid) && await inRevenue() === 0);
-    await page.locator('.order').locator('text=Hand over').click();
+    await page.locator('.order').getByRole('button', { name: 'Deliver', exact: true }).click();
     ok('handed over: closed even before it is paid, with a note saying so', await ev(page, (id) => isPast(S.events[id]) && upcomingCustom().length === 0, cid) && (await page.textContent('main')).includes('stays under Unpaid'));
     ok('handed over but unpaid: listed under Unpaid', await ev(page, () => owedGroups().length === 1));
     ok('a closed custom order counts in revenue', await inRevenue() === 1);

@@ -762,7 +762,7 @@ function lunchOn(date){ return events("lunch").filter(function(e){return e.date=
 function liveBatches(){ return events("batter").filter(function(e){return e.status!=="closed";}).sort(byDate); }
 function liveDrops(){ return events("drop").filter(function(e){return e.status!=="closed";}).sort(byDate); }
 function upcomingCustom(){ return events("custom").filter(function(e){return !isPast(e);}).sort(byDate); }
-/* a custom order is done once it's handed over, whatever its date; payment can follow under Unpaid */
+/* a custom order is done once it's delivered, whatever its date; payment can follow under Unpaid */
 function customClosed(ev){ return ev.orders.length>0&&ev.orders.every(function(o){return o.delivered;}); }
 function byDate(a,b){ return a.date<b.date?-1:a.date>b.date?1:(a.createdAt||0)-(b.createdAt||0); }
 function evLabel(ev){
@@ -909,7 +909,7 @@ function render(){
   if(p==="/costs") return viewCosts();
   if(p==="/costs/month") return viewMonth(r.q);
   if(p==="/costs/ingredients") return viewIngredients();
-  if((m=p.match(/^\/costs\/item\/(lunch|batter|drops)\/(.+)$/))) return viewCostItem(m[1],m[2]);
+  if((m=p.match(/^\/costs\/item\/(lunch|batter|drops)\/(.+)$/))) return viewCostItem(m[1],m[2],r.q);
   return viewHome();
 }
 
@@ -1019,8 +1019,8 @@ function eventBody(ev){
       (kc.length?'<div class="card pad count">'+rows+'</div>':'<p class="empty">No items on this menu.</p>')+'</div>'+
     orderSections(ev,orders);
 }
-/* orders still to hand over first, then handed over but unpaid, then done.
-   An order tapped on this screen keeps its place until you leave it, so Paid can follow Hand over. */
+/* orders still to deliver first, then delivered but unpaid, then done.
+   An order tapped on this screen keeps its place until you leave it, so Paid can follow Deliver. */
 var held={o:{}};
 function hold(o){ if(!held.o[o.id]) held.o[o.id]={delivered:!!o.delivered,paid:!!o.paid}; }
 function orderSections(ev,orders){
@@ -1034,8 +1034,8 @@ function orderSections(ev,orders){
   function sum(list){ return rupee(list.reduce(function(a,o){return a+orderTotal(ev,o);},0)); }
   var lkc=kitchenCount(ev,function(o){return !o.delivered;}).filter(function(c){return c.q;});
   var lead=lkc.length?'<p class="sub leftline" style="margin:-4px 0 10px">'+lkc.map(function(c){ var kgU=ev.kind==="batter"||(ev.kind==="drop"&&c.it.unit==="kg"); return esc(c.it.name)+' <b class="num">'+(kgU?fmtKg(c.q):c.q)+'</b>'; }).join(" · ")+'</p>':'';
-  return sec("To hand over",toGo,plural(toGo.filter(function(o){return !o.delivered;}).length,"order")+(ev.kind==="lunch"||ev.kind==="custom"?"":" · "+qtyText(ev,lkc)),lead)+
-    sec("Handed over, not paid",owe,sum(owe))+
+  return sec("To deliver",toGo,plural(toGo.filter(function(o){return !o.delivered;}).length,"order")+(ev.kind==="lunch"||ev.kind==="custom"?"":" · "+qtyText(ev,lkc)),lead)+
+    sec("Delivered, not paid",owe,sum(owe))+
     sec("Done",done,plural(done.length,"order")+" · "+sum(done));
 }
 function priceDesc(it){
@@ -1044,8 +1044,8 @@ function priceDesc(it){
 }
 function orderRow(ev,o){
   var t=orderTotal(ev,o), ro=ev.kind==="lunch"&&ev.status==="done";
-  var del=ro?'<span class="state">'+(o.delivered?I.check+"Handed over":"Not handed over")+'</span>':o.delivered?'<button class="chip on-del" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="true">'+I.check+'Handed over</button>':
-    '<button class="chip" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="false">'+I.circle+'Hand over</button>';
+  var del=ro?'<span class="state">'+(o.delivered?I.check+"Delivered":"Not delivered")+'</span>':o.delivered?'<button class="chip on-del" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="true">'+I.check+'Delivered</button>':
+    '<button class="chip" onclick="toggleDel(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="false">'+I.circle+'Deliver</button>';
   var pay=o.untracked?'<span class="pill">Payment not tracked</span>':(o.paid?'<button class="chip paid" onclick="togglePaid(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="true">'+I.check+'Paid</button>':
     '<button class="chip unpaid" onclick="togglePaid(\''+ev.id+'\',\''+o.id+'\')" aria-pressed="false">Unpaid</button>');
   var chg=(Number(o.changeDue)>0&&!o.changeGiven)?'<button class="chip change" onclick="giveChange(\''+ev.id+'\',\''+o.id+'\')">Change due '+rupee(o.changeDue)+'</button>':'';
@@ -1069,7 +1069,7 @@ function doneForDay(evId){
   openSheet({title:"Done for the day",short:true,cancel:false,onclose:function(){ afterDay(ev); },body:
     '<p class="sub" style="margin:0 0 12px">'+relDate(ev.date)+' · '+fmtDate(ev.date)+'. Orders are closed. To add an order or change the menu, reopen the day.</p>'+
     '<div class="card strip num"><div><div class="lab">Orders</div><div class="v">'+st.n+'</div></div><div><div class="lab">Total</div><div class="v money">'+rupee(st.total)+'</div></div><div><div class="lab">Unpaid</div><div class="v">'+rupee(st.unpaid)+'</div></div></div>'+
-    '<p class="sub" style="margin-top:10px">'+(undel?undel+" not handed over yet":"All handed over")+' · '+rupee(st.paid)+' paid</p>'+
+    '<p class="sub" style="margin-top:10px">'+(undel?undel+" not delivered yet":"All delivered")+' · '+rupee(st.paid)+' paid</p>'+
     (kc.length?'<div class="section" style="margin-top:18px"><h2>Cooked</h2><div class="card pad count">'+kc.map(function(c){return '<div class="ci"><div class="cn">'+esc(c.it.name)+'</div><div class="cv">'+c.q+'</div></div>';}).join("")+'</div></div>':''),
     foot:'<button class="btn secondary" onclick="reopenDay(\''+ev.id+'\')">Reopen day</button><button class="btn primary" onclick="closeSheet()">Close</button>'});
 }
@@ -1368,7 +1368,7 @@ function viewCustom(id){
       var ln=o.lines.filter(function(l){return l.ref===c.it.id;})[0];
       return '<div class="ci"><div class="cn">'+esc(c.it.name)+'<div class="t2 num">'+rupee(linePrice(ev,ln))+'</div></div><div class="cv">'+c.q+'</div></div>';
     }).join("")+'</div></div>'+
-    '<div class="section"><div class="list">'+orderRow(ev,o)+'</div>'+(customClosed(ev)?'<p class="hint">Handed over, so it\'s closed: it\'s off Home and counted in History.'+(o.paid?'':' Until it\'s paid, it stays under Unpaid.')+' Untick Handed over to reopen it.</p>':'')+'</div>'+
+    '<div class="section"><div class="list">'+orderRow(ev,o)+'</div>'+(customClosed(ev)?'<p class="hint">Delivered, so it\'s closed: it\'s off Home and counted in History.'+(o.paid?'':' Until it\'s paid, it stays under Unpaid.')+' Untick Delivered to reopen it.</p>':'')+'</div>'+
     '<div class="section"><button class="btn danger" onclick="deleteCustom(\''+ev.id+'\')">Delete custom order</button></div></main>';
   tabbar(isPast(ev)?"history":"home");
 }
@@ -1602,12 +1602,12 @@ function lineCost(ev,ln){
   var q=Number(ln.qty)||0; if(!q) return {c:0};
   if(isCombo(ln.ref)){
     var cb=evCombo(ev,ln.ref); if(!cb) return {c:0}; var s=0, miss=[];
-    cb.dishes.forEach(function(d){ var it=evItem(ev,d), mid=it&&menuIdFor("lunch",it), u=mid?unitCost("lunch",mid):null; if(u==null) miss.push(it?it.name:"dish"); else s+=u; });
-    return miss.length?{c:null,names:miss}:{c:s*q};
+    cb.dishes.forEach(function(d){ var it=evItem(ev,d), mid=it&&menuIdFor("lunch",it), u=mid?unitCost("lunch",mid):null; if(u==null) miss.push({name:it?it.name:"dish",mk:"lunch",mid:mid}); else s+=u; });
+    return miss.length?{c:null,items:miss}:{c:s*q};
   }
   var it=evItem(ev,ln.ref); if(!it) return {c:0};
   var mk=menuKindOf(ev), mid=menuIdFor(mk,it), u=mid?unitCost(mk,mid):null;
-  return u==null?{c:null,names:[it.name]}:{c:u*q};
+  return u==null?{c:null,items:[{name:it.name,mk:mk,mid:mid}]}:{c:u*q};
 }
 function monthReport(ym){
   var cats={lunch:{rev:0,cost:0,unc:0},batter:{rev:0,cost:0,unc:0},drop:{rev:0,cost:0,unc:0},custom:{rev:0,cost:0,unc:0}}, missing={};
@@ -1615,7 +1615,8 @@ function monthReport(ym){
     var c=cats[ev.kind]; if(!c) return;
     ev.orders.forEach(function(o){ (o.lines||[]).forEach(function(ln){
       var p=linePrice(ev,ln), lc=lineCost(ev,ln); c.rev+=p;
-      if(lc.c==null){ c.unc+=p; lc.names.forEach(function(n){ missing[n]=(missing[n]||0)+p; }); } else c.cost+=lc.c;
+      /* what each uncosted item sold, so the report can list them to cost (a combo's price is shared by its dishes) */
+      if(lc.c==null){ c.unc+=p; lc.items.forEach(function(x){ var k=x.mk+"|"+(x.mid||normName(x.name)); if(!missing[k]) missing[k]={name:x.name,mk:x.mk,mid:x.mid,rev:0}; missing[k].rev+=p/lc.items.length; }); } else c.cost+=lc.c;
     }); });
   });
   var t={rev:0,cost:0,unc:0}; Object.keys(cats).forEach(function(k){ t.rev+=cats[k].rev; t.cost+=cats[k].cost; t.unc+=cats[k].unc; });
@@ -1683,9 +1684,10 @@ function drawCostPick(){
 }
 
 /* ---------- an item's recipe ---------- */
-function viewCostItem(kind,id){
+function viewCostItem(kind,id,q){
   var it=menuItem2(kind,id); if(!it){ go("#/costs"); return; }
-  return viewRecipe(itemRecipeId(kind,id),kind,it);
+  var m=/^month:(\d{4}-\d{2})$/.exec((q&&q.back)||"");
+  return viewRecipe(itemRecipeId(kind,id),kind,it,m?"#/costs/month?m="+m[1]:"#/costs");
 }
 
 function marginCard(per,price,unit,note){
@@ -1698,15 +1700,15 @@ function marginCard(per,price,unit,note){
 
 /* ---------- the recipe calculator ---------- */
 var rd=null;
-function viewRecipe(rid,kind,it){
+function viewRecipe(rid,kind,it,back){
   if(!rd||rd.id!==rid){
     var r=recipeById(rid);
     rd=r?JSON.parse(JSON.stringify(r)):{id:rid,kind:"item",menuKind:kind,menuId:it.id,unit:makesUnit(kind,it),makes:null,lines:[],isNew:true};
   }
   if(rd.base===undefined) rd.base=rdShape(rd);
   var sub=({lunch:"Lunch dish",batter:"Batter",drops:"Drop item"}[kind])+" · sells at "+(sellPrice(kind,it)==null?"no price yet":rupee(sellPrice(kind,it))+" per "+MAKES_WORD[rd.unit]);
-  rd.back="#/costs";
-  $app.innerHTML=bar(it.name,"#/costs")+'<main class="page"><p class="sub">'+esc(sub)+'</p>'+
+  rd.back=back||"#/costs";
+  $app.innerHTML=bar(it.name,rd.back)+'<main class="page"><p class="sub">'+esc(sub)+'</p>'+
     '<div class="section"><h2>Ingredients</h2><div class="card pad" id="rdLines">'+rdLinesHtml()+'</div>'+
       '<p class="ferr" id="rdErr" hidden></p><div class="btnrow"><button class="btn secondary" onclick="addRecipeLine()">Add ingredient</button></div></div>'+
     '<div class="section"><h2>Makes</h2><div style="display:flex;align-items:center;gap:10px"><input type="number" inputmode="decimal" id="rdMakes" style="width:110px;text-align:right" value="'+(rd.makes==null?"":rd.makes)+'" oninput="rd.makes=num(this.value);rdSum()" aria-label="How much it makes"><span>'+rd.unit+'</span></div>'+
@@ -1832,14 +1834,19 @@ function viewMonth(q){
     var p=(c.rev-c.unc)-c.cost;
     return '<div class="row" style="align-items:flex-start"><span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">Cost '+rupee(c.cost)+(c.unc?' · '+rupee(c.unc)+' not costed':'')+'</span></span><span style="text-align:right"><span class="amt num" style="display:block">'+rupee(c.rev)+'</span><span class="t2 num" style="display:block">profit '+rupee(p)+'</span></span></div>';
   }).join("");
-  var miss=Object.keys(rep.missing).sort(function(a,b){return rep.missing[b]-rep.missing[a];});
+  var miss=Object.keys(rep.missing).map(function(k){return rep.missing[k];}).sort(function(a,b){return b.rev-a.rev;});
+  /* items sold this month with no recipe yet: tap one to cost it, then come back here */
+  var missHtml=miss.length?'<div class="section"><h2>Not costed yet<span class="aside num">'+rupee(t.unc)+' of sales</span></h2><div class="list" id="notCosted">'+miss.map(function(x){
+    var inner='<span class="grow"><span class="t1" style="display:block">'+esc(x.name)+'</span><span class="t2" style="display:block">'+({lunch:"Lunch",batter:"Batter",drops:"Drops"}[x.mk])+(x.mid?' · tap to add its recipe':' · no longer on the menu')+'</span></span><span class="amt num">'+rupee(x.rev)+'</span>';
+    return x.mid?'<a class="row" href="#/costs/item/'+x.mk+'/'+x.mid+'?back=month:'+ym+'">'+inner+I.chev+'</a>':'<div class="row">'+inner+'</div>';
+  }).join("")+'</div><p class="hint">These sales are left out of profit until each item has a recipe.</p></div>':'';
   $app.innerHTML=bar("Monthly report","#/costs")+'<main class="page">'+
     '<div style="display:flex;align-items:center;gap:8px;margin-top:4px"><button class="btn secondary icon" aria-label="Previous month" onclick="go(\'#/costs/month?m='+addMonths(ym,-1)+'\')">'+I.back+'</button>'+
       '<h2 class="title" style="flex:1;text-align:center;font-size:20px">'+monthName(ym)+'</h2>'+
       '<button class="btn secondary icon" aria-label="Next month" '+(ym>=thisM?'disabled':'')+' onclick="go(\'#/costs/month?m='+addMonths(ym,1)+'\')"><span style="display:flex;transform:scaleX(-1)">'+I.back+'</span></button></div>'+
     '<div class="section"><div class="card strip num"><div><div class="lab">Revenue</div><div class="v money">'+rupee(t.rev)+'</div></div><div><div class="lab">Cost</div><div class="v">'+rupee(t.cost)+'</div></div><div><div class="lab">Profit</div><div class="v money'+(profit<0?' neg':'')+'">'+rupee(profit)+'</div></div></div>'+
-      (t.unc?'<p class="notice" style="margin-top:10px">'+rupee(t.unc)+' of sales are from items with no cost yet, so they\'re left out of profit: '+esc(miss.slice(0,6).join(", "))+(miss.length>6?" and "+(miss.length-6)+" more":"")+'. Cost them to complete the month.</p>':'')+
       '<p class="hint">Revenue is what every order was worth, paid or not. Costs use today\'s ingredient prices and '+overhead()+'% overhead.</p></div>'+
+    missHtml+
     '<div class="section"><h2>By category</h2>'+(catRows?'<div class="list">'+catRows+'</div>':'<p class="empty">No orders this month.</p>')+'</div></main>';
   tabbar("costs");
 }

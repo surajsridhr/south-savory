@@ -142,7 +142,8 @@ ok('batter recipe is per kg', (await text(page)).includes('kg'));
 await addLine(page, 'Coconut', 1); await page.fill('#rdMakes', '5');
 ok('missing price: no cost, and names the ingredient', (await page.textContent('#rdSum')).includes('No price yet for Coconut'));
 
-// overhead is one setting
+// overhead is one setting (the unsaved Idly recipe is dropped first, so leaving doesn't stop to ask)
+await ev(page, () => { rd = null; });
 await page.goto(URL + '#/costs'); await page.reload();
 await page.click('text=Overhead'); await page.fill('#ohIn', '20'); await page.click('.sheet >> text=Save'); await page.waitForTimeout(300);
 ok('overhead changes in one place and every cost follows', await ev(page, () => S.costs.overhead === 20 && Math.abs(unitCost('lunch', S.menus.lunch.filter(i => i.name === 'Tomato Rasam')[0].id) - 104 * 1.2 / 20) < 1e-9));
@@ -166,6 +167,19 @@ const rep = await text(page);
 ok('month: revenue ₹210 (paid and unpaid)', rep.includes('₹210'), rep.slice(0, 300));
 ok('month: cost ₹18, profit ₹132', rep.includes('₹18') && rep.includes('₹132'), rep.slice(0, 300));
 ok('month: uncosted sales flagged, not counted free', rep.includes('₹60 of sales') && rep.includes('Rice'));
+{ const rows = await page.$$eval('#notCosted .row', r => r.map(x => x.textContent));
+  ok('month: each uncosted item listed with what it sold (Rice ₹60)', rows.length === 1 && rows[0].includes('Rice') && rows[0].includes('₹60'), rows.join(' | '));
+  ok('month: no red warning block', (await page.locator('main .notice').count()) === 0); }
+await page.click('#notCosted >> text=Rice');
+ok('tapping an uncosted item opens its recipe', (await page.locator('.bar h1').textContent()) === 'Rice' && (await page.locator('#rdLines').count()) === 1);
+await page.click('.bar .back'); await page.waitForTimeout(200);
+ok('Back from it returns to the monthly report', (await page.locator('.bar h1').textContent()) === 'Monthly report' && (await text(page)).includes('October 2026'));
+await page.click('#notCosted >> text=Rice');
+await addLine(page, 'Tomato', 100); await page.fill('#rdMakes', '10');
+await page.click('.dock >> text=Save'); await page.waitForTimeout(300);
+ok('saving it returns to the report, and Rice leaves the list', (await page.locator('.bar h1').textContent()) === 'Monthly report' && (await page.locator('#notCosted').count()) === 0);
+await ev(page, () => { S.costs.recipes = S.costs.recipes.filter(r => r.id !== itemRecipeId('lunch', S.menus.lunch.filter(i => i.name === 'Rice')[0].id)); save(); render(); });
+
 ok('next month is disabled for the current month', await page.isDisabled('[aria-label="Next month"]'));
 await shot(page, '36-month');
 await page.click('[aria-label="Previous month"]');
