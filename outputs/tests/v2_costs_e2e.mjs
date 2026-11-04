@@ -40,13 +40,10 @@ await page.click('#ieSave'); await wait(page);
 await page.click('.bar .back'); await wait(page);
 ok('Back from Ingredients goes to Costs', await title(page) === 'Costs');
 
-// Rice: from Costs › Today's lunch, give it its own recipe and save
+// Rice: from Costs › Today's lunch, straight into its recipe; 250 g raw rice, makes 4
 const rice = await menuId(page, 'Rice');
 await page.click(`a.row[href="#/costs/item/lunch/${rice}"]`); await wait(page);
-ok('tapping Rice opens the dish', await title(page) === 'Rice');
-await page.click('.dock >> text=Give it its own recipe'); await wait(page);
-// clear whatever the tier pot brought in, then 250 g raw rice, makes 4
-while (await page.locator('#rdLines .x').count()) { await page.locator('#rdLines .x').first().click(); await wait(page); }
+ok('tapping Rice opens its recipe, empty', await title(page) === 'Rice' && (await page.locator('#rdLines .rline').count()) === 0);
 await page.click('text=Add ingredient'); await page.fill('.sheet input[type=search]', 'Raw Rice');
 await page.click('#ipList button:has-text("Raw Rice")'); await wait(page);
 await page.locator('#rdLines input').last().fill('250');
@@ -104,54 +101,25 @@ ok('phone back from the recipe goes to Home', (await page.textContent('#app')).i
 await page.click('.tabbar >> text=Costs'); await wait(page);
 answer = 'accept';
 
-// a tier recipe from Costs › Curry tiers
-await page.click('a.row[href="#/costs/tier/1"]'); await wait(page);
-await page.click('text=Add ingredient'); await page.fill('.sheet input[type=search]', 'Raw Rice');
-await page.click('#ipList button:has-text("Raw Rice")'); await wait(page);
-await page.locator('#rdLines input').last().fill('500'); await page.fill('#rdMakes', '10');
-await page.click('.dock >> text=Save'); await wait(page);
-ok('Save on a tier recipe lands on Costs', await title(page) === 'Costs');
-await page.click('a.row[href="#/costs/tier/1"]'); await wait(page);
-await page.click('.bar .back'); await wait(page);
-ok('Back from a tier recipe goes to Costs', await title(page) === 'Costs');
-
-// a new own recipe, backed out of before saving, returns to the dish's tier
+// a new recipe, backed out of before saving, goes to Costs and saves nothing
 const rasam = await menuId(page, 'Tomato Rasam');
 await page.click(`a.row[href="#/costs/item/lunch/${rasam}"]`); await wait(page);
-await page.click('.dock >> text=Give it its own recipe'); await wait(page);
 await page.click('.bar .back'); await wait(page);
-ok('Back from an unsaved new recipe shows the dish on its tier', (await page.locator('.dock').textContent()).includes('Give it its own recipe'));
-await page.click('.bar .back'); await wait(page);
-ok('and Back again goes to Costs', await title(page) === 'Costs');
+ok('Back from an unsaved new recipe goes to Costs', await title(page) === 'Costs' && await ev(page, id => !recipeById(itemRecipeId('lunch', id)), rasam));
 
-// remove Rice's own recipe: back to its tier, Undo restores
+// remove Rice's recipe: lands on Costs, Rice not costed; Undo restores
 await page.click(`a.row[href="#/costs/item/lunch/${rice}"] >> nth=0`); await wait(page);
-await page.click('text=Remove own recipe, go back to its tier'); await wait(page);
-ok('remove shows Rice on its tier', (await page.locator('.dock').textContent()).includes('Give it its own recipe'));
+await page.click('text=Remove this recipe'); await wait(page);
+ok('remove lands on Costs with Rice not costed', await title(page) === 'Costs' && await ev(page, id => unitCost('lunch', id) === null, rice));
 await page.click('#toastUndo'); await wait(page);
-ok('Undo brings the recipe back', (await page.locator('#rdLines .rline').count()) === 1);
-await page.click('.bar .back'); await wait(page);
-ok('Back after Undo goes to Costs', await title(page) === 'Costs');
+ok('Undo brings the recipe back', await ev(page, id => recipeById(itemRecipeId('lunch', id)) && recipeById(itemRecipeId('lunch', id)).lines.length === 1, rice));
 
 // ---------- edge cases ----------
-// the tier recipe opened from a dish comes back to the dish, on Back and on Save
+// an empty recipe can't be saved
 await page.click(`a.row[href="#/costs/item/lunch/${rasam}"]`); await wait(page);
-await page.click('text=Edit the tier recipe'); await wait(page);
-await page.click('.bar .back'); await wait(page);
-ok('tier recipe opened from a dish: Back returns to the dish', await title(page) === 'Tomato Rasam' && (await page.locator('.dock').textContent()).includes('Give it its own recipe'));
-await page.click('text=Edit the tier recipe'); await wait(page);
-await page.fill('#rdMakes', '12'); await page.click('.dock >> text=Save'); await wait(page);
-ok('tier recipe opened from a dish: Save returns to the dish', await title(page) === 'Tomato Rasam');
-ok('and the dish shows the new tier cost', (await page.textContent('#app')).includes(await ev(page, () => money1(recipeCost(recipeById('tier1')).per))));
-await page.click('.bar .back'); await wait(page);
-
-// an empty own recipe can't be saved, and the dish keeps its tier cost
-await page.click(`a.row[href="#/costs/item/lunch/${rasam}"]`); await wait(page);
-await page.click('.dock >> text=Give it its own recipe'); await wait(page);
-while (await page.locator('#rdLines .x').count()) { await page.locator('#rdLines .x').first().click(); await wait(page); }
 await page.click('.dock >> text=Save'); await wait(page);
 ok('empty recipe: Save says what is missing', await page.locator('#rdErr').isVisible() && (await page.textContent('#rdErr')).includes('at least one ingredient'));
-ok('empty recipe: nothing saved, dish still on its tier', await ev(page, id => costInfo('lunch', id).src === 'tier', rasam) && await title(page) === 'Tomato Rasam');
+ok('empty recipe: nothing saved', await ev(page, id => costInfo('lunch', id).src === null, rasam) && await title(page) === 'Tomato Rasam');
 
 // an ingredient with no amount: no cost, and it says which
 await page.click('text=Add ingredient'); await page.fill('.sheet input[type=search]', 'Raw Rice');
@@ -211,7 +179,7 @@ await page.fill('#ohIn', '0'); await page.click('.sheet .sf >> text=Save'); awai
 ok('overhead 0 allowed and costs drop by 15%', await ev(page, (a) => Math.abs(unitCost('lunch', a.id) * 1.15 - a.c) < 1e-9, { id: rice, c: c15 }));
 await page.click('button.row:has-text("Overhead")'); await page.fill('#ohIn', '15'); await page.click('.sheet .sf >> text=Save'); await wait(page);
 
-// Cost an item: search, pick a batter item, give it a recipe, it lists under Own recipes
+// Cost an item: search, pick a batter item, give it a recipe, it lists under Costed items
 await page.click('.dock >> text=Cost an item');
 await page.fill('.sheet input[type=search]', 'idl');
 ok('search narrows the items', (await page.locator('#cpList .row').count()) >= 1 && (await page.textContent('#cpList')).includes('Idly'));
@@ -224,9 +192,9 @@ await page.click('text=Add ingredient'); await page.fill('.sheet input[type=sear
 await page.click('#ipList button:has-text("Raw Rice")'); await wait(page);
 await page.locator('#rdLines input').last().fill('1000'); await page.fill('#rdMakes', '3');
 await page.click('.dock >> text=Save'); await wait(page);
-ok('batter recipe saved, listed under Own recipes', await title(page) === 'Costs' && (await page.locator('.section', { hasText: 'Own recipes' }).textContent()).includes('Idly'));
+ok('batter recipe saved, listed under Costed items', await title(page) === 'Costs' && (await page.locator('.section', { hasText: 'Costed items' }).textContent()).includes('Idly'));
 // a new ingredient added from inside a recipe lands in the recipe
-await page.click('.section:has-text("Own recipes") a.row:has-text("Idly")'); await wait(page);
+await page.click('.section:has-text("Costed items") a.row:has-text("Idly")'); await wait(page);
 await page.click('text=Add ingredient'); await page.click('.sheet .sf >> text=New ingredient'); await wait(page);
 await page.fill('#ieName', 'Urad dal'); await page.fill('#iePrice', '140'); await page.click('#ieSave'); await wait(page);
 ok('new ingredient from a recipe is added to it', (await page.locator('#rdLines .rline').count()) === 2 && await title(page) === 'Idly');

@@ -146,8 +146,8 @@ Four tiles: **Daily lunch**, **Batter**, **Special drops**, **Custom orders**.
 ## Costs (COGS), agreed 25 Oct 2026
 
 - **Third tab** in the bottom bar: Home · History · Costs. Used most for lunch, where the menu changes daily; ragi ball, menthya ball, batter and drops are costed once and kept.
-- **Ingredients** are a saved list (name, price, per kg / litre / piece / bunch), kept in Costs and never shown in the menu lists. It starts empty: no researched or guessed prices.
-- **Tier first, then refine.** Three tier recipes: up to one vegetable, two vegetables, more than two. Each lunch dish picks a tier (first guess from its price: ₹50 / ₹60 / ₹70), but the tier is about ingredients, not price, so it can be changed. A dish given its own recipe in the calculator (e.g. pepper rasam, where pepper drives the cost) uses that instead. Rice, curd rice, ragi ball, menthya ball, chapathi, batter and drops use their own recipes.
+- **Ingredients** are a saved list (name, price, per kg / litre / piece / pack / bunch; a pack records how many pieces it holds), kept in Costs and never shown in the menu lists. It starts empty: no researched or guessed prices.
+- **Every item has its own recipe.** Each lunch dish, batter and drop is costed from what actually goes into it. The three curry tiers first agreed here (up to one vegetable / two / more than two, guessed from the ₹50 / ₹60 / ₹70 price) were dropped on 4 Nov 2026: they were Suraj's way of explaining his gravy prices to customers, and dishes on the same tier use vegetables that cost differently. A dish with no recipe shows as not costed.
 - **A recipe says what it makes**: N portions for lunch, N kg for batter, N kg or N pieces for drops. Cost per unit = (ingredients + overhead) ÷ that.
 - **Overhead: one setting, 15%**, on top of ingredients, for spices, gas and labour. Shown as its own line. No packaging or delivery costs: customers bring containers and collect from the door.
 - **The calculator shows the margin** for the item being costed: cost per portion, selling price, amount and % left.

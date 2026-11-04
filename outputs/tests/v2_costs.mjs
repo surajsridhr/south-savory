@@ -24,6 +24,7 @@ async function fresh(browser, opts = {}) {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, colorScheme: opts.dark ? 'dark' : 'light' });
   const page = await ctx.newPage(); const errors = [];
   page.on('pageerror', e => errors.push(e.message));
+  page.on('dialog', d => d.accept().catch(() => {}));   // a "discard changes?" left open at the end must not crash the run
   await page.clock.setFixedTime(new Date('2026-10-24T09:00:00'));
   await page.goto(URL + '#/'); await page.evaluate(() => localStorage.clear()); await page.reload();
   return { ctx, page, errors };
@@ -48,7 +49,7 @@ const { page, errors } = await fresh(browser);
 // the tab
 ok('bottom bar has three tabs: Home, History, Costs', (await page.locator('.tabbar a').allTextContents()).join('|').replace(/\d/g, '') === 'Home|History|Costs');
 await page.click('.tabbar >> text=Costs');
-ok('Costs opens with the three curry tiers', (await text(page)).includes('Up to 1 vegetable') && (await text(page)).includes('More than 2'));
+ok('Costs has no curry tiers: every item is costed on its own', !/tier|Up to 1 vegetable/i.test(await text(page)) && (await text(page)).includes('Costed items'));
 ok('overhead starts at his 15%', (await text(page)).includes('15%'));
 ok('ingredient list starts empty: no guessed prices', await ev(page, () => S.costs.ings.length === 0));
 ok('menu lists carry no cost fields', await ev(page, () => S.menus.lunch.every(i => !('cost' in i) && !('recipe' in i))));
@@ -67,42 +68,29 @@ ok('the same ingredient twice is refused (not case-sensitive)', await ev(page, (
 await page.click('.sheet .sh >> text=Cancel'); await page.waitForTimeout(300);
 await shot(page, '31-ingredients');
 
-// tier 1 pot: toor dal 400 g = ₹44, tomato 1500 g = ₹60 → ₹104; +15% = ₹15.6 → ₹119.6; makes 20 → ₹5.98 a portion
-await page.goto(URL + '#/costs/tier/1'); await page.reload();
+// Tomato Rasam's own pot: toor dal 400 g = ₹44, tomato 1500 g = ₹60 → ₹104; +15% = ₹15.6 → ₹119.6; makes 20 → ₹5.98 a portion
+const rasam = await ev(page, () => S.menus.lunch.filter(i => i.name === 'Tomato Rasam')[0].id);
+await page.goto(URL + '#/costs/item/lunch/' + rasam); await page.reload();
+ok('a lunch dish opens straight to its recipe, no tier to pick', (await page.locator('#rdLines').count()) === 1 && !/tier/i.test(await text(page)));
+ok('an uncosted dish starts empty', (await page.locator('#rdLines .rline').count()) === 0);
 await addLine(page, 'Toor dal', 400);
 await addLine(page, 'Tomato', 1500);
 await page.fill('#rdMakes', '20');
 const sum1 = await page.textContent('#rdSum');
 ok('calculator: ingredients ₹104', sum1.includes('₹104'), sum1);
 ok('calculator: overhead 15% shown as its own line, ₹15.6', sum1.includes('Overhead 15%') && sum1.includes('₹15.6'), sum1);
-ok('calculator: pot total ₹119.6 shown as ₹120, ₹6 a portion', sum1.includes('₹120') && /Cost per portion\s*₹6\b/.test(sum1), sum1);
-await shot(page, '32-tier-recipe');
+ok('calculator: pot total ₹119.6 shown as ₹120; ₹6 a portion, sells ₹50, ₹44 left (88%)', sum1.includes('₹120') && /Cost per portion\s*₹6(?![\d.])/.test(sum1) && sum1.includes('₹44') && sum1.includes('88%'), sum1);
+await shot(page, '32-recipe');
 await page.click('.dock >> text=Save'); await page.waitForTimeout(300);
-ok('tier recipe saved', await ev(page, () => { const r = S.costs.recipes.filter(r => r.id === 'tier1')[0]; return r && r.makes === 20 && r.lines.length === 2; }));
-ok('saving a tier recipe returns to Costs', page.url().endsWith('#/costs'));
-await page.goto(URL + '#/costs/tier/1'); await page.reload();
-await page.click('.bar .back'); await page.waitForTimeout(200);
-ok('Back from a tier recipe goes to Costs', page.url().endsWith('#/costs'));
+ok('recipe saved', await ev(page, id => { const r = recipeById(itemRecipeId('lunch', id)); return r && r.makes === 20 && r.lines.length === 2; }, rasam));
+ok('saving returns to Costs, with the dish under Costed items', page.url().endsWith('#/costs') && (await text(page)).includes('Tomato Rasam'));
+ok('saving says Saved', await page.locator('#toast', { hasText: 'Saved' }).isVisible());
+ok('Costs no longer shows the recipe Save button', (await page.locator('.dock >> text=Save').count()) === 0);
 
-// a dish takes its tier from its price, and can change it
-const rasam = await ev(page, () => S.menus.lunch.filter(i => i.name === 'Tomato Rasam')[0].id);
-await page.goto(URL + '#/costs/item/lunch/' + rasam); await page.reload();
-ok('Tomato Rasam (₹50) guesses the up-to-1-veg tier', (await page.getAttribute('.seg button[aria-pressed="true"]', 'onclick')).includes(',1)'));
-ok('first guess is labelled as a guess', (await text(page)).includes('First guess from its price'));
-const m1 = await text(page);
-ok('dish shows tier cost ₹6, sells ₹50, ₹44 left (88%)', m1.includes('₹6') && m1.includes('₹50') && m1.includes('₹44') && m1.includes('88%'), m1.slice(0, 400));
-await shot(page, '33-dish-on-tier');
-await page.click('.seg >> text=2 veg');
-ok('changing the tier is kept on the dish', await ev(page, id => S.menus.lunch.filter(i => i.id === id)[0].tier === 2, rasam));
-ok('a tier with no recipe says so instead of a cost', (await text(page)).includes('tier has no recipe yet'));
-await page.click('.seg >> text=Up to 1 veg');
-
-// pepper rasam gets its own recipe: pepper 50 g ₹40, toor dal 300 g ₹33, tomato 500 g ₹20 → ₹93; +15% ₹13.95 → ₹106.95; ÷15 = ₹7.13
+// a dish priced the same costs differently: pepper 50 g ₹40, toor dal 300 g ₹33, tomato 500 g ₹20 → ₹93; +15% ₹13.95 → ₹106.95; ÷15 = ₹7.13
 const pepper = await ev(page, () => S.menus.lunch.filter(i => i.name === 'Pepper Rasam')[0].id);
 await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
-await page.click('.dock >> text=Give it its own recipe');
-ok('own recipe starts from the tier pot', (await page.locator('#rdLines .rline').count()) === 2);
-await page.locator('#rdLines .x').first().click(); await page.locator('#rdLines .x').first().click();
+ok('another ₹50 dish does not borrow Tomato Rasam\'s cost', await ev(page, id => unitCost('lunch', id) === null, pepper) && (await page.locator('#rdLines .rline').count()) === 0);
 await addLine(page, 'Pepper', 50); await addLine(page, 'Toor dal', 300); await addLine(page, 'Tomato', 500);
 await page.fill('#rdMakes', '15');
 const sum2 = await page.textContent('#rdSum');
@@ -110,15 +98,12 @@ ok('own recipe: ₹93 + ₹13.95 = ₹107 pot, ₹7.1 a portion', sum2.includes(
 ok('margin: sells ₹50, ₹42.9 left, 86%', sum2.includes('₹42.9') && sum2.includes('86%'), sum2);
 await shot(page, '34-own-recipe');
 await page.click('.dock >> text=Save'); await page.waitForTimeout(300);
-ok('own recipe wins over the tier', await ev(page, id => Math.abs(unitCost('lunch', id) - 106.95 / 15) < 1e-9 && costInfo('lunch', id).src === 'own', pepper));
-ok('saving an own recipe returns to Costs', page.url().endsWith('#/costs'));
-ok('saving says Saved', await page.locator('#toast', { hasText: 'Saved' }).isVisible());
-ok('Costs no longer shows the recipe Save button', (await page.locator('.dock >> text=Save').count()) === 0);
+ok('each dish keeps its own cost', await ev(page, ([a, b]) => Math.abs(unitCost('lunch', b) - 106.95 / 15) < 1e-9 && Math.abs(unitCost('lunch', a) - 119.6 / 20) < 1e-9, [rasam, pepper]));
 // reopen the saved recipe from Costs (the bug: Back pointed at the same screen)
 await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
-ok('a dish with its own recipe opens the recipe', (await page.locator('#rdLines .rline').count()) === 3);
+ok('a costed dish opens its recipe', (await page.locator('#rdLines .rline').count()) === 3);
 await page.click('.bar .back'); await page.waitForTimeout(200);
-ok('Back from a saved own recipe goes to Costs', page.url().endsWith('#/costs') && (await page.locator('.bar h1').textContent()) === 'Costs');
+ok('Back from a saved recipe goes to Costs', page.url().endsWith('#/costs') && (await page.locator('.bar h1').textContent()) === 'Costs');
 // edit and save again: lands on Costs with the change kept
 await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
 await page.fill('#rdMakes', '14');
@@ -128,19 +113,28 @@ await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
 await page.fill('#rdMakes', '15');
 await page.click('.dock >> text=Save'); await page.waitForTimeout(300);
 
-// removing a lunch dish's own recipe drops it back to its tier, and Undo restores it
+// removing a recipe leaves the dish uncosted, and Undo restores it
 await page.goto(URL + '#/costs/item/lunch/' + pepper); await page.reload();
-await page.click('text=Remove own recipe, go back to its tier'); await page.waitForTimeout(200);
-ok('removing an own recipe shows the dish on its tier', (await page.locator('.dock').textContent()).includes('Give it its own recipe'));
+await page.click('text=Remove this recipe'); await page.waitForTimeout(200);
+ok('removing a recipe leaves the dish not costed', page.url().endsWith('#/costs') && await ev(page, id => costInfo('lunch', id).src === null, pepper));
 await page.click('#toastUndo'); await page.waitForTimeout(200);
-ok('undo brings the own recipe back', await ev(page, id => costInfo('lunch', id).src === 'own', pepper));
+ok('undo brings the recipe back', await ev(page, id => costInfo('lunch', id).src === 'own', pepper));
 
-// back out of an unsaved own recipe without looping
+// back out of an unsaved recipe
 const huli = await ev(page, () => S.menus.lunch.filter(i => i.name === 'Huruli Saaru')[0].id);
 await page.goto(URL + '#/costs/item/lunch/' + huli); await page.reload();
-await page.click('.dock >> text=Give it its own recipe');
 await page.click('.bar .back'); await page.waitForTimeout(200);
-ok('Back from an unsaved recipe returns to the dish\'s tier', (await text(page)).includes('Give it its own recipe') || (await page.locator('.dock').textContent()).includes('Give it its own recipe'));
+ok('Back from an unsaved recipe returns to Costs, nothing saved', page.url().endsWith('#/costs') && await ev(page, id => !recipeById(itemRecipeId('lunch', id)), huli));
+
+// old tier recipes in the data are ignored, and don't count as a use of an ingredient
+{ const r = await ev(page, () => { const toor = ingByName('Toor dal'); S.costs.recipes.push({ id: 'tier2', kind: 'tier', tier: 2, unit: 'portions', makes: 10, lines: [{ ing: toor.id, qty: 100 }] });
+    const huli = S.menus.lunch.filter(i => i.name === 'Huruli Saaru')[0];
+    const out = { huli: unitCost('lunch', huli.id), uses: costs().recipes.filter(x => x.kind === 'item' && x.lines.some(l => l.ing === toor.id)).length };
+    go('#/costs/ingredients'); return out; });
+  const toorRow = await page.locator('button.row', { hasText: 'Toor dal' }).textContent();
+  ok('an old tier recipe gives no dish a cost', r.huli === null);
+  ok('an old tier recipe is not counted on its ingredient', toorRow.includes('In ' + r.uses + ' recipe'), toorRow);
+  await ev(page, () => { S.costs.recipes = S.costs.recipes.filter(x => x.id !== 'tier2'); }); }
 
 // coconut has no price: a recipe using it shows no cost, and says why
 await page.goto(URL + '#/costs/item/batter/' + await ev(page, () => S.menus.batter.filter(i => i.name === 'Idly')[0].id)); await page.reload();
@@ -202,7 +196,8 @@ const p2 = await fresh(browser);
 await p2.page.goto(URL + '#/costs/ingredients'); await p2.page.reload();
 await addIng(p2.page, 'Papad', 60, 'piece');
 await addIng(p2.page, 'Wrong thing', 5, 'kg');
-await p2.page.goto(URL + '#/costs/tier/1');
+const p2dish = await ev(p2.page, () => S.menus.lunch.filter(i => i.name === 'Tomato Rasam')[0].id);
+await p2.page.goto(URL + '#/costs/item/lunch/' + p2dish);
 await p2.page.click('text=Add ingredient'); await p2.page.waitForTimeout(350);
 await p2.page.click('#ipList button[aria-label="Edit Wrong thing"]'); await p2.page.waitForTimeout(350);
 await p2.page.click('.sheet >> text=Remove ingredient'); await p2.page.waitForTimeout(400);
@@ -225,9 +220,9 @@ await p2.page.fill('#iePack', '20');
 await p2.page.click('#ieSave'); await p2.page.waitForTimeout(350);
 ok('pack: list shows the pack size', (await text(p2.page)).includes('per pack of 20'));
 // ₹60 for 20 = ₹3 a piece; 2 pieces = ₹6; + 15% = ₹6.90; 20 portions = ₹0.345 each
-const pc = await ev(p2.page, () => { const r = recipeCost(recipeById('tier1')); return [r.ing, Math.round(r.per * 1000)]; });
+const pc = await ev(p2.page, (id) => { const r = recipeCost(recipeById(itemRecipeId('lunch', id))); return [r.ing, Math.round(r.per * 1000)]; }, p2dish);
 ok('pack: recipe costs 2 pieces at ₹3 each', pc[0] === 6 && pc[1] === 345, JSON.stringify(pc));
-await p2.page.goto(URL + '#/costs/tier/1');
+await p2.page.goto(URL + '#/costs/item/lunch/' + p2dish);
 ok('pack: recipe line says per pack of 20 and ₹6', (await p2.page.textContent('#rdLines')).includes('₹60 per pack of 20') && (await p2.page.textContent('#rdLines')).includes('₹6'));
 ok('pack: no page errors', p2.errors.length === 0, p2.errors.join(' | '));
 

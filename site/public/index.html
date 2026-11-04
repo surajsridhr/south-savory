@@ -909,8 +909,7 @@ function render(){
   if(p==="/costs") return viewCosts();
   if(p==="/costs/month") return viewMonth(r.q);
   if(p==="/costs/ingredients") return viewIngredients();
-  if((m=p.match(/^\/costs\/tier\/([123])$/))) return viewTier(Number(m[1]),r.q);
-  if((m=p.match(/^\/costs\/item\/(lunch|batter|drops)\/(.+)$/))) return viewCostItem(m[1],m[2],r.q);
+  if((m=p.match(/^\/costs\/item\/(lunch|batter|drops)\/(.+)$/))) return viewCostItem(m[1],m[2]);
   return viewHome();
 }
 
@@ -1553,11 +1552,11 @@ function removeItem(){
 
 /* ======================= COSTS ======================= */
 /* What an item costs to make. Ingredient prices are his, typed once and kept in a list here,
-   never in the menu lists. A lunch dish takes its tier's pot (up to 1 veg, 2 veg, more than 2)
-   until he gives it a recipe of its own. One overhead percentage covers spices, gas and labour.
+   never in the menu lists. Each item is costed from its own recipe; the curry tiers
+   (₹50/60/70 pots) were dropped on 4 Nov 2026 because dishes on one tier use vegetables that
+   cost differently. Old tier recipes stay in the data, unused. One overhead percentage covers spices, gas and labour.
    Profit is only shown for a whole month. Nothing here is guessed: no price, no cost. */
 var ING_UNITS={kg:{per:"per kg",amt:"g",div:1000},L:{per:"per litre",amt:"ml",div:1000},piece:{per:"per piece",amt:"pieces",div:1},pack:{per:"per pack",amt:"pieces",div:1},bunch:{per:"per bunch",amt:"bunches",div:1}};
-var TIERS=[[1,"Up to 1 vegetable"],[2,"2 vegetables"],[3,"More than 2"]];
 var MAKES_WORD={portions:"portion",kg:"kg",pieces:"piece"};
 function costs(){ if(!S.costs) S.costs={overhead:15,ings:[],recipes:[]}; return S.costs; }
 function overhead(){ var o=Number(costs().overhead); return isFinite(o)?o:15; }
@@ -1573,8 +1572,6 @@ function itemRecipeId(kind,id){ return kind+"_"+id; }
 function money1(n){ if(n==null) return "—"; var a=Math.abs(n); if(a>=100) return rupee(n); var r=Math.round(n*10)/10; return (r<0?"−":"")+"₹"+String(Math.abs(r)); }
 function makesUnit(kind,it){ if(kind==="batter") return "kg"; if(kind==="drops") return it&&it.unit==="kg"?"kg":it&&it.unit==="portion"?"portions":"pieces"; return "portions"; }
 function sellPrice(kind,it){ if(!it) return null; return num(kind==="lunch"?it.price:it.rate); }
-function guessTier(it){ if(!it||it.group!=="Curries") return null; return {50:1,60:2,70:3}[Number(it.price)]||null; }
-function dishTier(it){ return it?(it.tier||guessTier(it)):null; }
 
 function recipeCost(r){
   var sum=0, missing=[], noAmt=[], n=0;
@@ -1590,17 +1587,11 @@ function recipeCost(r){
 /* cost of one portion / kg / piece of a menu item, or null when it can't be known yet */
 function costInfo(kind,id){
   var r=recipeById(itemRecipeId(kind,id));
-  if(r) return {per:recipeCost(r).per,src:"own"};
-  if(kind==="lunch"){
-    var t=dishTier(menuItem2("lunch",id)), tr=t&&recipeById("tier"+t);
-    if(t) return {per:tr?recipeCost(tr).per:null,src:"tier",tier:t};
-  }
-  return {per:null,src:null};
+  return r?{per:recipeCost(r).per,src:"own"}:{per:null,src:null};
 }
 function unitCost(kind,id){ return costInfo(kind,id).per; }
 function costLabel(ci){
-  if(ci.src==="own") return ci.per==null?"Own recipe, not finished":"Own recipe";
-  if(ci.src==="tier") return TIERS[ci.tier-1][1]+(ci.per==null?", tier not costed yet":"");
+  if(ci.src==="own") return ci.per==null?"Recipe not finished":"Costed";
   return "Not costed";
 }
 
@@ -1648,11 +1639,6 @@ function viewCosts(){
   }
   var own=costs().recipes.filter(function(r){return r.kind==="item";}).map(function(r){ return {r:r,it:menuItem2(r.menuKind,r.menuId)}; }).filter(function(x){return x.it;})
     .sort(function(a,b){return a.it.name.localeCompare(b.it.name);});
-  var tierRows=TIERS.map(function(tt){
-    var r=recipeById("tier"+tt[0]), per=r?recipeCost(r).per:null;
-    var used=S.menus.lunch.filter(function(i){return dishTier(i)===tt[0]&&!recipeById(itemRecipeId("lunch",i.id));}).length;
-    return '<a class="row" href="#/costs/tier/'+tt[0]+'"><span class="grow"><span class="t1" style="display:block">'+tt[1]+'</span><span class="t2" style="display:block">'+(!r?"No recipe yet · ":per==null?"Not finished · ":"")+plural(used,"dish","dishes")+'</span></span><span class="val num" style="font-weight:500">'+money1(per)+'</span>'+I.chev+'</a>';
-  }).join("");
   var ownRows=own.map(function(x){
     var per=recipeCost(x.r).per, kindWord={lunch:"Lunch",batter:"Batter",drops:"Drops"}[x.r.menuKind];
     return '<a class="row" href="#/costs/item/'+x.r.menuKind+'/'+x.r.menuId+'"><span class="grow"><span class="t1" style="display:block">'+esc(x.it.name)+'</span><span class="t2" style="display:block">'+kindWord+' · per '+MAKES_WORD[x.r.unit]+'</span></span><span class="val num" style="font-weight:500">'+money1(per)+'</span>'+I.chev+'</a>';
@@ -1661,9 +1647,7 @@ function viewCosts(){
   var mt=rep.total;
   $app.innerHTML='<header class="bar"><h1 style="padding-left:8px">Costs</h1></header><main class="page">'+
     lunchHtml+
-    '<div class="section"><h2>Curry tiers<span class="aside">cost per portion</span></h2><div class="list">'+tierRows+'</div>'+
-      '<p class="hint">Each curry and rasam takes its tier\'s cost until you give it its own recipe.</p></div>'+
-    '<div class="section"><h2>Own recipes</h2>'+(ownRows?'<div class="list">'+ownRows+'</div>':'<p class="empty">None yet. Cost an item to give it a recipe of its own.</p>')+'</div>'+
+    '<div class="section"><h2>Costed items<span class="aside">cost per portion, kg or piece</span></h2>'+(ownRows?'<div class="list">'+ownRows+'</div>':'<p class="empty">None yet. Tap Cost an item and add what goes into it.</p>')+'</div>'+
     '<div class="section"><h2>'+monthName(ym)+'</h2><a class="card owedrow" style="margin-top:0" href="#/costs/month?m='+ym+'"><span><span style="font-weight:500">Monthly report</span><span class="sub" style="display:block;margin:0">'+rupee(mt.rev)+' revenue so far'+(mt.unc?' · some items not costed':'')+'</span></span><span style="margin-left:auto;display:flex">'+I.chev+'</span></a></div>'+
     '<div class="section"><h2>Settings</h2><div class="list">'+
       '<a class="row" href="#/costs/ingredients"><span class="grow"><span class="t1" style="display:block">Ingredients</span><span class="t2" style="display:block">'+plural(costs().ings.length,"ingredient")+(noPrice?' · '+noPrice+' with no price':'')+'</span></span>'+I.chev+'</a>'+
@@ -1698,33 +1682,11 @@ function drawCostPick(){
   document.getElementById("cpList").innerHTML=html||'<p class="empty" style="margin-top:12px">Nothing matches.</p>';
 }
 
-/* ---------- a lunch dish on its tier, or any item's own recipe ---------- */
-function viewCostItem(kind,id,q){
+/* ---------- an item's recipe ---------- */
+function viewCostItem(kind,id){
   var it=menuItem2(kind,id); if(!it){ go("#/costs"); return; }
-  var rid=itemRecipeId(kind,id);
-  if(q&&q.tier&&rd&&rd.id===rid&&rd.isNew) rd=null;   /* backing out of a recipe he hadn't saved */
-  if(recipeById(rid)||(rd&&rd.id===rid)||kind!=="lunch") return viewRecipe(rid,kind,it);
-  rd=null;
-  var t=dishTier(it), guessed=!it.tier&&t, tr=t&&recipeById("tier"+t), per=tr?recipeCost(tr).per:null, price=sellPrice(kind,it);
-  $app.innerHTML=bar(it.name,"#/costs")+'<main class="page">'+
-    '<p class="sub">Sells at '+(price==null?"no price yet":rupee(price)+" a portion")+'</p>'+
-    '<div class="section"><h2>Tier</h2><div class="seg full" role="group" aria-label="Tier">'+TIERS.map(function(tt){
-      return '<button aria-pressed="'+(t===tt[0])+'" onclick="setDishTier(\''+id+'\','+tt[0]+')">'+tt[1].replace("Up to 1 vegetable","Up to 1 veg").replace("2 vegetables","2 veg")+'</button>';
-    }).join("")+'</div><p class="hint">'+(guessed?"First guess from its price. Change it if the ingredients say otherwise.":t?"":"Pick the tier closest to what goes in, or give it its own recipe.")+'</p></div>'+
-    (t?'<div class="section">'+marginCard(per,price,"portions",tr?null:"The "+TIERS[t-1][1].toLowerCase()+" tier has no recipe yet.")+
-      '<div class="btnrow"><a class="btn text" href="#/costs/tier/'+t+'?from='+id+'">'+(tr?"Edit":"Set up")+' the tier recipe</a></div></div>':'')+
-    '</main>';
-  dock('<button class="btn primary" onclick="ownRecipe(\''+id+'\')">Give it its own recipe</button>');
-  tabbar("costs");
+  return viewRecipe(itemRecipeId(kind,id),kind,it);
 }
-function setDishTier(id,t){ var it=menuItem2("lunch",id); if(!it) return; it.tier=t; save(); render(); }
-function ownRecipe(id){
-  var it=menuItem2("lunch",id), t=dishTier(it), tr=t&&recipeById("tier"+t);
-  rd={id:itemRecipeId("lunch",id),kind:"item",menuKind:"lunch",menuId:id,unit:"portions",makes:tr?tr.makes:null,
-      lines:tr?tr.lines.map(function(l){return {ing:l.ing,qty:l.qty};}):[],isNew:true};
-  render();
-}
-function viewTier(n,q){ return viewRecipe("tier"+n,null,null,q&&q.from&&menuItem2("lunch",q.from)?"#/costs/item/lunch/"+q.from:null); }
 
 function marginCard(per,price,unit,note){
   var w=MAKES_WORD[unit];
@@ -1736,28 +1698,21 @@ function marginCard(per,price,unit,note){
 
 /* ---------- the recipe calculator ---------- */
 var rd=null;
-function viewRecipe(rid,kind,it,from){
-  var isTier=rid.indexOf("tier")===0, n=isTier?Number(rid.slice(4)):0;
+function viewRecipe(rid,kind,it){
   if(!rd||rd.id!==rid){
     var r=recipeById(rid);
-    rd=r?JSON.parse(JSON.stringify(r)):(isTier?{id:rid,kind:"tier",tier:n,unit:"portions",makes:null,lines:[],isNew:true}
-        :{id:rid,kind:"item",menuKind:kind,menuId:it.id,unit:makesUnit(kind,it),makes:null,lines:[],isNew:true});
+    rd=r?JSON.parse(JSON.stringify(r)):{id:rid,kind:"item",menuKind:kind,menuId:it.id,unit:makesUnit(kind,it),makes:null,lines:[],isNew:true};
   }
   if(rd.base===undefined) rd.base=rdShape(rd);
-  var title=isTier?"Tier: "+TIERS[n-1][1]:it.name;
-  var sub=isTier?"One typical pot. Every curry on this tier without its own recipe uses its cost.":
-    ({lunch:"Lunch dish",batter:"Batter",drops:"Drop item"}[kind])+" · sells at "+(sellPrice(kind,it)==null?"no price yet":rupee(sellPrice(kind,it))+" per "+MAKES_WORD[rd.unit]);
-  /* a saved recipe sits on the dish's own route, so back can't point there: it goes to Costs.
-     A new own recipe for a lunch dish backs out to the dish's tier */
-  var back=from||(!isTier&&kind==="lunch"&&rd.isNew?"#/costs/item/lunch/"+it.id+"?tier=1":"#/costs");
-  rd.back=from||"#/costs";
-  $app.innerHTML=bar(title,back)+'<main class="page"><p class="sub">'+esc(sub)+'</p>'+
+  var sub=({lunch:"Lunch dish",batter:"Batter",drops:"Drop item"}[kind])+" · sells at "+(sellPrice(kind,it)==null?"no price yet":rupee(sellPrice(kind,it))+" per "+MAKES_WORD[rd.unit]);
+  rd.back="#/costs";
+  $app.innerHTML=bar(it.name,"#/costs")+'<main class="page"><p class="sub">'+esc(sub)+'</p>'+
     '<div class="section"><h2>Ingredients</h2><div class="card pad" id="rdLines">'+rdLinesHtml()+'</div>'+
       '<p class="ferr" id="rdErr" hidden></p><div class="btnrow"><button class="btn secondary" onclick="addRecipeLine()">Add ingredient</button></div></div>'+
     '<div class="section"><h2>Makes</h2><div style="display:flex;align-items:center;gap:10px"><input type="number" inputmode="decimal" id="rdMakes" style="width:110px;text-align:right" value="'+(rd.makes==null?"":rd.makes)+'" oninput="rd.makes=num(this.value);rdSum()" aria-label="How much it makes"><span>'+rd.unit+'</span></div>'+
       '<p class="hint">How much this '+(rd.unit==="portions"?"pot":"batch")+' gives you. Cost per '+MAKES_WORD[rd.unit]+' is the total divided by this.</p></div>'+
     '<div class="section"><h2>Cost</h2><div id="rdSum">'+rdSumHtml(kind,it)+'</div></div>'+
-    (!rd.isNew?'<div class="section"><button class="btn danger" onclick="removeRecipe()">'+(isTier?"Clear this tier recipe":kind==="lunch"?"Remove own recipe, go back to its tier":"Remove this recipe")+'</button></div>':'')+
+    (!rd.isNew?'<div class="section"><button class="btn danger" onclick="removeRecipe()">'+"Remove this recipe"+'</button></div>':'')+
     '</main>';
   rd.ctx={kind:kind,it:it};
   dock('<button class="btn primary" onclick="saveRecipe()">Save</button>');
@@ -1794,15 +1749,14 @@ function rdSum(){
 function saveRecipe(){
   if(!rd.lines.some(function(l){return ingById(l.ing);})){ var e=document.getElementById("rdErr"); if(e){ e.textContent="Add at least one ingredient to save this recipe."; e.hidden=false; } return; }
   var r={id:rd.id,kind:rd.kind,unit:rd.unit,makes:rd.makes,lines:rd.lines.filter(function(l){return ingById(l.ing);}).map(function(l){return {ing:l.ing,qty:l.qty};})};
-  if(rd.kind==="tier") r.tier=rd.tier; else { r.menuKind=rd.menuKind; r.menuId=rd.menuId; }
+  r.menuKind=rd.menuKind; r.menuId=rd.menuId;
   var arr=costs().recipes, ix=-1; arr.forEach(function(x,k){ if(x.id===r.id) ix=k; });
   if(ix>=0) arr[ix]=r; else arr.push(r);
   var back=rd.back||"#/costs"; save(); rd=null; go(back); toast("Saved");
 }
 function removeRecipe(){
   var arr=costs().recipes, ix=-1; arr.forEach(function(x,k){ if(x.id===rd.id) ix=k; }); if(ix<0) return;
-  var r=arr.splice(ix,1)[0], toTier=r.kind==="item"&&r.menuKind==="lunch"; rd=null; save();
-  if(toTier) render(); else go("#/costs");
+  var r=arr.splice(ix,1)[0]; rd=null; save(); go("#/costs");
   toast("Recipe removed",function(){ arr.splice(ix,0,r); save(); render(); });
 }
 var ipk=null;
@@ -1826,7 +1780,7 @@ function viewIngredients(){
   var items=costs().ings.slice().sort(function(a,b){return a.name.localeCompare(b.name);});
   $app.innerHTML=bar("Ingredients","#/costs")+'<main class="page"><p class="sub">What you pay for each. Change a price here and every recipe using it updates.</p>'+
     (items.length?'<div class="list" style="margin-top:12px">'+items.map(function(g){
-      var used=costs().recipes.filter(function(r){return r.lines.some(function(l){return l.ing===g.id;});}).length;
+      var used=costs().recipes.filter(function(r){return r.kind==="item"&&r.lines.some(function(l){return l.ing===g.id;});}).length;
       return '<button class="row" onclick="ingSheet(\''+g.id+'\')"><span class="grow"><span class="t1" style="display:block">'+esc(g.name)+'</span><span class="t2" style="display:block">'+(used?"In "+plural(used,"recipe"):"Not in a recipe yet")+'</span></span><span class="val num">'+(g.price==null||g.price===""?'<span class="pill warn">No price</span>':rupee(g.price)+' <span class="small muted">'+ingPriceText(g).replace(/^\S+ /,"")+'</span>')+'</span>'+I.chev+'</button>';
     }).join("")+'</div>':'<p class="empty" style="margin-top:12px">No ingredients yet. Add what you buy, with what you paid.</p>')+'</main>';
   dock('<button class="btn primary" onclick="ingSheet(null)">New ingredient</button>');
@@ -1836,7 +1790,7 @@ var ie=null;
 function ingSheet(id,forRecipe){
   var g=id?ingById(id):null;
   ie={id:id,name:g?g.name:"",price:g?g.price:null,unit:g?g.unit:"kg",pack:g&&g.pack?g.pack:null,forRecipe:forRecipe===true,fromPick:forRecipe==="pick"};
-  var inUse=g?costs().recipes.filter(function(r){return r.lines.some(function(l){return l.ing===g.id;});}).length:0;
+  var inUse=g?costs().recipes.filter(function(r){return r.kind==="item"&&r.lines.some(function(l){return l.ing===g.id;});}).length:0;
   var b='<div class="field"><label class="f" for="ieName">Name</label><input type="text" id="ieName" autocapitalize="words" value="'+esc(ie.name)+'" oninput="ie.name=this.value;ieState()"></div>'+
     '<div class="field"><label class="f" for="iePrice">What you pay</label><span style="display:flex;gap:8px;align-items:center"><span class="money-in"><input type="number" inputmode="decimal" id="iePrice" style="width:120px" value="'+(ie.price==null?"":ie.price)+'" oninput="ie.price=num(this.value)"></span>'+
       /* once in a recipe the amounts there are fixed in g, ml or pieces, so only units counted the same way are offered */
