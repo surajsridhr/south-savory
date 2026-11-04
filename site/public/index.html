@@ -593,7 +593,7 @@ async function syncNow(){
         if(rec.deleted){ if(rec.id in cur){ delete cur[rec.id]; changed=true; } delete SYNC.last[rec.id]; }
         else { if(cur[rec.id]!==rec.data){ cur[rec.id]=rec.data; changed=true; } SYNC.last[rec.id]=rec.data; }
       });
-      if(changed){ S=unflatten(cur,S.meta); store.save(S); }
+      if(changed){ S=unflatten(cur,S.meta); store.save(S); if(tidySizedDrops()) save(); }
     }
     SYNC.cursor=got.cursor; SYNC.state="ok"; SYNC.at=Date.now();
     if(changed) softRender();
@@ -612,7 +612,7 @@ async function syncReconcile(){
     Object.keys(SYNC.pending).forEach(function(id){ var p=SYNC.pending[id]; if(p.deleted) delete merged[id]; else merged[id]=p.data; });
     var before=JSON.stringify(flatten(S));
     S=unflatten(merged,S.meta); store.save(S);
-    SYNC.last=flatten(S); SYNC.cursor=got.cursor; SYNC.state="ok"; SYNC.at=Date.now();
+    SYNC.last=flatten(S); if(tidySizedDrops()) save(); SYNC.cursor=got.cursor; SYNC.state="ok"; SYNC.at=Date.now();
     if(JSON.stringify(SYNC.last)!==before) softRender();
   }catch(e){ if(SYNC.state!=="signedout") SYNC.state="offline"; }
   finally{ SYNC.busy=false; syncPersist(); syncBadge(); }
@@ -664,6 +664,7 @@ async function syncStart(){
       SYNC.last=server;
     }
     SYNC.cursor=got.cursor; SYNC.state="ok"; SYNC.at=Date.now();
+    if(tidySizedDrops()) store.save(S);
     var cur2=flatten(S), now=Date.now();
     Object.keys(cur2).forEach(function(id){ if(cur2[id]!==SYNC.last[id]) SYNC.pending[id]={id:id,data:cur2[id],deleted:0,ts:now}; });
     SYNC.last=cur2; syncPersist(); render();
@@ -1598,16 +1599,51 @@ function costLabel(ci){
 /* a line on an order, at today's costs */
 function menuKindOf(ev){ return ev.kind==="batter"?"batter":ev.kind==="drop"?"drops":"lunch"; }
 function menuIdFor(mk,it){ if(menuItem2(mk,it.id)) return it.id; var m=S.menus[mk].filter(function(x){return normName(x.name)===normName(it.name);})[0]; return m?m.id:null; }
+/* The old app had no weight input, so a drop sold by weight was split into one item per pack,
+   "Ragi malt (½ kg)", "Ragi malt (50 g)". This folds them back into the one item, sold by the kg:
+   each line becomes its weight in kg, keeping what the customer was charged. Runs on every phone
+   until nothing is left to fold; the result is the same everywhere, so it syncs cleanly. */
+var SIZED_RE=/^(.*?)\s*\(\s*(½|[\d.]+)\s*(kg|g)\s*\)\s*$/i;
+function sizeKg(name){ var m=SIZED_RE.exec(name||""); if(!m) return null; var n=m[2]==="½"?0.5:parseFloat(m[2]); var kg=m[3].toLowerCase()==="g"?n/1000:n; return kg>0?{base:m[1].trim(),kg:kg}:null; }
+function tidySizedDrops(){
+  var changed=false;
+  events("drop").forEach(function(ev){
+    var map={};
+    ev.items.forEach(function(it){
+      var sz=it.unit!=="kg"&&sizeKg(it.name); if(!sz) return;
+      var menu=S.menus.drops.filter(function(x){return normName(x.name)===normName(sz.base);})[0];
+      var target=ev.items.filter(function(x){return x.unit==="kg"&&normName(x.name)===normName(sz.base);})[0];
+      if(!target){ target={id:menu&&menu.unit==="kg"?menu.id:"kg_"+it.id,name:menu?menu.name:sz.base,unit:"kg",rate:menu&&menu.unit==="kg"?menu.rate:(it.rate!=null?Math.round(Number(it.rate)/sz.kg):null),pair:null};
+        if(evItem(ev,target.id)) target.id="kg_"+it.id; ev.items.push(target); }
+      map[it.id]={to:target.id,kg:sz.kg,rate:it.rate};
+    });
+    if(!Object.keys(map).length) return;
+    ev.orders.forEach(function(o){
+      var out=[];
+      (o.lines||[]).forEach(function(ln){
+        var m=map[ln.ref]; if(!m){ out.push(ln); return; }
+        var price=(ln.price!==null&&ln.price!==undefined)?Number(ln.price):(m.rate!=null?Number(m.rate)*(Number(ln.qty)||0):null);
+        var qty=Math.round((Number(ln.qty)||0)*m.kg*1000)/1000;
+        var same=out.filter(function(x){return x.ref===m.to;})[0];
+        if(same){ same.qty=Math.round(((Number(same.qty)||0)+qty)*1000)/1000; same.price=(same.price==null||price==null)?null:Number(same.price)+price; }
+        else out.push({ref:m.to,qty:qty,price:price});
+      });
+      o.lines=out;
+    });
+    ev.items=ev.items.filter(function(it){return !map[it.id];});
+    changed=true;
+  });
+  return changed;
+}
 /* the menu item a line is costed from, and how many of its units one line unit is.
    Drops brought over from the old app list each pack size as its own item, "Ragi malt (½ kg)" or
    "(50 g)"; those take the per-kg cost of the item they're a size of. */
 function costRef(mk,it){
   var mid=menuIdFor(mk,it); if(mid) return {mid:mid,f:1,name:it.name};
-  var m=mk==="drops"&&/^(.*?)\s*\(\s*(½|[\d.]+)\s*(kg|g)\s*\)\s*$/i.exec(it.name||"");
-  if(m){
-    var base=S.menus.drops.filter(function(x){return x.unit==="kg"&&normName(x.name)===normName(m[1]);})[0];
-    var n=m[2]==="½"?0.5:parseFloat(m[2]), kg=m[3].toLowerCase()==="g"?n/1000:n;
-    if(base&&kg>0) return {mid:base.id,f:kg,name:base.name};
+  var sz=mk==="drops"&&sizeKg(it.name);
+  if(sz){
+    var base=S.menus.drops.filter(function(x){return x.unit==="kg"&&normName(x.name)===normName(sz.base);})[0];
+    if(base) return {mid:base.id,f:sz.kg,name:base.name};
   }
   return {mid:null,f:1,name:it.name};
 }
@@ -2113,7 +2149,7 @@ function toast(msg,undo){
   t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove("show"); },undo?5000:2600);
 }
 
-save(); render(); syncStart();
+tidySizedDrops(); save(); render(); syncStart();
 </script>
 </body>
 </html>

@@ -122,6 +122,15 @@ ok('the other tab took the new order before saving', await state(A2, () => event
 ok('the new order survives an edit in the older tab', await state(B.page, () => events('batter')[0].orders.some(o => o.name === 'Sister new')) && await state(A.page, () => events('batter')[0].orders.some(o => o.name === 'Sister new')));
 await A2.close();
 
+// old-app pack items arriving from the shared list are folded into kg on the phone that gets them, and that goes back up
+await A.page.evaluate(() => { S.events.oldPk = { id: 'oldPk', kind: 'drop', title: 'Ragi malt', date: todayKey(), status: 'closed', imported: true, createdAt: 1,
+  items: [{ id: 'old_h', name: 'Ragi malt (½ kg)', unit: 'piece', rate: 700 }], orders: [{ id: 'opk', name: 'A', lines: [{ ref: 'old_h', qty: 2, price: 1400 }], delivered: true, paid: true }] }; save(); });
+await wait(700); await sync(A.page); await sync(B.page); await wait(300); await sync(B.page); await sync(A.page);
+const tidied = p => state(p, () => { const e = S.events.oldPk; return e && e.items.length === 1 && e.items[0].unit === 'kg' && e.orders[0].lines[0].qty === 1 && e.orders[0].lines[0].price === 1400; });
+ok('a phone that receives old pack items folds them into kg', await tidied(B.page));
+ok('and the other phone gets the folded version back', await tidied(A.page));
+await A.page.evaluate(() => { delete S.events.oldPk; save(); }); await wait(700); await sync(A.page); await sync(B.page);
+
 // costing made on one phone shows on the other
 await A.page.evaluate(() => { S.costs.ings.push({ id: uid(), name: 'Toor dal', price: 110, unit: 'kg' }); S.costs.overhead = 18; save(); });
 await wait(700); await sync(A.page); await sync(B.page);

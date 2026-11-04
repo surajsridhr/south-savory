@@ -207,6 +207,20 @@ ok('previous month: September', (await text(page)).includes('September 2026'));
   ok('tapping a drop item opens its recipe', (await page.locator('.bar h1').textContent()) === 'Ragi malt' && (await text(page)).includes('Drop item'));
   await ev(page, () => { delete S.events.oldDrop; delete S.events.openDrop; S.costs.recipes = S.costs.recipes.filter(r => r.menuKind !== 'drops'); rd = null; save(); go('#/costs'); }); }
 
+// the tidy-up: old-app pack items fold into the one item, by the kg, keeping what was charged
+{ const r = await ev(page, () => {
+    const ev = { id: 'oldDrop2', kind: 'drop', title: 'Ragi malt', date: todayKey(), status: 'closed', imported: true, createdAt: 1,
+      items: [{ id: 'old_rm_h', name: 'Ragi malt (½ kg)', unit: 'piece', rate: 700 }, { id: 'old_rm_s', name: 'Ragi malt (50 g)', unit: 'piece', rate: 80 }, { id: 'old_lad', name: 'Laddu', unit: 'piece', rate: 20 }],
+      orders: [{ id: 'od1', name: 'A', lines: [{ ref: 'old_rm_h', qty: 2, price: 1400 }, { ref: 'old_rm_s', qty: 3, price: 240 }, { ref: 'old_lad', qty: 4, price: 80 }], delivered: true, paid: true }] };
+    S.events.oldDrop2 = ev; const before = orderTotal(ev, ev.orders[0]);
+    const first = tidySizedDrops(), again = tidySizedDrops(), e = S.events.oldDrop2, malt = S.menus.drops.filter(i => i.name === 'Ragi malt')[0];
+    const out = { first, again, before, after: orderTotal(e, e.orders[0]), names: e.items.map(i => i.name + ':' + i.unit).join(','), lines: JSON.stringify(e.orders[0].lines), usesMenu: e.items.some(i => i.id === malt.id), what: orderWhat(e, e.orders[0]) };
+    delete S.events.oldDrop2; return out; });
+  ok('tidy: "Ragi malt (½ kg)" and "(50 g)" become one Ragi malt sold by the kg', r.first && r.names === 'Laddu:piece,Ragi malt:kg' && r.usesMenu, r.names);
+  ok('tidy: 2 × ½ kg + 3 × 50 g = one line of 1.15 kg, charged ₹1,640 as before', r.lines.includes('"qty":1.15') && r.lines.includes('"price":1640') && r.before === r.after, r.lines);
+  ok('tidy: the order reads in kg', /Ragi malt 1.15 kg/.test(r.what), r.what);
+  ok('tidy: items without a weight in the name are left alone, and a second run changes nothing', r.names.startsWith('Laddu:piece') && r.again === false); }
+
 // sync rows: costs travel as their own rows and come back intact
 ok('costs flatten to c: rows and back', await ev(page, () => {
   const m = flatten(S), ids = Object.keys(m);
