@@ -185,6 +185,28 @@ await shot(page, '36-month');
 await page.click('[aria-label="Previous month"]');
 ok('previous month: September', (await text(page)).includes('September 2026'));
 
+// drops from the old app list each size as its own item; they take the per-kg recipe
+// ragi malt: toor dal 1000 g = ₹110, +15% = ₹126.5 a kg. ½ kg × 2 = ₹126.5; 50 g × 3 = ₹18.975 → ₹145.475
+{ const r = await ev(page, () => {
+    const malt = S.menus.drops.filter(i => i.name === 'Ragi malt')[0], toor = ingByName('Toor dal');
+    S.costs.recipes.push({ id: itemRecipeId('drops', malt.id), kind: 'item', menuKind: 'drops', menuId: malt.id, unit: 'kg', makes: 1, lines: [{ ing: toor.id, qty: 1000 }] });
+    const ev = { id: 'oldDrop', kind: 'drop', title: 'Ragi malt', date: todayKey(), status: 'closed', imported: true, createdAt: 1,
+      items: [{ id: 'old_rm_h', name: 'Ragi malt (½ kg)', unit: 'piece', rate: 700 }, { id: 'old_rm_s', name: 'Ragi malt (50 g)', unit: 'piece', rate: 80 }],
+      orders: [{ id: 'od1', name: 'A', lines: [{ ref: 'old_rm_h', qty: 2, price: 1400 }, { ref: 'old_rm_s', qty: 3, price: 240 }], delivered: true, paid: true }] };
+    S.events.oldDrop = ev;
+    const rep = monthReport(todayKey().slice(0, 7));
+    const open = { id: 'openDrop', kind: 'drop', title: 'Ragi malt', date: addDays(todayKey(), 3), status: 'open', createdAt: 2, items: ev.items, orders: [] };
+    S.events.openDrop = open; go('#/costs');
+    return { cost: rep.cats.drop.cost, unc: rep.cats.drop.unc };
+  });
+  ok('an old-app pack size is costed from the per-kg recipe (½ kg and 50 g)', Math.abs(r.cost - 145.475) < 1e-6 && r.unc === 0, JSON.stringify(r));
+  await page.waitForTimeout(200);
+  const rows = await page.$$eval('.section:has(h2:text("Open drops")) .row', x => x.map(y => y.textContent));
+  ok('Costs lists items in open drops, each size under its one item, with its cost per kg', rows.length === 1 && rows[0].includes('Ragi malt') && rows[0].includes('per kg') && rows[0].includes('₹127'), rows.join(' | '));
+  await page.click('.section:has(h2:text("Open drops")) a.row');
+  ok('tapping a drop item opens its recipe', (await page.locator('.bar h1').textContent()) === 'Ragi malt' && (await text(page)).includes('Drop item'));
+  await ev(page, () => { delete S.events.oldDrop; delete S.events.openDrop; S.costs.recipes = S.costs.recipes.filter(r => r.menuKind !== 'drops'); rd = null; save(); go('#/costs'); }); }
+
 // sync rows: costs travel as their own rows and come back intact
 ok('costs flatten to c: rows and back', await ev(page, () => {
   const m = flatten(S), ids = Object.keys(m);

@@ -1598,6 +1598,19 @@ function costLabel(ci){
 /* a line on an order, at today's costs */
 function menuKindOf(ev){ return ev.kind==="batter"?"batter":ev.kind==="drop"?"drops":"lunch"; }
 function menuIdFor(mk,it){ if(menuItem2(mk,it.id)) return it.id; var m=S.menus[mk].filter(function(x){return normName(x.name)===normName(it.name);})[0]; return m?m.id:null; }
+/* the menu item a line is costed from, and how many of its units one line unit is.
+   Drops brought over from the old app list each pack size as its own item, "Ragi malt (½ kg)" or
+   "(50 g)"; those take the per-kg cost of the item they're a size of. */
+function costRef(mk,it){
+  var mid=menuIdFor(mk,it); if(mid) return {mid:mid,f:1,name:it.name};
+  var m=mk==="drops"&&/^(.*?)\s*\(\s*(½|[\d.]+)\s*(kg|g)\s*\)\s*$/i.exec(it.name||"");
+  if(m){
+    var base=S.menus.drops.filter(function(x){return x.unit==="kg"&&normName(x.name)===normName(m[1]);})[0];
+    var n=m[2]==="½"?0.5:parseFloat(m[2]), kg=m[3].toLowerCase()==="g"?n/1000:n;
+    if(base&&kg>0) return {mid:base.id,f:kg,name:base.name};
+  }
+  return {mid:null,f:1,name:it.name};
+}
 function lineCost(ev,ln){
   var q=Number(ln.qty)||0; if(!q) return {c:0};
   if(isCombo(ln.ref)){
@@ -1606,8 +1619,8 @@ function lineCost(ev,ln){
     return miss.length?{c:null,items:miss}:{c:s*q};
   }
   var it=evItem(ev,ln.ref); if(!it) return {c:0};
-  var mk=menuKindOf(ev), mid=menuIdFor(mk,it), u=mid?unitCost(mk,mid):null;
-  return u==null?{c:null,items:[{name:it.name,mk:mk,mid:mid}]}:{c:u*q};
+  var mk=menuKindOf(ev), cr=costRef(mk,it), u=cr.mid?unitCost(mk,cr.mid):null;
+  return u==null?{c:null,items:[{name:cr.name,mk:mk,mid:cr.mid}]}:{c:u*q*cr.f};
 }
 function monthReport(ym){
   var cats={lunch:{rev:0,cost:0,unc:0},batter:{rev:0,cost:0,unc:0},drop:{rev:0,cost:0,unc:0},custom:{rev:0,cost:0,unc:0}}, missing={};
@@ -1638,6 +1651,14 @@ function viewCosts(){
         return mid?'<a class="row" href="#/costs/item/lunch/'+mid+'">'+inner+I.chev+'</a>':'<div class="row">'+inner+'</div>';
       }).join("")+'</div></div>';
   }
+  /* the items in drops still open, each once, costed per kg, piece or portion like the menu says */
+  var seen={}, dropRows=liveDrops().reduce(function(a,d){ return a.concat(d.items); },[]).map(function(it){ return costRef("drops",it); })
+    .filter(function(cr){ var k=cr.mid||normName(cr.name); if(seen[k]) return false; seen[k]=1; return true; }).map(function(cr){
+      var mi=cr.mid&&menuItem2("drops",cr.mid), ci=cr.mid?costInfo("drops",cr.mid):{per:null,src:null};
+      var inner='<span class="grow"><span class="t1" style="display:block">'+esc(cr.name)+'</span><span class="t2" style="display:block">'+esc(costLabel(ci))+(mi?' · per '+MAKES_WORD[makesUnit("drops",mi)]:'')+'</span></span><span class="val num" style="font-weight:500">'+money1(ci.per)+'</span>';
+      return cr.mid?'<a class="row" href="#/costs/item/drops/'+cr.mid+'">'+inner+I.chev+'</a>':'<div class="row">'+inner+'</div>';
+    }).join("");
+  var dropHtml=dropRows?'<div class="section"><h2>Open drops<span class="aside">cost per kg or piece</span></h2><div class="list">'+dropRows+'</div></div>':'';
   var own=costs().recipes.filter(function(r){return r.kind==="item";}).map(function(r){ return {r:r,it:menuItem2(r.menuKind,r.menuId)}; }).filter(function(x){return x.it;})
     .sort(function(a,b){return a.it.name.localeCompare(b.it.name);});
   var ownRows=own.map(function(x){
@@ -1647,7 +1668,7 @@ function viewCosts(){
   var noPrice=costs().ings.filter(function(g){return g.price==null||g.price==="";}).length;
   var mt=rep.total;
   $app.innerHTML='<header class="bar"><h1 style="padding-left:8px">Costs</h1></header><main class="page">'+
-    lunchHtml+
+    lunchHtml+dropHtml+
     '<div class="section"><h2>Costed items<span class="aside">cost per portion, kg or piece</span></h2>'+(ownRows?'<div class="list">'+ownRows+'</div>':'<p class="empty">None yet. Tap Cost an item and add what goes into it.</p>')+'</div>'+
     '<div class="section"><h2>'+monthName(ym)+'</h2><a class="card owedrow" style="margin-top:0" href="#/costs/month?m='+ym+'"><span><span style="font-weight:500">Monthly report</span><span class="sub" style="display:block;margin:0">'+rupee(mt.rev)+' revenue so far'+(mt.unc?' · some items not costed':'')+'</span></span><span style="margin-left:auto;display:flex">'+I.chev+'</span></a></div>'+
     '<div class="section"><h2>Settings</h2><div class="list">'+
