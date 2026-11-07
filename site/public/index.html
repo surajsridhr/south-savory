@@ -27,7 +27,7 @@
   --font:"Work Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   --serif:"Lora",Georgia,serif;
   --fs-title:26px; --fs-section:18px; --fs-kpi:30px; --fs-body:15px; --fs-small:13px;
-  --bar:56px; --tabbar:64px;
+  --bar:56px; --tabbar:76px; --sab:max(12px,env(safe-area-inset-bottom));
   color-scheme:light;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -40,7 +40,7 @@ a{color:inherit;text-decoration:none}
 .num{font-variant-numeric:tabular-nums}
 :focus-visible{outline:2px solid var(--hue);outline-offset:2px;border-radius:4px}
 .app{max-width:560px;margin:0 auto;min-height:100vh;
-  padding-bottom:calc(var(--tabbar) + env(safe-area-inset-bottom) + 84px)}
+  padding-bottom:calc(var(--tabbar) + var(--sab) + 84px)}
 
 /* top bar: the screen's name, a back button, at most one action */
 .bar{position:sticky;top:0;z-index:5;height:calc(var(--bar) + env(safe-area-inset-top));
@@ -156,14 +156,14 @@ button.row:hover{background:color-mix(in srgb,var(--raised) 45%,transparent)}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 
 /* the action dock: the screen's one primary job, in thumb reach above the tab bar */
-.dock{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom));z-index:6;
+.dock{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + var(--sab));z-index:6;
   background:var(--ground);padding:10px var(--pad)}
 .dock .in{max-width:528px;margin:0 auto;display:flex;gap:8px}
 .dock .btn{flex:1}
 
 /* tab bar */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:7;background:var(--surface);border-top:1px solid var(--border);
-  padding-bottom:env(safe-area-inset-bottom)}
+  padding-bottom:var(--sab)}
 .tabbar .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;height:var(--tabbar)}
 .tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);text-decoration:none;font-size:11px;font-weight:500}
 .tabbar a svg{width:22px;height:22px}
@@ -232,12 +232,12 @@ input:focus{outline:2px solid var(--hue);outline-offset:-1px;border-color:transp
 .sheet .drag{touch-action:none;cursor:grab}
 .sheet.dragging{transition:none}
 .sheet .sb{flex:1;overflow:auto;padding:4px var(--pad) 24px;-webkit-overflow-scrolling:touch}
-.sheet .sf{flex:none;padding:10px var(--pad) calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--ground);display:flex;gap:10px;align-items:center}
+.sheet .sf{flex:none;padding:10px var(--pad) var(--sab);border-top:1px solid var(--border);background:var(--ground);display:flex;gap:10px;align-items:center}
 .sheet .sf .tot{font-size:13px;color:var(--muted);line-height:1.2}
 .sheet .sf .tot b{display:block;font-size:20px;color:var(--text);font-weight:700}
 .sheet .sf .btn{flex:1}
 
-.toast{position:fixed;left:50%;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom) + 76px);transform:translate(-50%,20px);
+.toast{position:fixed;left:50%;bottom:calc(var(--tabbar) + var(--sab) + 76px);transform:translate(-50%,20px);
   background:var(--primary);color:var(--on-primary);padding:10px 8px 10px 16px;border-radius:10px;z-index:30;display:flex;align-items:center;gap:8px;
   font-size:14px;opacity:0;transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.2)} /* taste-skill-ignore: a toast floats */
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -306,7 +306,7 @@ button.row:active,a.row:active{background:var(--well)}
 .tile .fig{font-size:24px;font-weight:600}
 /* home: wide rows, photo at the left edge, the day's state in the middle, the number on the right */
 .tbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.tiles{grid-template-columns:1fr;gap:12px}
+.tiles{grid-template-columns:1fr;gap:16px}
 .tiles .tile{flex-direction:row;align-items:center;min-height:0;padding:10px 16px 24px 10px;gap:14px}
 .tiles .catimg{width:76px;height:76px;margin:0}
 .tiles .fig{margin:0;text-align:right;font-size:22px;line-height:1.1}
@@ -382,8 +382,9 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--text);outline-offset:
 .tabbar{border-top:0;background:linear-gradient(var(--pouch-a),var(--pouch-b));box-shadow:0 -4px 12px rgba(var(--sh),.25)}
 .tabbar::before{content:"";position:absolute;left:0;right:0;top:4px;height:10px;background:#F6EEDB;opacity:.5;
   -webkit-mask:var(--kolam-border) repeat-x center/16px 10px;mask:var(--kolam-border) repeat-x center/16px 10px}
-.tabbar .in{padding:16px 12px 4px;gap:10px}
-.tabbar a{color:rgba(246,238,219,.72);border-radius:12px;margin:2px 0}
+/* 14 px clears the kolam border at the top; each tab is a 52 px pill that holds its icon, word and dot */
+.tabbar .in{padding:14px 12px 6px;gap:10px}
+.tabbar a{color:rgba(246,238,219,.72);border-radius:12px;margin:2px 0;padding:4px 0}
 .tabbar a[aria-current="page"]{color:#FFFCF5;background:rgba(0,0,0,.22);box-shadow:inset 0 2px 4px rgba(0,0,0,.35)}
 .tabbar a[aria-current="page"]::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--ember);margin-top:1px}
 .tabbar .badge{background:var(--clay-b);color:#FFFCF5;font-weight:600}
@@ -417,7 +418,7 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--text);outline-offset:
 .x{height:var(--ctl-h)}
 .dock{padding:var(--ctl-gap) var(--pad)}
 .dock .in{gap:var(--ctl-gap)}
-.sheet .sf{padding:var(--ctl-gap) var(--pad) calc(var(--ctl-gap) + env(safe-area-inset-bottom));gap:var(--ctl-gap)}
+.sheet .sf{padding:var(--ctl-gap) var(--pad) var(--sab);gap:var(--ctl-gap)}
 .sheet .sh{padding:0 var(--pad)}
 .sheet .sh .btn.text{justify-content:flex-start}
 .bar{padding-left:10px;padding-right:10px}
@@ -439,6 +440,11 @@ input[type=text],input[type=number],input[type=date],input[type=search],select,.
 .list,.card:not(.pad){padding-top:5px;padding-bottom:5px}
 .card.pad,.card > .pad{padding-left:21px;padding-right:21px}
 .card.pad{padding-top:17px;padding-bottom:17px}
+.card.owedrow{padding:17px 21px;margin-top:16px}
+/* a totals strip right under a page heading sits as close as other content under a heading */
+.section:has(> .strip:first-child){margin-top:16px}
+.custcard + .custcard{margin-top:16px}
+.tiles .tile{padding:13px 21px 27px 13px}
 /* the brand signature on Home: the supplied wordmark, never retyped */
 .brandhead{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) var(--pad) 6px}
 .sswordmark{width:220px;height:auto;color:var(--text);display:block}
@@ -930,11 +936,11 @@ function viewHome(){
   else bt={when:"No batch open",quiet:"Start a batch",line:""};
 
   var ds=liveDrops(), dt;
-  if(ds.length){ dt={when:ds.length+" open",fig:ds.reduce(function(a,d){return a+d.orders.length;},0)+'<small>orders</small>',line:"Next collection "+relDate(ds[0].date)}; }
+  if(ds.length){ dt={when:ds.length+" open",fig:ds.reduce(function(a,d){return a+d.orders.length;},0)+'<small>orders</small>',line:(ds[0].date<todayKey()?"Collection was ":"Next collection ")+relLower(ds[0].date)}; }
   else dt={when:"None open",quiet:"Start a drop",line:""};
 
   var cs=upcomingCustom(), ct;
-  if(cs.length){ var c0=cs[0]; ct={when:relDate(c0.date),fig:esc(c0.orders[0]?c0.orders[0].name:"Order"),line:rupee(orderTotal(c0,c0.orders[0]||{lines:[]}))+(cs.length>1?" · "+(cs.length-1)+" more":"")}; }
+  if(cs.length){ var c0=cs[0]; ct={when:"Next "+relLower(c0.date)+" · "+(c0.orders[0]&&c0.orders[0].name||"Order"),fig:cs.length+'<small>'+(cs.length===1?"order":"orders")+'</small>',line:rupee(orderTotal(c0,c0.orders[0]||{lines:[]}))}; }
   else ct={when:"None coming up",quiet:"New custom order",line:""};
 
   function tile(name,href,d,img){
@@ -1213,7 +1219,8 @@ function viewEvent(id,backHash){
   var editHref=ev.kind==="batter"?"#/batter/setup?id="+ev.id:"#/drops/setup?id="+ev.id;
   $app.innerHTML=bar(title,closed?"#/history":backHash)+'<main class="page">'+
     '<div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><h2 class="title">'+(ev.kind==="batter"?"Pickup ":"Collect ")+relLower(ev.date)+'</h2>'+(closed?'<span class="pill">Closed</span>':'')+'<a class="btn text" style="margin-left:auto" href="'+editHref+'">Edit</a></div>'+
-    '<p class="sub">'+fmtDate(ev.date)+(ev.imported?' · brought in from the old app':'')+'</p>'+
+    /* the date line only when the heading says "today"/"tomorrow", so it isn't said twice */
+    ((relLower(ev.date)!==fmtDate(ev.date)||ev.imported)?'<p class="sub">'+[relLower(ev.date)!==fmtDate(ev.date)?fmtDate(ev.date):'',ev.imported?'brought in from the old app':''].filter(Boolean).join(' · ')+'</p>':'')+
     eventBody(ev)+
     '<div class="section">'+(closed?'<button class="btn secondary" onclick="setClosed(\''+ev.id+'\',false)">Reopen</button>':'')+'</div></main>';
   dock(closed?'':'<button class="btn secondary" onclick="setClosed(\''+ev.id+'\',true)">Close '+(ev.kind==="batter"?"batch":"drop")+'</button><button class="btn primary" onclick="openOrder(\''+ev.id+'\')">Add order</button>');
@@ -1303,10 +1310,11 @@ function saveDrop(){
 function viewCustomList(){
   var t=todayKey(), up=upcomingCustom();
   $app.innerHTML=bar("Custom orders","#/")+'<main class="page">'+
-    '<div class="section" style="margin-top:8px"><h2>Coming up</h2>'+(up.length?'<div class="list">'+up.map(function(ev){
+    /* each custom order is its own job for its own customer, so each gets its own card */
+    '<div class="section" style="margin-top:8px"><h2>Coming up<span class="aside">'+plural(up.length,"order")+'</span></h2>'+(up.length?up.map(function(ev){
       var o=ev.orders[0]||{lines:[]};
-      return '<a class="row" href="#/custom/'+ev.id+'"><span class="grow"><span class="t1" style="display:block">'+esc(o.name||"No name")+'</span><span class="t2" style="display:block">'+relDate(ev.date)+(relDate(ev.date)!==fmtDate(ev.date)?" · "+fmtDate(ev.date):"")+' · '+esc(orderWhat(ev,o))+'</span></span><span class="amt num">'+rupee(orderTotal(ev,o))+'</span>'+I.chev+'</a>';
-    }).join("")+'</div>':'<p class="empty">No custom orders coming up.</p>')+'</div><p class="foot">Past custom orders are in History.</p></main>';
+      return '<div class="list custcard"><a class="row" href="#/custom/'+ev.id+'"><span class="grow"><span class="t1" style="display:block">'+esc(o.name||"No name")+'</span><span class="t2" style="display:block">'+relDate(ev.date)+(relDate(ev.date)!==fmtDate(ev.date)?" · "+fmtDate(ev.date):"")+'</span><span class="t2" style="display:block;white-space:normal">'+esc(orderWhat(ev,o))+'</span></span><span class="amt num">'+rupee(orderTotal(ev,o))+'</span>'+I.chev+'</a></div>';
+    }).join(""):'<p class="empty">No custom orders coming up.</p>')+'</div><p class="foot">Past custom orders are in History.</p></main>';
   dock('<a class="btn primary" href="#/custom/setup">New custom order</a>');
   tabbar("home");
 }
@@ -1969,7 +1977,7 @@ function viewHistory(q){
   var revRows=[["lunch","Daily lunch"],["batter","Batter"],["drop","Special drops"],["custom","Custom orders"]].map(function(k){
     var c=rv.cats[k[0]], days=per==="month"?past.filter(function(ev){return ev.kind===k[0];}):[];
     var head=catImg(k[0])+'<span class="grow"><span class="t1" style="display:block">'+k[1]+'</span><span class="t2 num" style="display:block">'+(c.n?plural(c.n,"order")+' · '+Math.round(c.rev*100/(rv.total||1))+'%':'No orders')+'</span></span><span class="amt num">'+rupee(c.rev)+'</span>';
-    if(!days.length) return '<div class="cat"><div class="row catrow">'+head+(per==="month"?'<span style="width:20px"></span>':'')+'</div></div>';
+    if(!days.length) return '<div class="cat"><div class="row catrow">'+head+(per==="month"?'<span style="width:16px;flex:none"></span>':'')+'</div></div>';
     return '<details class="acc cat" data-kind="'+k[0]+'"'+(histCatOpen[k[0]]?' open':'')+' ontoggle="histCatOpen[\''+k[0]+'\']=this.open"><summary><span class="row catrow">'+head+I.chev+'</span></summary>'+
       days.map(function(ev){ var st=eventStats(ev);
         return '<a class="row day" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+plural(st.n,"order")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="val num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</details>';
