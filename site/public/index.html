@@ -387,6 +387,8 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--text);outline-offset:
 .tabbar .in{padding:20px 12px 4px;gap:10px}
 .tabbar a{color:rgba(246,238,219,.72);border-radius:12px;margin:2px 0}
 .tabbar a[aria-current="page"]{color:#FFFCF5;background:rgba(0,0,0,.22);box-shadow:inset 0 2px 4px rgba(0,0,0,.35)}
+/* the selected tab's icon takes the logo's ember; its word stays cream */
+.tabbar a[aria-current="page"] .ic{color:var(--ember)}
 .tabbar .badge{background:var(--clay-b);color:#FFFCF5;font-weight:600}
 
 .sheet{background:var(--ground);border-radius:16px 16px 0 0;box-shadow:0 -1px 0 var(--label-edge),0 -12px 30px rgba(var(--sh),.3)}
