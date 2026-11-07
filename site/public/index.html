@@ -27,7 +27,7 @@
   --font:"Work Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   --serif:"Lora",Georgia,serif;
   --fs-title:26px; --fs-section:18px; --fs-kpi:30px; --fs-body:15px; --fs-small:13px;
-  --bar:56px; --tabbar:76px; --sab:max(12px,env(safe-area-inset-bottom));
+  --bar:56px; --tabbar:80px; --sab:max(12px,env(safe-area-inset-bottom));
   color-scheme:light;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -382,11 +382,11 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--text);outline-offset:
 .tabbar{border-top:0;background:linear-gradient(var(--pouch-a),var(--pouch-b));box-shadow:0 -4px 12px rgba(var(--sh),.25)}
 .tabbar::before{content:"";position:absolute;left:0;right:0;top:4px;height:10px;background:#F6EEDB;opacity:.5;
   -webkit-mask:var(--kolam-border) repeat-x center/16px 10px;mask:var(--kolam-border) repeat-x center/16px 10px}
-/* 14 px clears the kolam border at the top; each tab is a 52 px pill that holds its icon, word and dot */
-.tabbar .in{padding:14px 12px 6px;gap:10px}
-.tabbar a{color:rgba(246,238,219,.72);border-radius:12px;margin:2px 0;padding:4px 0}
+/* the kolam border runs 4-14 px; the tab pills start 8 px below it, and every tab's icon and word sit
+   centred at the same height. The pill alone marks the selected tab: a dot under the word left no air */
+.tabbar .in{padding:20px 12px 4px;gap:10px}
+.tabbar a{color:rgba(246,238,219,.72);border-radius:12px;margin:2px 0}
 .tabbar a[aria-current="page"]{color:#FFFCF5;background:rgba(0,0,0,.22);box-shadow:inset 0 2px 4px rgba(0,0,0,.35)}
-.tabbar a[aria-current="page"]::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--ember);margin-top:1px}
 .tabbar .badge{background:var(--clay-b);color:#FFFCF5;font-weight:600}
 
 .sheet{background:var(--ground);border-radius:16px 16px 0 0;box-shadow:0 -1px 0 var(--label-edge),0 -12px 30px rgba(var(--sh),.3)}
