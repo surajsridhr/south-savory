@@ -445,6 +445,8 @@ input[type=text],input[type=number],input[type=date],input[type=search],select,.
 .card.owedrow{padding:17px 21px;margin-top:16px}
 /* a totals strip right under a page heading sits as close as other content under a heading */
 .section:has(> .strip:first-child){margin-top:16px}
+.ingcat{font-size:14px;font-weight:500;color:var(--muted);margin:18px 0 8px}
+.ingcat:first-child{margin-top:12px}
 .custcard + .custcard{margin-top:16px}
 .tiles .tile{padding:13px 21px 27px 13px}
 /* the brand signature on Home: the supplied wordmark, never retyped */
@@ -1576,6 +1578,21 @@ function ingById(id){ return costs().ings.filter(function(g){return g.id===id;})
 function ingDiv(g){ return g.unit==="pack"?(Number(g.pack)>0?Number(g.pack):null):ING_UNITS[g.unit].div; }
 function ingCost(g,qty){ var d=ingDiv(g); return (g.price==null||g.price===""||!d)?null:Number(g.price)*(Number(qty)||0)/d; }
 function ingPriceText(g){ return g.price==null||g.price===""?"No price yet":rupee(g.price)+" "+(g.unit==="pack"&&Number(g.pack)>0?"per pack of "+g.pack:ING_UNITS[g.unit].per); }
+/* ingredients sit under the kind of thing they are; a guess from the name until he picks one in the sheet */
+var ING_CATS=[["veg","Vegetables and greens"],["grain","Rice, grains and flours"],["dal","Dals and pulses"],["dairy","Milk, curd and eggs"],["oil","Oil and ghee"],["spice","Spices and masalas"],["sweet","Sugar, jaggery and dry fruit"],["pack","Packing"],["other","Other"]];
+var ING_GUESS=[
+  ["pack",/\b(box|boxes|container|cover|covers|bag|bags|pouch|pouches|foil|lid|lids|label|labels|sticker|stickers|tape|spoon|spoons|plate|plates|cup|cups|bottle|bottles|jar|jars|tissue)\b/],
+  ["oil",/\b(oil|ghee|vanaspati|dalda)\b/],
+  ["spice",/\b(masala|powder|salt|turmeric|haldi|mustard|cumin|jeera|pepper|hing|asafoetida|fenugreek|cardamom|elaichi|clove|cloves|cinnamon|tamarind|saffron|fennel|saunf|bay|seeds?|dhania|kasuri|chilli flakes|dry chilli|red chilli|byadgi|nutmeg|mace|star anise)\b/],
+  ["dal",/\b(dal|dhal|daal|urad|toor|tur|moong|mung|chana|gram|besan|rajma|chickpeas?|kabuli|lentils?|masoor|bele|kadle|hesaru|uddina|thogari|avare)\b/],
+  ["sweet",/\b(jaggery|bella|sugar|cashews?|almonds?|badam|raisins?|kismis|dates|khajur|pista|pistachios?|walnuts?|honey|dry ?fruits?|peanuts?|groundnuts?|sesame|til|ellu|poppy|khus|gasagase|dry coconut|copra|kobbari)\b/],
+  ["dairy",/\b(milk|curd|yogurt|yoghurt|butter|paneer|cream|buttermilk|mosaru|eggs?)\b/],
+  ["grain",/\b(rice|ragi|wheat|atta|maida|rava|rawa|sooji|suji|semolina|poha|avalakki|flour|millets?|jowar|bajra|oats|vermicelli|shavige|sabudana|sago|akki)\b/],
+  ["veg",/\b(tomato(es)?|onions?|potato(es)?|brinjal|beans|carrots?|cabbage|drumsticks?|okra|bhindi|ladies finger|pumpkin|gourd|cucumber|capsicum|chillies|chilli|chili|coconut|banana|plantain|lemons?|limes?|greens|soppu|coriander|mint|curry leaves|ginger|garlic|beetroot|beet|peas|cauliflower|radish|yam|colocasia|sweet potato|methi|spinach|palak|dill|leaves|veg|vegetables?|mushrooms?|corn|knol ?khol|chow chow|chayote|raw mango|mango|amla)\b/]
+];
+function ingGuess(name){ var n=String(name||"").toLowerCase(); for(var k=0;k<ING_GUESS.length;k++) if(ING_GUESS[k][1].test(n)) return ING_GUESS[k][0]; return "other"; }
+function ingCat(g){ return g.cat&&ING_CATS.some(function(c){return c[0]===g.cat;})?g.cat:ingGuess(g.name); }
+function ingGroups(items){ return ING_CATS.map(function(c){ return {id:c[0],label:c[1],items:items.filter(function(g){return ingCat(g)===c[0];})}; }).filter(function(x){return x.items.length;}); }
 function ingByName(n){ return costs().ings.filter(function(g){return normName(g.name)===normName(n);})[0]||null; }
 function recipeById(id){ return costs().recipes.filter(function(r){return r.id===id;})[0]||null; }
 function menuItem2(kind,id){ return S.menus[kind].filter(function(i){return i.id===id;})[0]||null; }
@@ -1838,9 +1855,9 @@ function addRecipeLine(){
 function drawIngPick(){
   var q=normName(ipk.q), used={}; rd.lines.forEach(function(l){used[l.ing]=1;});
   var items=costs().ings.filter(function(g){return !used[g.id]&&(!q||normName(g.name).indexOf(q)>=0);}).sort(function(a,b){return a.name.localeCompare(b.name);});
-  document.getElementById("ipList").innerHTML=items.length?'<div class="list" style="margin-top:10px">'+items.map(function(g){
+  document.getElementById("ipList").innerHTML=items.length?ingGroups(items).map(function(gr){ return '<h3 class="ingcat">'+gr.label+'</h3><div class="list">'+gr.items.map(function(g){
     return '<div class="row" style="padding:0 4px 0 0;gap:0"><button class="grow" style="padding:12px 16px;text-align:left;min-height:52px" onclick="pickIng(\''+g.id+'\')"><span class="t1" style="display:block">'+esc(g.name)+'</span><span class="t2" style="display:block">'+ingPriceText(g)+'</span></button><button class="btn text" onclick="ingSheet(\''+g.id+'\',\'pick\')" aria-label="Edit '+esc(g.name)+'">Edit</button></div>';
-  }).join("")+'</div>':'<p class="empty" style="margin-top:10px">'+(costs().ings.length?"Nothing matches. Add it as a new ingredient.":"No ingredients yet. Add the first one.")+'</p>';
+  }).join("")+'</div>'; }).join(""):'<p class="empty" style="margin-top:10px">'+(costs().ings.length?"Nothing matches. Add it as a new ingredient.":"No ingredients yet. Add the first one.")+'</p>';
 }
 function pickIng(id){ rd.lines.push({ing:id,qty:null}); closeSheet(); render(); setTimeout(function(){ var ins=document.querySelectorAll("#rdLines input"); if(ins.length) ins[ins.length-1].focus(); },50); }
 
@@ -1848,19 +1865,20 @@ function pickIng(id){ rd.lines.push({ing:id,qty:null}); closeSheet(); render(); 
 function viewIngredients(){
   var items=costs().ings.slice().sort(function(a,b){return a.name.localeCompare(b.name);});
   $app.innerHTML=bar("Ingredients","#/costs")+'<main class="page"><p class="sub">What you pay for each. Change a price here and every recipe using it updates.</p>'+
-    (items.length?'<div class="list" style="margin-top:12px">'+items.map(function(g){
+    (items.length?ingGroups(items).map(function(gr){ return '<div class="section"><h2>'+gr.label+'<span class="aside num">'+gr.items.length+'</span></h2><div class="list">'+gr.items.map(function(g){
       var used=costs().recipes.filter(function(r){return r.kind==="item"&&r.lines.some(function(l){return l.ing===g.id;});}).length;
       return '<button class="row" onclick="ingSheet(\''+g.id+'\')"><span class="grow"><span class="t1" style="display:block">'+esc(g.name)+'</span><span class="t2" style="display:block">'+(used?"In "+plural(used,"recipe"):"Not in a recipe yet")+'</span></span><span class="val num">'+(g.price==null||g.price===""?'<span class="pill warn">No price</span>':rupee(g.price)+' <span class="small muted">'+ingPriceText(g).replace(/^\S+ /,"")+'</span>')+'</span>'+I.chev+'</button>';
-    }).join("")+'</div>':'<p class="empty" style="margin-top:12px">No ingredients yet. Add what you buy, with what you paid.</p>')+'</main>';
+    }).join("")+'</div></div>'; }).join(""):'<p class="empty" style="margin-top:12px">No ingredients yet. Add what you buy, with what you paid.</p>')+'</main>';
   dock('<button class="btn primary" onclick="ingSheet(null)">New ingredient</button>');
   tabbar("costs");
 }
 var ie=null;
 function ingSheet(id,forRecipe){
   var g=id?ingById(id):null;
-  ie={id:id,name:g?g.name:"",price:g?g.price:null,unit:g?g.unit:"kg",pack:g&&g.pack?g.pack:null,forRecipe:forRecipe===true,fromPick:forRecipe==="pick"};
+  ie={id:id,name:g?g.name:"",price:g?g.price:null,unit:g?g.unit:"kg",pack:g&&g.pack?g.pack:null,cat:g?ingCat(g):"other",catSet:!!(g&&g.cat),forRecipe:forRecipe===true,fromPick:forRecipe==="pick"};
   var inUse=g?costs().recipes.filter(function(r){return r.kind==="item"&&r.lines.some(function(l){return l.ing===g.id;});}).length:0;
-  var b='<div class="field"><label class="f" for="ieName">Name</label><input type="text" id="ieName" autocapitalize="words" value="'+esc(ie.name)+'" oninput="ie.name=this.value;ieState()"></div>'+
+  var b='<div class="field"><label class="f" for="ieName">Name</label><input type="text" id="ieName" autocapitalize="words" value="'+esc(ie.name)+'" oninput="ie.name=this.value;ieState();ieGuessCat()"></div>'+
+    '<div class="field"><label class="f" for="ieCat">Kind</label><select id="ieCat" onchange="ie.cat=this.value;ie.catSet=true">'+ING_CATS.map(function(c){return '<option value="'+c[0]+'" '+(c[0]===ie.cat?'selected':'')+'>'+c[1]+'</option>';}).join("")+'</select></div>'+
     '<div class="field"><label class="f" for="iePrice">What you pay</label><span style="display:flex;gap:8px;align-items:center"><span class="money-in"><input type="number" inputmode="decimal" id="iePrice" style="width:120px" value="'+(ie.price==null?"":ie.price)+'" oninput="ie.price=num(this.value)"></span>'+
       /* once in a recipe the amounts there are fixed in g, ml or pieces, so only units counted the same way are offered */
       '<select id="ieUnit" style="width:auto;flex:1" onchange="ie.unit=this.value;document.getElementById(\'iePackF\').hidden=this.value!==\'pack\'" aria-label="Per">'+Object.keys(ING_UNITS).filter(function(u){return !inUse||ING_UNITS[u].amt===ING_UNITS[ie.unit].amt;}).map(function(u){return '<option value="'+u+'" '+(u===ie.unit?'selected':'')+'>'+ING_UNITS[u].per+'</option>';}).join("")+'</select></span>'+
@@ -1871,6 +1889,7 @@ function ingSheet(id,forRecipe){
   openSheet({title:g?"Edit ingredient":"New ingredient",short:true,body:b,onclose:ie.fromPick&&rd?addRecipeLine:null,foot:'<button class="btn primary" id="ieSave" '+(ie.name.trim()?'':'disabled')+' onclick="saveIng()">'+(g?"Save":"Add")+'</button>'});
   if(!g) setTimeout(function(){ var n=document.getElementById("ieName"); if(n) n.focus(); },280);
 }
+function ieGuessCat(){ if(ie.catSet) return; ie.cat=ingGuess(ie.name); var s=document.getElementById("ieCat"); if(s) s.value=ie.cat; }
 function ieState(){ var b=document.getElementById("ieSave"); if(b) b.disabled=!ie.name.trim(); }
 function saveIng(){
   var nm=ie.name.trim(); if(!nm) return;
@@ -1880,6 +1899,7 @@ function saveIng(){
   var g;
   if(ie.id){ g=ingById(ie.id); g.name=nm; g.price=ie.price; g.unit=ie.unit; }
   else { g={id:uid(),name:nm,price:ie.price,unit:ie.unit}; costs().ings.push(g); }
+  g.cat=ie.cat;
   if(ie.unit==="pack") g.pack=ie.pack; else delete g.pack;
   if(ie.forRecipe&&rd) rd.lines.push({ing:g.id,qty:null});
   save(); closeSheet(ie.fromPick); render(); toast(ie.id?"Saved":nm+" added");
