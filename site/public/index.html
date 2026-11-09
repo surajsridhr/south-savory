@@ -507,7 +507,7 @@ function kgLabel(kg){ kg=Math.round(kg*1000)/1000; if(kg===0.5) return "½ kg"; 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
 function normName(s){ return String(s||"").trim().replace(/\s+/g," ").toLowerCase(); }
 function num(v){ if(v===""||v===null||v===undefined) return null; var n=Number(v); return isFinite(n)?n:null; }
-var LUNCH_GROUPS=["Curries","Palyas","Rice items","Ragi ball and menthya ball","Chapathi","Sides"];
+var LUNCH_GROUPS=["Curries","Palyas","Rice items","Ragi ball and menthya ball","Chapathi","Sides","Sweets"];
 var UNIT_LABEL={kg:"per kg",piece:"per piece",portion:"per portion"};
 
 /* ---------- state ---------- */

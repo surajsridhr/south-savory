@@ -52,7 +52,7 @@ Names are typed by hand, no recall. For grouping (e.g. who owes), names match **
 
 **Create**
 - Choose the date first: **today or tomorrow**.
-- Pick items from the menu list, grouped: Curries / Palyas / Rice items / Ragi ball and menthya ball / Chapathi.
+- Pick items from the menu list, grouped: Curries / Palyas / Rice items / Ragi ball and menthya ball / Chapathi / Sides / Sweets (Sweets added 9 Nov, for sugar pongal, payasa and the like).
 - Each item carries its standing price. Editing a price on a day's menu changes **that day only**. To change it permanently, edit it in the menu list.
 
 **Combos**
