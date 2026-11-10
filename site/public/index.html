@@ -1600,6 +1600,16 @@ function itemRecipeId(kind,id){ return kind+"_"+id; }
 function money1(n){ if(n==null) return "—"; var a=Math.abs(n); if(a>=100) return rupee(n); var r=Math.round(n*10)/10; return (r<0?"−":"")+"₹"+String(Math.abs(r)); }
 function makesUnit(kind,it){ if(kind==="batter") return "kg"; if(kind==="drops") return it&&it.unit==="kg"?"kg":it&&it.unit==="portion"?"portions":"pieces"; return "portions"; }
 function sellPrice(kind,it){ if(!it) return null; return num(kind==="lunch"?it.price:it.rate); }
+/* a lunch dish priced differently on today's or tomorrow's menu sells at that price there, so the margin uses it */
+function sellNow(kind,it){
+  var std=sellPrice(kind,it); if(kind!=="lunch"||!it) return {price:std};
+  var t=todayKey(), days=[[t,"today"],[addDays(t,1),"tomorrow"]];
+  for(var k=0;k<days.length;k++){ var ev=lunchOn(days[k][0]); if(!ev) continue;
+    var x=ev.items.filter(function(i){return menuIdFor("lunch",i)===it.id;})[0];
+    if(x&&num(x.price)!=null&&num(x.price)!==std) return {price:num(x.price),when:days[k][1],std:std};
+    if(x) return {price:std}; }
+  return {price:std};
+}
 
 function recipeCost(r){
   var sum=0, missing=[], noAmt=[], n=0;
@@ -1774,10 +1784,10 @@ function viewCostItem(kind,id,q){
   return viewRecipe(itemRecipeId(kind,id),kind,it,m?"#/costs/month?m="+m[1]:"#/costs");
 }
 
-function marginCard(per,price,unit,note){
+function marginCard(per,price,unit,note,when){
   var w=MAKES_WORD[unit];
   var rows='<div class="ci"><div class="cn">Cost per '+w+'</div><div class="cv">'+money1(per)+'</div></div>'+
-    '<div class="ci"><div class="cn">Sells at</div><div class="cv" style="color:var(--text)">'+(price==null?"—":rupee(price))+'</div></div>';
+    '<div class="ci"><div class="cn">Sells at'+(when?' '+when:'')+'</div><div class="cv" style="color:var(--text)">'+(price==null?"—":rupee(price))+'</div></div>';
   if(per!=null&&price!=null&&price>0){ var left=price-per; rows+='<div class="ci"><div class="cn"><b style="font-weight:500">Left per '+w+'</b></div><div class="cv" style="color:'+(left<0?'var(--negative)':'var(--text)')+'">'+money1(left)+'<small>'+Math.round(left/price*100)+'%</small></div></div>'; }
   return '<div class="card pad count">'+rows+'</div>'+(note?'<p class="hint">'+esc(note)+'</p>':'');
 }
@@ -1790,7 +1800,7 @@ function viewRecipe(rid,kind,it,back){
     rd=r?JSON.parse(JSON.stringify(r)):{id:rid,kind:"item",menuKind:kind,menuId:it.id,unit:makesUnit(kind,it),makes:null,lines:[],isNew:true};
   }
   if(rd.base===undefined) rd.base=rdShape(rd);
-  var sub=({lunch:"Lunch dish",batter:"Batter",drops:"Drop item"}[kind])+" · sells at "+(sellPrice(kind,it)==null?"no price yet":rupee(sellPrice(kind,it))+" per "+MAKES_WORD[rd.unit]);
+  var sn=sellNow(kind,it), sub=({lunch:"Lunch dish",batter:"Batter",drops:"Drop item"}[kind])+" · sells at "+(sn.price==null?"no price yet":rupee(sn.price)+" per "+MAKES_WORD[rd.unit]+(sn.when?" "+sn.when+(sn.std!=null?", usually "+rupee(sn.std):""):""));
   rd.back=back||"#/costs";
   $app.innerHTML=bar(it.name,rd.back)+'<main class="page"><p class="sub">'+esc(sub)+'</p>'+
     '<div class="section"><h2>Ingredients</h2><div class="card pad" id="rdLines">'+rdLinesHtml()+'</div>'+
@@ -1825,8 +1835,8 @@ function rdSumHtml(kind,it){
     '<div class="ci"><div class="cn">Overhead '+overhead()+'%<div class="t2">spices, gas, labour</div></div><div class="cv" style="color:var(--text)">'+money1(rc.oh)+'</div></div>'+
     '<div class="ci"><div class="cn"><b style="font-weight:500">Total for the '+(rd.unit==="portions"?"pot":"batch")+'</b></div><div class="cv" style="color:var(--text)">'+money1(rc.total)+'</div></div>';
   var note=rc.missing.length?"No price yet for "+rc.missing.join(", ")+". Add it under Ingredients.":rc.noAmt.length?"Fill in the amount of "+rc.noAmt.join(", ")+".":(!rc.lines?"Add ingredients to see the cost.":(!(Number(rd.makes)>0)?"Fill in how much it makes.":null));
-  var price=it?sellPrice(kind,it):null;
-  return '<div class="card pad count">'+rows+'</div><div style="margin-top:10px">'+(it?marginCard(rc.per,price,rd.unit,note):'<div class="card pad count"><div class="ci"><div class="cn">Cost per portion</div><div class="cv">'+money1(rc.per)+'</div></div></div>'+(note?'<p class="hint">'+esc(note)+'</p>':''))+'</div>';
+  var sn=it?sellNow(kind,it):{price:null};
+  return '<div class="card pad count">'+rows+'</div><div style="margin-top:10px">'+(it?marginCard(rc.per,sn.price,rd.unit,note,sn.when):'<div class="card pad count"><div class="ci"><div class="cn">Cost per portion</div><div class="cv">'+money1(rc.per)+'</div></div></div>'+(note?'<p class="hint">'+esc(note)+'</p>':''))+'</div>';
 }
 function rdSum(){
   var el=document.getElementById("rdSum"); if(el) el.innerHTML=rdSumHtml(rd.ctx&&rd.ctx.kind,rd.ctx&&rd.ctx.it);
