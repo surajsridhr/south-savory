@@ -48,7 +48,7 @@ a{color:inherit;text-decoration:none}
 .bar h1{font-size:17px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
 .bar .back{display:flex;align-items:center;gap:2px;height:44px;padding:0 8px;color:var(--text);font-size:15px}
 .bar .back svg{width:20px;height:20px}
-.bar .act{height:44px;padding:0 10px;font-size:15px;color:var(--text);display:flex;align-items:center}
+.bar .act{height:44px;padding:0 10px;font-size:15px;color:var(--text);display:flex;align-items:center;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--hue,var(--control))}
 .wordmark{display:flex;align-items:center;gap:10px;padding:0 8px;flex:1}
 .wordmark h1{padding:0;font-size:17px}
 
@@ -1803,6 +1803,7 @@ function viewRecipe(rid,kind,it,back){
   var sn=sellNow(kind,it), sub=({lunch:"Lunch dish",batter:"Batter",drops:"Drop item"}[kind])+" · sells at "+(sn.price==null?"no price yet":rupee(sn.price)+" per "+MAKES_WORD[rd.unit]+(sn.when?" "+sn.when+(sn.std!=null?", usually "+rupee(sn.std):""):""));
   rd.back=back||"#/costs";
   $app.innerHTML=bar(it.name,rd.back)+'<main class="page"><p class="sub">'+esc(sub)+'</p>'+
+    '<button class="btn text" style="padding:0;margin-top:2px" onclick="editItem(\''+kind+'\',\''+it.id+'\')">Change '+(kind==="lunch"?"usual price":"price")+'</button>'+
     '<div class="section"><h2>Ingredients</h2><div class="card pad" id="rdLines">'+rdLinesHtml()+'</div>'+
       '<p class="ferr" id="rdErr" hidden></p><div class="btnrow"><button class="btn secondary" onclick="addRecipeLine()">Add ingredient</button></div></div>'+
     '<div class="section"><h2>Makes</h2><div style="display:flex;align-items:center;gap:10px"><input type="number" inputmode="decimal" id="rdMakes" style="width:110px;text-align:right" value="'+(rd.makes==null?"":rd.makes)+'" oninput="rd.makes=num(this.value);rdSum()" aria-label="How much it makes"><span>'+rd.unit+'</span></div>'+
