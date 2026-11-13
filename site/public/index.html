@@ -782,6 +782,12 @@ function evLabel(ev){
   if(ev.kind==="drop") return (ev.title||"Drop")+" · "+fmtDate(ev.date);
   return "Custom · "+((ev.orders[0]&&ev.orders[0].name)||"order")+" · "+fmtDate(ev.date);
 }
+/* inside a History category the category already names the kind: batter rows name the batters, custom rows the customer */
+function evDayLabel(ev){
+  if(ev.kind==="batter"){ var n=(ev.items||[]).map(function(i){return i.name;}).filter(Boolean); return (n.length?n.join(", "):"Batter")+" · "+fmtDate(ev.date); }
+  if(ev.kind==="custom") return ((ev.orders[0]&&ev.orders[0].name)||"Order")+" · "+fmtDate(ev.date);
+  return evLabel(ev);
+}
 function evRoute(ev){ return {lunch:"#/lunch?d="+ev.date,batter:"#/batter/"+ev.id,drop:"#/drops/"+ev.id,custom:"#/custom/"+ev.id}[ev.kind]; }
 function isPast(ev){
   var t=todayKey();
@@ -2013,7 +2019,7 @@ function viewHistory(q){
     if(!days.length) return '<div class="cat"><div class="row catrow">'+head+(per==="month"?'<span style="width:16px;flex:none"></span>':'')+'</div></div>';
     return '<details class="acc cat" data-kind="'+k[0]+'"'+(histCatOpen[k[0]]?' open':'')+' ontoggle="histCatOpen[\''+k[0]+'\']=this.open"><summary><span class="row catrow">'+head+I.chev+'</span></summary>'+
       days.map(function(ev){ var st=eventStats(ev);
-        return '<a class="row day" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evLabel(ev))+'</span><span class="t2" style="display:block">'+plural(st.n,"order")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="val num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</details>';
+        return '<a class="row day" href="'+evRoute(ev)+'"><span class="grow"><span class="t1" style="display:block">'+esc(evDayLabel(ev))+'</span><span class="t2" style="display:block">'+plural(st.n,"order")+(st.unpaid?' · '+rupee(st.unpaid)+' unpaid':'')+(ev.imported?' · old app':'')+'</span></span><span class="val num">'+rupee(st.total)+'</span>'+I.chev+'</a>'; }).join("")+'</details>';
   }).join("");
   var owedSum=og.reduce(function(a,g){return a+g.total;},0);
   $app.innerHTML='<header class="bar"><h1 style="padding-left:8px">History</h1></header><main class="page">'+
